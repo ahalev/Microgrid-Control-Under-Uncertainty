@@ -11,13 +11,10 @@ from garage.replay_buffer import PathBuffer
 
 from pymgrid.microgrid.envs import DiscreteMicrogridEnv
 
-import sys
-
-
 # PARAMETERS TO CHANGE:
 sampler_type = 'local' # 'local' or 'ray'
 name = "first_experiment"
-log_dir = f'{name}'
+log_dir = f'logs/{name}'
 
 hyperparams = dict(n_epochs=800,
                    steps_per_epoch=32,
@@ -45,6 +42,7 @@ if name is None:
 @wrap_experiment(name=name,
                  snapshot_mode='gap',
                  snapshot_gap=50,
+                 archive_launch_repo=False,
                  log_dir=log_dir)
 def discrete_dqn(ctxt=None, seed=1):
     set_seed(seed)
