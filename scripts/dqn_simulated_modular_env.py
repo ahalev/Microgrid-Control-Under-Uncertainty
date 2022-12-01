@@ -9,7 +9,7 @@ from garage.torch.policies import DiscreteQFArgmaxPolicy
 from garage.torch.q_functions import DiscreteMLPQFunction
 from garage.replay_buffer import PathBuffer
 
-from pymgrid.microgrid.envs import DiscreteMicrogridEnv
+from pymgrid.envs import DiscreteMicrogridEnv
 
 # PARAMETERS TO CHANGE:
 sampler_type = 'local' # 'local' or 'ray'
