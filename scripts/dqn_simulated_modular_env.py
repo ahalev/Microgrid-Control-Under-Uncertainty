@@ -1,5 +1,5 @@
 from garage.torch.algos.dqn import DQN
-from garage.envs import GymEnv
+from envs import GymEnv
 from garage import wrap_experiment
 from garage.experiment.deterministic import set_seed
 from garage.sampler import LocalSampler, RaySampler
@@ -10,6 +10,7 @@ from garage.torch.q_functions import DiscreteMLPQFunction
 from garage.replay_buffer import PathBuffer
 
 from pymgrid.envs import DiscreteMicrogridEnv
+
 
 # PARAMETERS TO CHANGE:
 sampler_type = 'local' # 'local' or 'ray'
@@ -107,5 +108,6 @@ def discrete_dqn(ctxt=None, seed=1):
     env.close()
     print('Training completed')
     print(f'Saved results in dir: {trainer._snapshotter.snapshot_dir}')
+
 
 discrete_dqn()
