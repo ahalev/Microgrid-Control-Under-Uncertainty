@@ -24,3 +24,14 @@ class Namespacify(UserDict):
                 v.pprint(indent)
             else:
                 print("{}{}: {}".format(' ' * indent, k, v))
+
+    def __dir__(self):
+        rv = set(super().__dir__())
+        rv = rv | set(self.keys())
+        return sorted(rv)
+
+    def __getattr__(self, item):
+        try:
+            return self[item]
+        except KeyError:
+            raise AttributeError(item)
