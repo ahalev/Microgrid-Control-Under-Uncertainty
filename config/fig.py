@@ -99,9 +99,7 @@ class Config(Namespacify):
 
     @classmethod
     def deserialize(cls, stream):
-        config = yaml.safe_load(stream)
-        return Config().update(config)
-
+        return Config(yaml.safe_load(stream))
 
 if __name__ == '__main__':
     c = Config()
