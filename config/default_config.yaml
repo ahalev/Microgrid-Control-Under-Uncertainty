@@ -1,5 +1,6 @@
 env:
-  !DiscreteMicrogridEnv
+  cls: DiscreteMicrogridEnv
+  config:
     scenario: 0
 algo:
   package: garage
