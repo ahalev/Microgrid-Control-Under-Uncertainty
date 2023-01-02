@@ -45,9 +45,6 @@ class Config(Namespacify):
             'default': default_val,
             'type': type(default_val),
         }
-        # if isinstance(default_val, bool):
-        #     arg['action'] = 'store_true'
-        #
         if hasattr(default_val, '__len__') and not isinstance(default_val, str):
             arg["nargs"] = '+'
 
