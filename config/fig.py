@@ -4,6 +4,8 @@ import yaml
 
 
 from pathlib import Path
+from collections import UserDict
+
 from config import Namespacify
 from pymgrid import envs
 
@@ -91,6 +93,9 @@ class Config(Namespacify):
             elif isinstance(value, dict):
                 self._check_restructured(restructured[key], value, *stack, key)
 
+    def serialize(self):
+        yaml.SafeDumper.add_multi_representer(UserDict, yaml.SafeDumper.represent_dict)
+        return yaml.safe_dump(self)
 
 if __name__ == '__main__':
     c = Config()
