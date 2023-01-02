@@ -78,7 +78,7 @@ class Config(Namespacify):
             if subset.index.dropna('all').empty:
                 restructured.update({key: subset.item()})
             elif subset.index.dropna().nlevels == 1:
-                restructured.update(subset.to_dict())
+                restructured.update({key: subset.to_dict()})
             else:
                 restructured.update({key: self._restructure_arguments(subset)})
 
@@ -89,7 +89,7 @@ class Config(Namespacify):
             if key not in restructured:
                 raise RuntimeError(f'Missing key {"->".join([*stack, key])} in restructured config.')
             elif isinstance(value, dict):
-                self._check_restructured(value, default_config[key], *stack, key)
+                self._check_restructured(restructured[key], value, *stack, key)
 
 
 if __name__ == '__main__':
