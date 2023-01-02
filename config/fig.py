@@ -94,6 +94,12 @@ class Config(Namespacify):
         yaml.SafeDumper.add_multi_representer(UserDict, yaml.SafeDumper.represent_dict)
         return yaml.safe_dump(self)
 
+    @classmethod
+    def deserialize(cls, stream):
+        config = yaml.safe_load(stream)
+        return Config().update(config)
+
+
 if __name__ == '__main__':
     c = Config()
     # print(Namespacify('config', c.default_config))
