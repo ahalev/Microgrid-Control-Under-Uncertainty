@@ -17,9 +17,12 @@ def is_builtin_class_instance(obj):
 
 
 class Config(Namespacify):
-    def __init__(self):
+    def __init__(self, config=None):
         self.default_config = self._load_default_config()
         super().__init__('GridRL', self._parse_config())
+
+        if config:
+            self.update(config)
 
     def _load_default_config(self):
         contents = (Path(__file__).parent / 'default_config.yaml').open('r')
