@@ -80,6 +80,10 @@ class Trainer:
             **self.config.algo.dqn
         )
 
+    def serialize_config(self, fname):
+        with open(fname, 'w') as f:
+            self.config.serialize(f)
+
     def train(self):
         if self.config.algo.package == 'garage':
             return self._train_garage()
@@ -101,6 +105,8 @@ class Trainer:
         def train(ctxt=None):
             set_seed(log_config.seed)
             garage_trainer = GarageTrainer(ctxt)
+
+            self.serialize_config(f'{garage_trainer._snapshotter.snapshot_dir}/config.yaml')
 
             garage_trainer.setup(self.algo, self.env)
             garage_trainer.train(n_epochs=train_config.n_epochs, batch_size=train_config.batch_size)
