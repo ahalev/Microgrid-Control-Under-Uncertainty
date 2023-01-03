@@ -93,9 +93,9 @@ class Config(Namespacify):
             elif isinstance(value, dict):
                 self._check_restructured(restructured[key], value, *stack, key)
 
-    def serialize(self):
+    def serialize(self, stream=None):
         yaml.SafeDumper.add_multi_representer(UserDict, yaml.SafeDumper.represent_dict)
-        return yaml.safe_dump(self)
+        return yaml.safe_dump(self, stream=stream)
 
     @classmethod
     def deserialize(cls, stream):
