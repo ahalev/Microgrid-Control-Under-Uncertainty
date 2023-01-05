@@ -55,6 +55,12 @@ class Config(Namespacify):
 
     def _parse_config(self):
         parsed_args = self._create_parser().parse_known_args()
+
+        if len(parsed_args[1]):
+            bad_args = [x.replace("--", "") for x in parsed_args[1] if x.startswith("--")]
+            valid_args = "\n\t\t".join(sorted(parsed_args[0].__dict__.keys()))
+            raise NameError(f'Unrecognized arguments {bad_args}.\n\tValid arguments:\n\t\t{valid_args}')
+
         restructured = self._restructure_arguments(parsed_args[0].__dict__)
         self._check_restructured(restructured, self.default_config)
         return restructured
