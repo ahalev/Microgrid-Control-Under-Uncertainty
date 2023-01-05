@@ -94,7 +94,9 @@ class Trainer:
         log_config = self.config.context
         train_config = self.config.algo.train
 
-        name = log_config.name if log_config.name is not None else self.algo.__class__.__name__.lower()
+        name = log_config.experiment_name if log_config.experiment_name is not None \
+            else self.algo.__class__.__name__.lower()
+
         log_dir = f'{log_config.log_dir}/{name}'
 
         @wrap_experiment(name=name,
