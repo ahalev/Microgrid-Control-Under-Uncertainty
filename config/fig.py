@@ -21,12 +21,19 @@ class Config(Namespacify):
         self.default_config = self._load_default_config()
         super().__init__('GridRL', self._parse_config())
 
-        if config:
-            self.update(config)
+        if config is not None:
+            self._update_with_config(config)
 
     def _load_default_config(self):
         contents = (Path(__file__).parent / 'default_config.yaml').open('r')
         return yaml.safe_load(contents)
+
+    def _update_with_config(self, config):
+        if isinstance(config, str):
+            with open(config, 'r') as f:
+                config = yaml.safe_load(f)
+
+        self.update(config)
 
     def _get_arguments(self, key='', d=None):
         if d is None:
