@@ -15,8 +15,8 @@ from envs import GymEnv
 
 
 class Trainer:
-    def __init__(self):
-        self.config = Config()
+    def __init__(self, config=None):
+        self.config = Config(config=config)
         self.env = self._setup_env()
         self.qf, self.policy, self.exploration_policy = self._setup_policies()
         self.sampler = self._setup_sampler()

@@ -21,12 +21,19 @@ class Config(Namespacify):
         self.default_config = self._load_default_config()
         super().__init__('GridRL', self._parse_config())
 
-        if config:
-            self.update(config)
+        if config is not None:
+            self._update_with_config(config)
 
     def _load_default_config(self):
         contents = (Path(__file__).parent / 'default_config.yaml').open('r')
         return yaml.safe_load(contents)
+
+    def _update_with_config(self, config):
+        if isinstance(config, str):
+            with open(config, 'r') as f:
+                config = yaml.safe_load(f)
+
+        self.update(config)
 
     def _get_arguments(self, key='', d=None):
         if d is None:
@@ -61,14 +68,21 @@ class Config(Namespacify):
             valid_args = "\n\t\t".join(sorted(parsed_args[0].__dict__.keys()))
             raise NameError(f'Unrecognized arguments {bad_args}.\n\tValid arguments:\n\t\t{valid_args}')
 
+        config_file = parsed_args[0].__dict__.pop('config')
+
+        if config_file is not None:
+            self._update_with_config(config_file)
+
         restructured = self._restructure_arguments(parsed_args[0].__dict__)
         self._check_restructured(restructured, self.default_config)
         return restructured
 
     def _create_parser(self):
         parser = argparse.ArgumentParser(prog='GridRL')
-        for arg_name, arg in self._get_arguments().items():
-            parser.add_argument(f'--{arg_name}', **arg)
+        for arg_name, arg_info in self._get_arguments().items():
+            parser.add_argument(f'--{arg_name}', **arg_info)
+
+        parser.add_argument('--config', default=None)
 
         return parser
 
