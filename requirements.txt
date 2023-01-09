@@ -3,4 +3,5 @@ gym
 matplotlib
 numpy
 pandas
-git+https://github.com/Total-RD/pymgrid/
+pymgrid
+pyyaml
