@@ -31,6 +31,8 @@ in this directory, denoting the configuration used for the specific experiment. 
 
 The location of results can be moved by modifying `context.log_dir` and `context.experiment_name`. 
 
+### Additional methods of inputting custom hyperparameters
+
 There are three other ways to define custom settings/hyperparameters:
     
   1. You can pass the `--config <path_to_a_config.yaml>` argument at the command line. You may pass any combination
