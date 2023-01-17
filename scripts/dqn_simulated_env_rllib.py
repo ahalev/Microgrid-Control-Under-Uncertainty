@@ -6,7 +6,7 @@ from ray.rllib.algorithms import apex_dqn
 from ray.tune.registry import register_env
 from ray.tune.logger import pretty_print
 
-from pymgrid.microgrid.envs import DiscreteMicrogridEnv
+from pymgrid.envs import DiscreteMicrogridEnv
 
 hyperparams = dict(
     training_steps=10,
@@ -36,7 +36,8 @@ exploration_config = {
                       }
 
 rollout_config = {
-    "rollout_fragment_length": hyperparams["rollout_fragment_length"]
+    "rollout_fragment_length": hyperparams["rollout_fragment_length"],
+    "num_rollout_workers": hyperparams["num_workers"]
 }
 
 
