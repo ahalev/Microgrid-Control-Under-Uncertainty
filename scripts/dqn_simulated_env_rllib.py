@@ -36,7 +36,8 @@ exploration_config = {
                       }
 
 rollout_config = {
-    "rollout_fragment_length": hyperparams["rollout_fragment_length"]
+    "rollout_fragment_length": hyperparams["rollout_fragment_length"],
+    "num_rollout_workers": hyperparams["num_workers"]
 }
 
 
