@@ -58,6 +58,12 @@ class Trainer:
     def _get_log_dir(self, log_dir, experiment_name):
         return f'{log_dir}/{self.algo_name}/{experiment_name}'
 
+
+    def serialize_config(self, fname):
+        with open(fname, 'w') as f:
+            self.config.serialize(f)
+
+
     @abstractmethod
     def train(self):
         pass
@@ -134,10 +140,6 @@ class RLTrainer(Trainer):
             steps_per_epoch=self.config.algo.train.steps_per_epoch,
             **self.config.algo.dqn
         )
-
-    def serialize_config(self, fname):
-        with open(fname, 'w') as f:
-            self.config.serialize(f)
 
     def train(self):
         if self.config.algo.package == 'garage':
