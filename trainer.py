@@ -19,7 +19,7 @@ class Trainer:
         if algo.lower() == 'rl':
             cls = RLTrainer
         elif algo.lower() == 'mpc':
-            pass
+            cls = MPCTrainer
         elif algo.lower() == 'rb':
             pass
         else:
