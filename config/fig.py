@@ -7,13 +7,6 @@ from pathlib import Path
 from collections import UserDict
 
 from config import Namespacify
-from pymgrid import envs
-
-BuiltinFunctionType = type(len)
-
-
-def is_builtin_class_instance(obj):
-    return obj.__class__.__module__ == 'builtins'
 
 
 class Config(Namespacify):
