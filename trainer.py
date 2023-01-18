@@ -24,7 +24,7 @@ ENVS = {
 
 
 class Trainer:
-    algo: str
+    algo_name: str
 
     def __new__(cls: type, algo='', *args, **kwargs):
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
@@ -41,7 +41,7 @@ class Trainer:
         return super().__new__(cls, *args, **kwargs)
 
     def __init__(self, algo='', config=None):
-        self.config = Config(algo=self.algo, config=config)
+        self.config = Config(algo=self.algo_name, config=config)
         self.microgrid = self._setup_microgrid()
 
     def _setup_microgrid(self):
@@ -53,7 +53,7 @@ class Trainer:
             raise yaml.YAMLError(f'Unable to parse microgrid yaml:\n{microgrid_yaml}')
 
     def _get_log_dir(self, log_dir, experiment_name):
-        return f'{log_dir}/{self.algo}/{experiment_name}'
+        return f'{log_dir}/{self.algo_name}/{experiment_name}'
 
     @abstractmethod
     def train(self):
@@ -61,7 +61,7 @@ class Trainer:
 
 
 class RLTrainer(Trainer):
-    algo = 'rl'
+    algo_name = 'rl'
 
     def __init__(self, config=None):
         super().__init__(config=config)
@@ -167,11 +167,11 @@ class RLTrainer(Trainer):
 
 
 class MPCTrainer(Trainer):
-    algo = 'mpc'
+    algo_name = 'mpc'
 
 
 class RBCTrainer(Trainer):
-    algo = 'rbc'
+    algo_name = 'rbc'
 
 
 if __name__ == '__main__':
