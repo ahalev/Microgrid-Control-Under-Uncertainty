@@ -15,7 +15,6 @@ from garage.replay_buffer import PathBuffer
 from config import Config
 from envs import GymEnv
 
-# This import is necessary to register the yaml tag
 from pymgrid import envs
 
 ENVS = {
