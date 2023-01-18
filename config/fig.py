@@ -10,9 +10,9 @@ from config import Namespacify
 
 
 class Config(Namespacify):
-    def __init__(self, config=None):
+    def __init__(self, algo='', config=None):
         self.default_config = self._load_default_config()
-        super().__init__('GridRL', self._parse_config())
+        super().__init__(f'Grid{algo.upper()}', self._parse_config())
 
         if config is not None:
             self._update_with_config(config)
