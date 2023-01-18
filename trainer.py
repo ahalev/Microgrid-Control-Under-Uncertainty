@@ -16,7 +16,12 @@ from config import Config
 from envs import GymEnv
 
 # This import is necessary to register the yaml tag
-from pymgrid.envs import DiscreteMicrogridEnv
+from pymgrid import envs
+
+ENVS = {
+    'DiscreteMicrogridEnv': envs.DiscreteMicrogridEnv,
+    'ContinuousMicrogridEnv': envs.ContinuousMicrogridEnv
+}
 
 
 class Trainer:
@@ -68,12 +73,9 @@ class RLTrainer(Trainer):
         self.rl_algo = self._setup_rl_algo()
 
     def _setup_env(self):
-        env_yaml = f'!{self.config.env.cls}\n{yaml.safe_dump(self.config.env.config.data)}'
-        try:
-            env = yaml.safe_load(env_yaml)
-            return GymEnv(env, max_episode_length=len(env))
-        except yaml.YAMLError:
-            raise yaml.YAMLError(f'Unable to parse environment yaml:\n{env_yaml}')
+        env_cls = ENVS[self.config.env.cls]
+        env = env_cls(self.microgrid)
+        return GymEnv(env, max_episode_length=len(env))
 
     def _setup_policies(self):
         policy_config = self.config.algo.policy
