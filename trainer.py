@@ -20,8 +20,8 @@ class Trainer:
             cls = RLTrainer
         elif algo.lower() == 'mpc':
             cls = MPCTrainer
-        elif algo.lower() == 'rb':
-            pass
+        elif algo.lower() == 'rbc':
+            cls = RBCTrainer
         else:
             raise ValueError(f"Unrecognized algo '{algo}'.")
 
@@ -146,6 +146,10 @@ class RLTrainer(Trainer):
 class MPCTrainer(Trainer):
     def __init__(self, algo='mpc', config=None):
         super().__init__(algo=algo, config=config)
+
+
+class RBCTrainer(Trainer):
+    pass
 
 
 if __name__ == '__main__':
