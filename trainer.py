@@ -19,7 +19,9 @@ from pymgrid.envs import DiscreteMicrogridEnv
 
 class Trainer:
     def __new__(cls, algo='', *args, **kwargs):
-        if algo.lower() == 'rl':
+        if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
+            pass
+        elif algo.lower() == 'rl':
             cls = RLTrainer
         elif algo.lower() == 'mpc':
             cls = MPCTrainer
