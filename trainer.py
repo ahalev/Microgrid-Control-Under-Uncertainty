@@ -13,6 +13,9 @@ from garage.replay_buffer import PathBuffer
 from config import Config
 from envs import GymEnv
 
+# This import is necessary to register the yaml tag
+from pymgrid.envs import DiscreteMicrogridEnv
+
 
 class Trainer:
     def __new__(cls, algo='', *args, **kwargs):
