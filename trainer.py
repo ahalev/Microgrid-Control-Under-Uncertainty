@@ -143,5 +143,10 @@ class RLTrainer(Trainer):
         train()
 
 
+class MPCTrainer(Trainer):
+    def __init__(self, algo='mpc', config=None):
+        super().__init__(algo=algo, config=config)
+
+
 if __name__ == '__main__':
     Trainer().train()
