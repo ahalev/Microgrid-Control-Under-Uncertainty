@@ -45,6 +45,7 @@ class Trainer:
 
         self.config = Config(algo=self.algo_name, config=config)
         self.microgrid = self._setup_microgrid()
+        self.algo = self._setup_algo()
 
     def _setup_microgrid(self):
         microgrid_yaml = f'!Microgrid\n{yaml.safe_dump(self.config.microgrid.config.data)}'
@@ -59,6 +60,10 @@ class Trainer:
 
     @abstractmethod
     def train(self):
+        pass
+
+    @abstractmethod
+    def _setup_algo(self):
         pass
 
 
