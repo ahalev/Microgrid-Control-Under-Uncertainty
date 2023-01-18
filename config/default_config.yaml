@@ -1,5 +1,6 @@
 env:
   cls: DiscreteMicrogridEnv
+microgrid:
   config:
     scenario: 0
 algo:
