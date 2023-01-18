@@ -69,14 +69,16 @@ class Trainer:
 
 class RLTrainer(Trainer):
     algo_name = 'rl'
+    env = None
 
     def __init__(self, config=None):
         super().__init__(config=config)
 
+    def _setup_algo(self):
         self.env = self._setup_env()
-        self.qf, self.policy, self.exploration_policy = self._setup_policies()
-        self.sampler = self._setup_sampler()
-        self.rl_algo = self._setup_rl_algo()
+        qf, policy, exploration_policy = self._setup_policies()
+        self.sampler = self._setup_sampler(exploration_policy)
+        return self._setup_rl_algo(qf, policy, exploration_policy)
 
     def _setup_env(self):
         env_cls = ENVS[self.config.env.cls]
@@ -100,11 +102,11 @@ class RLTrainer(Trainer):
                                                  decay_ratio=policy_config.exploration.decay_ratio)
         return qf, policy, exploration_policy
 
-    def _setup_sampler(self):
+    def _setup_sampler(self, exploration_policy):
         sampler_config = self.config.algo.sampler
 
         sampler_kwargs = {
-            'agents': self.exploration_policy,
+            'agents': exploration_policy,
             'envs': self.env,
             'max_episode_length': self.env.spec.max_episode_length,
             'n_workers': sampler_config.n_workers,
@@ -118,17 +120,17 @@ class RLTrainer(Trainer):
         else:
             raise ValueError(f"Invalid sampler config type {sampler_config.type}, must be 'local' or 'ray'.")
 
-    def _setup_rl_algo(self):
+    def _setup_rl_algo(self, qf, policy, exploration_policy):
 
         replay_buffer = PathBuffer(capacity_in_transitions=self.config.algo.replay_buffer.buffer_size)
 
         return DQN(
             env_spec=self.env.spec,
-            policy=self.policy,
-            qf=self.qf,
+            policy=policy,
+            qf=qf,
             replay_buffer=replay_buffer,
             sampler=self.sampler,
-            exploration_policy=self.exploration_policy,
+            exploration_policy=exploration_policy,
             steps_per_epoch=self.config.algo.train.steps_per_epoch,
             **self.config.algo.dqn
         )
@@ -148,7 +150,7 @@ class RLTrainer(Trainer):
         train_config = self.config.algo.train
 
         name = log_config.experiment_name if log_config.experiment_name is not None \
-            else self.rl_algo.__class__.__name__.lower()
+            else self.algo.__class__.__name__.lower()
 
         log_dir = self._get_log_dir(log_config.log_dir, name)
 
@@ -163,7 +165,7 @@ class RLTrainer(Trainer):
 
             self.serialize_config(f'{garage_trainer._snapshotter.snapshot_dir}/config.yaml')
 
-            garage_trainer.setup(self.rl_algo, self.env)
+            garage_trainer.setup(self.algo, self.env)
             garage_trainer.train(n_epochs=train_config.n_epochs, batch_size=train_config.batch_size)
 
             self.env.close()
