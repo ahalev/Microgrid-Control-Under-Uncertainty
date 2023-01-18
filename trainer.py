@@ -1,5 +1,7 @@
 import yaml
 
+from abc import abstractmethod
+
 from garage.torch.algos.dqn import DQN
 from garage import wrap_experiment
 from garage.experiment.deterministic import set_seed
@@ -39,6 +41,10 @@ class Trainer:
 
     def _get_log_dir(self, log_dir, experiment_name):
         return f'{log_dir}/{self.algo}/{experiment_name}'
+
+    @abstractmethod
+    def train(self):
+        pass
 
 
 class RLTrainer(Trainer):
