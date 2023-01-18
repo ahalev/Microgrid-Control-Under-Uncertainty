@@ -15,7 +15,23 @@ from envs import GymEnv
 
 
 class Trainer:
-    def __init__(self, config=None):
+    def __new__(cls, algo='', *args, **kwargs):
+        if algo.lower() == 'rl':
+            cls = RLTrainer
+        elif algo.lower() == 'mpc':
+            pass
+        elif algo.lower() == 'rb':
+            pass
+        else:
+            raise ValueError(f"Unrecognized algo '{algo}'.")
+
+        return super().__new__(cls, *args, **kwargs)
+
+
+class RLTrainer(Trainer):
+    def __init__(self, algo='rl', config=None):
+        assert algo == 'rl'
+
         self.config = Config(config=config)
         self.env = self._setup_env()
         self.qf, self.policy, self.exploration_policy = self._setup_policies()
