@@ -64,10 +64,8 @@ class Trainer:
         with open(fname, 'w') as f:
             self.config.serialize(f)
 
-
-    @abstractmethod
     def train(self):
-        pass
+        return self.algo.run()
 
     @abstractmethod
     def _setup_algo(self):
