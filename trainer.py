@@ -27,16 +27,23 @@ class Trainer:
 
         return super().__new__(cls, *args, **kwargs)
 
+    def __init__(self, algo='', config=None):
+        self.algo = algo
+        self.config = Config(algo=algo, config=config)
+
+    def _get_log_dir(self, log_dir, experiment_name):
+        return f'{log_dir}/{self.algo}/{experiment_name}'
+
 
 class RLTrainer(Trainer):
     def __init__(self, algo='rl', config=None):
         assert algo == 'rl'
+        super().__init__(algo=algo, config=config)
 
-        self.config = Config(config=config)
         self.env = self._setup_env()
         self.qf, self.policy, self.exploration_policy = self._setup_policies()
         self.sampler = self._setup_sampler()
-        self.algo = self._setup_algo()
+        self.rl_algo = self._setup_rl_algo()
 
     def _setup_env(self):
         env_yaml = f'!{self.config.env.cls}\n{yaml.safe_dump(self.config.env.config.data)}'
@@ -81,7 +88,7 @@ class RLTrainer(Trainer):
         else:
             raise ValueError(f"Invalid sampler config type {sampler_config.type}, must be 'local' or 'ray'.")
 
-    def _setup_algo(self):
+    def _setup_rl_algo(self):
 
         replay_buffer = PathBuffer(capacity_in_transitions=self.config.algo.replay_buffer.buffer_size)
 
@@ -111,9 +118,9 @@ class RLTrainer(Trainer):
         train_config = self.config.algo.train
 
         name = log_config.experiment_name if log_config.experiment_name is not None \
-            else self.algo.__class__.__name__.lower()
+            else self.rl_algo.__class__.__name__.lower()
 
-        log_dir = f'{log_config.log_dir}/{name}'
+        log_dir = self._get_log_dir(log_config.log_dir, name)
 
         @wrap_experiment(name=name,
                          snapshot_mode='gap',
@@ -126,7 +133,7 @@ class RLTrainer(Trainer):
 
             self.serialize_config(f'{garage_trainer._snapshotter.snapshot_dir}/config.yaml')
 
-            garage_trainer.setup(self.algo, self.env)
+            garage_trainer.setup(self.rl_algo, self.env)
             garage_trainer.train(n_epochs=train_config.n_epochs, batch_size=train_config.batch_size)
 
             self.env.close()
