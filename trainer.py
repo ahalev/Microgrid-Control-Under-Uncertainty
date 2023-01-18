@@ -41,6 +41,8 @@ class Trainer:
         return super().__new__(cls, *args, **kwargs)
 
     def __init__(self, algo='', config=None):
+        # 'algo' needs to be in signature to catch the same key passed to new
+
         self.config = Config(algo=self.algo_name, config=config)
         self.microgrid = self._setup_microgrid()
 
