@@ -16,6 +16,7 @@ from config import Config
 from envs import GymEnv
 
 from pymgrid import envs
+from pymgrid.algos import ModelPredictiveControl, RuleBasedControl
 
 ENVS = {
     'DiscreteMicrogridEnv': envs.DiscreteMicrogridEnv,
@@ -180,9 +181,15 @@ class RLTrainer(Trainer):
 class MPCTrainer(Trainer):
     algo_name = 'mpc'
 
+    def _setup_algo(self):
+        return ModelPredictiveControl(self.microgrid)
+
 
 class RBCTrainer(Trainer):
     algo_name = 'rbc'
+
+    def _setup_algo(self):
+        return RuleBasedControl(self.microgrid)
 
 
 if __name__ == '__main__':
