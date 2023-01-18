@@ -18,6 +18,8 @@ from pymgrid.envs import DiscreteMicrogridEnv
 
 
 class Trainer:
+    algo: str
+
     def __new__(cls: type, algo='', *args, **kwargs):
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
             pass
@@ -33,17 +35,17 @@ class Trainer:
         return super().__new__(cls, *args, **kwargs)
 
     def __init__(self, algo='', config=None):
-        self.algo = algo
-        self.config = Config(algo=algo, config=config)
+        self.config = Config(algo=self.algo, config=config)
 
     def _get_log_dir(self, log_dir, experiment_name):
         return f'{log_dir}/{self.algo}/{experiment_name}'
 
 
 class RLTrainer(Trainer):
-    def __init__(self, algo='rl', config=None):
-        assert algo == 'rl'
-        super().__init__(algo=algo, config=config)
+    algo = 'rl'
+
+    def __init__(self, config=None):
+        super().__init__(config=config)
 
         self.env = self._setup_env()
         self.qf, self.policy, self.exploration_policy = self._setup_policies()
@@ -149,12 +151,11 @@ class RLTrainer(Trainer):
 
 
 class MPCTrainer(Trainer):
-    def __init__(self, algo='mpc', config=None):
-        super().__init__(algo=algo, config=config)
+    algo = 'mpc'
 
 
 class RBCTrainer(Trainer):
-    pass
+    algo = 'rbc'
 
 
 if __name__ == '__main__':
