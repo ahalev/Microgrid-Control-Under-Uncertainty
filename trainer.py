@@ -38,6 +38,15 @@ class Trainer:
 
     def __init__(self, algo='', config=None):
         self.config = Config(algo=self.algo, config=config)
+        self.microgrid = self._setup_microgrid()
+
+    def _setup_microgrid(self):
+        microgrid_yaml = f'!Microgrid\n{yaml.safe_dump(self.config.microgrid.config.data)}'
+        try:
+            microgrid = yaml.safe_load(microgrid_yaml)
+            return microgrid
+        except yaml.YAMLError:
+            raise yaml.YAMLError(f'Unable to parse microgrid yaml:\n{microgrid_yaml}')
 
     def _get_log_dir(self, log_dir, experiment_name):
         return f'{log_dir}/{self.algo}/{experiment_name}'
