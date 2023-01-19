@@ -30,7 +30,7 @@ class Trainer:
 
     def __new__(cls: type, config=None, *args, **kwargs):
         config = Config(config=config)
-        algo = config.algo_type
+        algo = config.algo.type
 
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
             pass
