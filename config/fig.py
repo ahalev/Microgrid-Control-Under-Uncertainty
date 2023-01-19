@@ -31,9 +31,19 @@ class Config(Namespacify):
         if config is not None:
             self._update_with_config(config)
 
+        self._verbose(self.context.verbose)
+
     def _load_default_config(self):
         contents = (Path(__file__).parent / 'default_config.yaml').open('r')
         return yaml.safe_load(contents)
+
+    def _verbose(self, level):
+        if level >= 2:
+            print('Trainer config:')
+            self.pprint(indent=1)
+        elif level >= 1:
+            print('Custom trainer config:')
+            (self ^ self.default_config).pprint(indent=1)
 
     def _update_with_config(self, config, updatee=None):
         if isinstance(config, str):
