@@ -23,7 +23,7 @@ class Config(Namespacify):
         except (KeyError, TypeError):
             algo_type = parsed_config_dict['algo']['type']
 
-        super().__init__(f'Grid{algo_type.upper()}', parsed_config_dict)
+        super().__init__(parsed_config_dict, name=f'Grid{algo_type.upper()}')
 
         if _default:
             return

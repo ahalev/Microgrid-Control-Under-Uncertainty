@@ -2,12 +2,12 @@ from collections import UserDict
 
 
 class Namespacify(UserDict):
-    def __init__(self, name, in_dict):
+    def __init__(self, in_dict, name=''):
         self.name = name
 
         for key in in_dict.keys():
             if isinstance(in_dict[key], dict):
-                in_dict[key] = Namespacify(key, in_dict[key])
+                in_dict[key] = Namespacify(in_dict[key], name=key)
 
         super().__init__(in_dict)
 
@@ -48,7 +48,7 @@ class Namespacify(UserDict):
                 else:
                     diff[k] = v
 
-        return Namespacify(self.name, diff)
+        return Namespacify(diff, name=self.name)
 
 
 def nested_dict_update(nested_dict, *args, nest_namespacify=False, **kwargs):
@@ -67,7 +67,7 @@ def nested_dict_update(nested_dict, *args, nest_namespacify=False, **kwargs):
             if k in nested_dict:
                 nested_dict[k].update(v)
             else:
-                nested_dict[k] = Namespacify(k, v) if nest_namespacify else v
+                nested_dict[k] = Namespacify(v, name=k) if nest_namespacify else v
         else:
             nested_dict[k] = v
 
