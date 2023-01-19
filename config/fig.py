@@ -132,9 +132,3 @@ class Config(Namespacify):
                 raise RuntimeError(f'Missing key {"->".join([*stack, key])} in restructured config.')
             elif isinstance(value, dict):
                 self._check_restructured(restructured[key], value, *stack, key)
-
-
-if __name__ == '__main__':
-    c = Config()
-    # print(Namespacify('config', c.default_config))
-    print(c._get_arguments())
