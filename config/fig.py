@@ -52,7 +52,7 @@ class Config(Namespacify):
 
         for k, v in d.items():
             new_key = f'{key}.{k}' if key else k
-            if isinstance(v, dict):
+            if isinstance(v, (dict, UserDict)):
                 args.update(self._get_arguments(key=new_key, d=v))
             else:
                 args[new_key] = self._collect_argument(v)
