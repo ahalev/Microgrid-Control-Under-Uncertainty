@@ -34,10 +34,60 @@ The location of results can be moved by modifying `context.log_dir` and `context
 ### Additional methods of inputting custom hyperparameters
 
 There are three other ways to define custom settings/hyperparameters:
-    
-  1. You can pass the `--config <path_to_a_config.yaml>` argument at the command line. You may pass any combination
-     of values as defined in `config/default_config.yaml`; they must be in the same format. Not that any values passed
-     this way will be overridden by explicit arguments or arguments passed by the below two methods.
+
+  1. You can pass the `--config <path_to_a_config.yaml>` argument at the command line. `<path_to_a_config.yaml>` may
+     contain any combination of values as defined in `config/default_config.yaml`; they must be in the same format. 
+     Not that any values passed this way will be overridden by explicit arguments or arguments passed by the below 
+     two methods.
+     
+     For example, suppose you have a yaml file `custom_config.yaml`:
+     ```yaml
+     microgrid:
+        config:
+          scenario: 1
+     algo:
+        sampler:
+           type: local
+           n_workers: 4 
+     context:
+        verbose: 1
+     ```
+     
+     You can then use pass the path to your custom configuration file at the command line:
+     ```shell script
+     python trainer.py --config custom_config.yaml 
+     ```
+     and since `verbose=1`, this will print:
+     
+     ```shell script
+     Custom trainer config:
+     GridRL:
+         microgrid:
+             config:
+                 scenario: 1
+         algo:
+             sampler:
+                 type: local
+                 n_workers: 4
+         context:
+             verbose: 1
+     ```
+
   2. You can pass a path to a `yaml` file containing settings to `trainer.Trainer`. You may pass any combination
-     of values as defined in `config/default_config.yaml`; they must be in the same format.
+     of values as defined in `config/default_config.yaml`; they must be in the same format. This is equivalent to
+     the above except it is done within a script and not at the command line:
+     ```python
+     from trainer import Trainer
+     Trainer(config='custom_config.yaml').train()
+     ```
   3. You can pass a nested dictionary defining configuration settings to `trainer.Trainer`.
+     For example:
+     ```python
+     from trainer import Trainer
+     config = {
+         'microgrid': {'config': {'scenario': 1}},
+         'algo': {'sampler': {'type': 'local', 'n_workers': 4}},
+         'context': {'verbose': True}
+     }
+     Trainer(config=config).train()  
+     ```
