@@ -1,3 +1,5 @@
+import yaml
+
 from collections import UserDict
 
 
@@ -26,6 +28,15 @@ class Namespacify(UserDict):
                 v.pprint(indent)
             else:
                 print("{}{}: {}".format(' ' * indent, k, v))
+
+    def serialize(self, stream=None):
+        yaml.SafeDumper.add_multi_representer(UserDict, yaml.SafeDumper.represent_dict)
+        return yaml.safe_dump(self, stream=stream)
+
+
+    @classmethod
+    def deserialize(cls, stream):
+        return cls(yaml.safe_load(stream))
 
     def __dir__(self):
         rv = set(super().__dir__())
