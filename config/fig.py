@@ -5,6 +5,7 @@ import yaml
 
 from pathlib import Path
 from collections import UserDict
+from warnings import warn
 
 from config import Namespacify, nested_dict_update
 
@@ -75,7 +76,7 @@ class Config(Namespacify):
         if len(parsed_args[1]):
             bad_args = [x.replace("--", "") for x in parsed_args[1] if x.startswith("--")]
             valid_args = "\n\t\t".join(sorted(parsed_args[0].__dict__.keys()))
-            raise NameError(f'Unrecognized arguments {bad_args}.\n\tValid arguments:\n\t\t{valid_args}')
+            warn(f'Unrecognized arguments {bad_args}.\n\tValid arguments:\n\t\t{valid_args}')
 
         config_file = parsed_args[0].__dict__.pop('config')
         restructured = self._restructure_arguments(parsed_args[0].__dict__)
