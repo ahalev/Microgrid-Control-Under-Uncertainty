@@ -1,3 +1,4 @@
+algo_type: rl
 env:
   cls: DiscreteMicrogridEnv
 microgrid:
