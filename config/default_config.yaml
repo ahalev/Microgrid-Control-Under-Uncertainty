@@ -1,8 +1,10 @@
 env:
   cls: DiscreteMicrogridEnv
+microgrid:
   config:
     scenario: 0
 algo:
+  type: rl
   package: garage
   sampler:
     type: ray
@@ -31,6 +33,7 @@ algo:
     steps_per_epoch: 32
     n_epochs: 100
 context:
+  verbose: 0
   experiment_name: null
   log_dir: experiment_logs
   snapshot_gap: 50

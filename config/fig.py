@@ -5,35 +5,55 @@ import yaml
 
 from pathlib import Path
 from collections import UserDict
+from warnings import warn
 
-from config import Namespacify
-from pymgrid import envs
-
-BuiltinFunctionType = type(len)
-
-
-def is_builtin_class_instance(obj):
-    return obj.__class__.__module__ == 'builtins'
+from config import Namespacify, nested_dict_update
 
 
 class Config(Namespacify):
-    def __init__(self, config=None):
-        self.default_config = self._load_default_config()
-        super().__init__('GridRL', self._parse_config())
+    def __init__(self, config=None, _default=False):
+        if not _default:
+            self.default_config = Config(self._load_default_config(), _default=True)
+            parsed_config_dict = self._parse_config()
+        else:
+            parsed_config_dict = config
+
+        try:
+            algo_type = config['algo']['type']
+        except (KeyError, TypeError):
+            algo_type = parsed_config_dict['algo']['type']
+
+        super().__init__(f'Grid{algo_type.upper()}', parsed_config_dict)
+
+        if _default:
+            return
 
         if config is not None:
             self._update_with_config(config)
+
+        self._verbose(self.context.verbose)
 
     def _load_default_config(self):
         contents = (Path(__file__).parent / 'default_config.yaml').open('r')
         return yaml.safe_load(contents)
 
-    def _update_with_config(self, config):
+    def _verbose(self, level):
+        if level >= 2:
+            print('Trainer config:')
+            self.pprint(indent=1)
+        elif level >= 1:
+            print('Custom trainer config:')
+            (self ^ self.default_config).pprint(indent=1)
+
+    def _update_with_config(self, config, updatee=None):
         if isinstance(config, str):
             with open(config, 'r') as f:
                 config = yaml.safe_load(f)
 
-        self.update(config)
+        if updatee:
+            nested_dict_update(updatee, config)
+        else:
+            nested_dict_update(self, config)
 
     def _get_arguments(self, key='', d=None):
         if d is None:
@@ -43,7 +63,7 @@ class Config(Namespacify):
 
         for k, v in d.items():
             new_key = f'{key}.{k}' if key else k
-            if isinstance(v, dict):
+            if isinstance(v, (dict, UserDict)):
                 args.update(self._get_arguments(key=new_key, d=v))
             else:
                 args[new_key] = self._collect_argument(v)
@@ -66,14 +86,14 @@ class Config(Namespacify):
         if len(parsed_args[1]):
             bad_args = [x.replace("--", "") for x in parsed_args[1] if x.startswith("--")]
             valid_args = "\n\t\t".join(sorted(parsed_args[0].__dict__.keys()))
-            raise NameError(f'Unrecognized arguments {bad_args}.\n\tValid arguments:\n\t\t{valid_args}')
+            warn(f'Unrecognized arguments {bad_args}.\n\tValid arguments:\n\t\t{valid_args}')
 
         config_file = parsed_args[0].__dict__.pop('config')
+        restructured = self._restructure_arguments(parsed_args[0].__dict__)
 
         if config_file is not None:
-            self._update_with_config(config_file)
+            self._update_with_config(config_file, updatee=restructured)
 
-        restructured = self._restructure_arguments(parsed_args[0].__dict__)
         self._check_restructured(restructured, self.default_config)
         return restructured
 
