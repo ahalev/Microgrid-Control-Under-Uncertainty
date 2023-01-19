@@ -26,8 +26,12 @@ ENVS = {
 
 class Trainer:
     algo_name: str
+    config: Config
 
-    def __new__(cls: type, algo='', *args, **kwargs):
+    def __new__(cls: type, config=None, *args, **kwargs):
+        config = Config(config=config)
+        algo = config.algo_type
+
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
             pass
         elif algo.lower() == 'rl':
@@ -37,14 +41,12 @@ class Trainer:
         elif algo.lower() == 'rbc':
             cls = RBCTrainer
         else:
-            raise ValueError(f"Unrecognized algo '{algo}'.")
+            raise ValueError(f"Unrecognized algo type '{algo}'.")
 
+        cls.config = config
         return super().__new__(cls, *args, **kwargs)
 
-    def __init__(self, algo='', config=None):
-        # 'algo' needs to be in signature to catch the same key passed to new
-
-        self.config = Config(algo=self.algo_name, config=config)
+    def __init__(self, *args, **kwargs):
         self.microgrid = self._setup_microgrid()
         self.algo = self._setup_algo()
 
@@ -75,9 +77,6 @@ class Trainer:
 class RLTrainer(Trainer):
     algo_name = 'rl'
     env = None
-
-    def __init__(self, config=None):
-        super().__init__(config=config)
 
     def _setup_algo(self):
         self.env = self._setup_env()
