@@ -78,11 +78,11 @@ class Config(Namespacify):
             raise NameError(f'Unrecognized arguments {bad_args}.\n\tValid arguments:\n\t\t{valid_args}')
 
         config_file = parsed_args[0].__dict__.pop('config')
+        restructured = self._restructure_arguments(parsed_args[0].__dict__)
 
         if config_file is not None:
-            self._update_with_config(config_file)
+            self._update_with_config(config_file, updatee=restructured)
 
-        restructured = self._restructure_arguments(parsed_args[0].__dict__)
         self._check_restructured(restructured, self.default_config)
         return restructured
 
