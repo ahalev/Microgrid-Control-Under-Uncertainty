@@ -102,8 +102,8 @@ class RLTrainer(Trainer):
         exploration_policy = EpsilonGreedyPolicy(env_spec=self.env.spec,
                                                  policy=policy,
                                                  total_timesteps=total_timesteps,
-                                                 min_epsilon=policy_config.exploration.max_epsilon,
-                                                 max_epsilon=policy_config.exploration.min_epsilon,
+                                                 min_epsilon=policy_config.exploration.min_epsilon,
+                                                 max_epsilon=policy_config.exploration.max_epsilon,
                                                  decay_ratio=policy_config.exploration.decay_ratio)
         return qf, policy, exploration_policy
 
