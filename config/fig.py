@@ -10,9 +10,22 @@ from config import Namespacify, nested_dict_update
 
 
 class Config(Namespacify):
-    def __init__(self, algo='', config=None):
-        self.default_config = self._load_default_config()
-        super().__init__(f'Grid{algo.upper()}', self._parse_config())
+    def __init__(self, config=None, _default=False):
+        if not _default:
+            self.default_config = Config(self._load_default_config(), _default=True)
+            parsed_config_dict = self._parse_config()
+        else:
+            parsed_config_dict = config
+
+        try:
+            algo_type = config['algo']['type']
+        except (KeyError, TypeError):
+            algo_type = parsed_config_dict['algo']['type']
+
+        super().__init__(f'Grid{algo_type.upper()}', parsed_config_dict)
+
+        if _default:
+            return
 
         if config is not None:
             self._update_with_config(config)
