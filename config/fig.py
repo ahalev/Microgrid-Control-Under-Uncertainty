@@ -6,7 +6,7 @@ import yaml
 from pathlib import Path
 from collections import UserDict
 
-from config import Namespacify
+from config import Namespacify, nested_dict_update
 
 
 class Config(Namespacify):
@@ -21,12 +21,15 @@ class Config(Namespacify):
         contents = (Path(__file__).parent / 'default_config.yaml').open('r')
         return yaml.safe_load(contents)
 
-    def _update_with_config(self, config):
+    def _update_with_config(self, config, updatee=None):
         if isinstance(config, str):
             with open(config, 'r') as f:
                 config = yaml.safe_load(f)
 
-        self.update(config)
+        if updatee:
+            nested_dict_update(updatee, config)
+        else:
+            nested_dict_update(self, config)
 
     def _get_arguments(self, key='', d=None):
         if d is None:
