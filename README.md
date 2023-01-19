@@ -59,7 +59,7 @@ There are three other ways to define custom settings/hyperparameters:
      ```
      and since `verbose=1`, this will print:
      
-     ```shell script
+     ```text
      Custom trainer config:
      GridRL:
          microgrid:
