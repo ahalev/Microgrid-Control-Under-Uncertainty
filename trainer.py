@@ -43,6 +43,7 @@ class Trainer:
         else:
             raise ValueError(f"Unrecognized algo type '{algo}'.")
 
+        config.algo.type = algo
         cls.config = config
         return super().__new__(cls, *args, **kwargs)
 
