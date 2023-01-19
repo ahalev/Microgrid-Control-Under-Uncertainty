@@ -33,10 +33,6 @@ class Config(Namespacify):
 
         self._verbose(self.context.verbose)
 
-    def _load_default_config(self):
-        contents = (Path(__file__).parent / 'default_config.yaml').open('r')
-        return yaml.safe_load(contents)
-
     def _verbose(self, level):
         if level >= 2:
             print('Trainer config:')
@@ -132,3 +128,12 @@ class Config(Namespacify):
                 raise RuntimeError(f'Missing key {"->".join([*stack, key])} in restructured config.')
             elif isinstance(value, dict):
                 self._check_restructured(restructured[key], value, *stack, key)
+
+
+class DefaultConfig(Namespacify):
+    def __init__(self):
+        super().__init__(self._load_default_config())
+
+    def _load_default_config(self):
+        contents = (Path(__file__).parent / 'default_config.yaml').open('r')
+        return yaml.safe_load(contents)
