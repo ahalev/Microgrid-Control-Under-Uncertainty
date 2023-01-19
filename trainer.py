@@ -97,12 +97,16 @@ class Trainer:
         with open(fname, 'w') as f:
             self.config.serialize(f)
 
-    def train(self):
-        return self.algo.run()
-
     @abstractmethod
     def _setup_algo(self):
         pass
+
+    def train(self):
+        pass
+
+    def evaluate(self):
+        # TODO log your config and stuff here
+        return self.algo.run()
 
 
 class RLTrainer(Trainer):
