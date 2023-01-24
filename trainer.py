@@ -14,6 +14,7 @@ from garage.replay_buffer import PathBuffer
 
 from config import Config
 from envs import GymEnv
+from logger.log_dir import make_sequential_log_dir
 
 from pymgrid import envs
 from pymgrid.algos import ModelPredictiveControl, RuleBasedControl
@@ -83,7 +84,7 @@ class Trainer:
             setattr(microgrid, attr, value)
 
     def _get_log_dir(self, log_dir, experiment_name):
-        return f'{log_dir}/{self.algo_name}/{experiment_name}'
+        return make_sequential_log_dir(f'{log_dir}/{self.algo_name}/{experiment_name}')
 
     def serialize_config(self, fname):
         with open(fname, 'w') as f:
@@ -185,15 +186,16 @@ class RLTrainer(Trainer):
         def train(ctxt=None):
             set_seed(log_config.seed)
             garage_trainer = GarageTrainer(ctxt)
+            assert garage_trainer._snapshotter.snapshot_dir == log_dir
 
-            self.serialize_config(f'{garage_trainer._snapshotter.snapshot_dir}/config.yaml')
+            self.serialize_config(f'{log_dir}/config.yaml')
 
             garage_trainer.setup(self.algo, self.env)
             garage_trainer.train(n_epochs=train_config.n_epochs, batch_size=train_config.batch_size)
 
             self.env.close()
 
-            print(f'Logged results in dir: {garage_trainer._snapshotter.snapshot_dir}')
+            print(f'Logged results in dir: {log_dir}')
 
         train()
 
