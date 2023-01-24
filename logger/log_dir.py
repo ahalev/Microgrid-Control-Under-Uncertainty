@@ -1,8 +1,10 @@
 import os
 
 
-def _make_sequential_log_dir(log_dir):
-    """Creates log_dir, appending a number if necessary.
+def make_sequential_log_dir(log_dir):
+    """Taken from rlworkgroup/garage.
+
+    Creates log_dir, appending a number if necessary.
 
     Attempts to create the directory `log_dir`. If it already exists, appends
     "_1". If that already exists, appends "_2" instead, etc.
