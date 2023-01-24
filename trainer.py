@@ -55,13 +55,35 @@ class Trainer:
         microgrid_yaml = f'!Microgrid\n{yaml.safe_dump(self.config.microgrid.config.data)}'
         try:
             microgrid = yaml.safe_load(microgrid_yaml)
+            self._post_process_microgrid(microgrid)
             return microgrid
         except yaml.YAMLError:
             raise yaml.YAMLError(f'Unable to parse microgrid yaml:\n{microgrid_yaml}')
 
+    def _post_process_microgrid(self, microgrid):
+        self._call_microgrid_methods(microgrid)
+        self._set_microgrid_attributes(microgrid)
+
+    def _call_microgrid_methods(self, microgrid):
+        try:
+            methods = self.config.microgrid.methods
+        except AttributeError:
+            return
+
+        for method, method_params in methods.items():
+            getattr(microgrid, method)(**method_params)
+
+    def _set_microgrid_attributes(self, microgrid):
+        try:
+            attributes = self.config.microgrid.attributes
+        except AttributeError:
+            return
+
+        for attr, value in attributes.items():
+            setattr(microgrid, attr, value)
+
     def _get_log_dir(self, log_dir, experiment_name):
         return f'{log_dir}/{self.algo_name}/{experiment_name}'
-
 
     def serialize_config(self, fname):
         with open(fname, 'w') as f:
