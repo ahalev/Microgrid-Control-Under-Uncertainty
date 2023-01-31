@@ -1,5 +1,5 @@
 import yaml
-
+from pathlib import Path
 from abc import abstractmethod
 
 from garage.torch.algos.dqn import DQN
@@ -12,7 +12,7 @@ from garage.torch.policies import DiscreteQFArgmaxPolicy
 from garage.torch.q_functions import DiscreteMLPQFunction
 from garage.replay_buffer import PathBuffer
 
-from config import Config
+from expfig import Config
 from envs import GymEnv
 from logger.log_dir import make_sequential_log_dir
 
@@ -24,13 +24,15 @@ ENVS = {
     'ContinuousMicrogridEnv': envs.ContinuousMicrogridEnv
 }
 
+DEFAULT_CONFIG = Path(__file__).parent / 'config/default_config.yaml'
+
 
 class Trainer:
     algo_name: str
     config: Config
 
     def __new__(cls: type, config=None, *args, **kwargs):
-        config = Config(config=config)
+        config = Config(config=config, default=DEFAULT_CONFIG)
         algo = config.algo.type
 
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
