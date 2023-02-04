@@ -1,4 +1,6 @@
+import expfig
 import yaml
+
 from pathlib import Path
 from abc import abstractmethod
 
@@ -12,9 +14,7 @@ from garage.torch.policies import DiscreteQFArgmaxPolicy
 from garage.torch.q_functions import DiscreteMLPQFunction
 from garage.replay_buffer import PathBuffer
 
-from expfig import Config
 from envs import GymEnv
-from logger.log_dir import make_sequential_log_dir
 
 from pymgrid import envs
 from pymgrid.algos import ModelPredictiveControl, RuleBasedControl
@@ -29,10 +29,10 @@ DEFAULT_CONFIG = Path(__file__).parent / 'config/default_config.yaml'
 
 class Trainer:
     algo_name: str
-    config: Config
+    config: expfig.Config
 
     def __new__(cls: type, config=None, *args, **kwargs):
-        config = Config(config=config, default=DEFAULT_CONFIG)
+        config = expfig.Config(config=config, default=DEFAULT_CONFIG)
         algo = config.algo.type
 
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
@@ -86,7 +86,7 @@ class Trainer:
             setattr(microgrid, attr, value)
 
     def _get_log_dir(self, log_dir, experiment_name):
-        return make_sequential_log_dir(f'{log_dir}/{self.algo_name}/{experiment_name}')
+        return expfig.make_sequential_log_dir(f'{log_dir}/{self.algo_name}/{experiment_name}')
 
     def serialize_config(self, fname):
         with open(fname, 'w') as f:
