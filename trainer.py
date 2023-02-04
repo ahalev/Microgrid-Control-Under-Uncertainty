@@ -90,8 +90,12 @@ class Trainer:
         for attr, value in attributes.items():
             setattr(microgrid, attr, value)
 
-    def _get_log_dir(self, log_dir, experiment_name):
-        return expfig.make_sequential_log_dir(f'{log_dir}/{self.algo_name}/{experiment_name}')
+    def _get_log_dir(self):
+        log_config = self.config.context
+        experiment_name = log_config.experiment_name if log_config.experiment_name is not None \
+            else self.algo.__class__.__name__.lower()
+
+        return expfig.make_sequential_log_dir(f'{log_config.log_dir}/{self.algo_name}/{experiment_name}')
 
     def serialize_config(self, fname):
         with open(fname, 'w') as f:
@@ -192,8 +196,6 @@ class RLTrainer(Trainer):
 
         name = log_config.experiment_name if log_config.experiment_name is not None \
             else self.algo.__class__.__name__.lower()
-
-        log_dir = self._get_log_dir(log_config.log_dir, name)
 
         @wrap_experiment(name=name,
                          snapshot_mode='gap',
