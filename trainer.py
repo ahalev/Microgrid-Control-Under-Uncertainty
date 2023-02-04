@@ -184,7 +184,8 @@ class RLTrainer(Trainer):
                          snapshot_mode='gap',
                          snapshot_gap=log_config.snapshot_gap,
                          archive_launch_repo=False,
-                         log_dir=log_dir)
+                         log_dir=log_dir,
+                         use_existing_dir=True)
         def train(ctxt=None):
             set_seed(log_config.seed)
             garage_trainer = GarageTrainer(ctxt)
