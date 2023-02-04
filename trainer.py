@@ -102,6 +102,12 @@ class Trainer:
         pass
 
     def train(self):
+        log_dir = self._get_log_dir()
+        self.serialize_config(f'{log_dir}/config.yaml')
+        self._train(log_dir)
+        print(f'Logged results in dir: {log_dir}')
+
+    def _train(self, log_dir):
         pass
 
     def evaluate(self):
@@ -174,13 +180,13 @@ class RLTrainer(Trainer):
             **self.config.algo.dqn
         )
 
-    def train(self):
+    def _train(self, log_dir):
         if self.config.algo.package == 'garage':
-            return self._train_garage()
+            return self._train_garage(log_dir)
         else:
             raise ValueError(self.config.algo.package)
 
-    def _train_garage(self):
+    def _train_garage(self, log_dir):
         log_config = self.config.context
         train_config = self.config.algo.train
 
