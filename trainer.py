@@ -107,18 +107,21 @@ class Trainer:
     def _setup_algo(self):
         pass
 
+    def train_and_evaluate(self):
+        self.train()
+        return self.evaluate()
+
     def train(self):
-        log_dir = self._get_log_dir()
-        self.serialize_config(f'{log_dir}/config.yaml')
-        self._train(log_dir)
-        print(f'Logged results in dir: {log_dir}')
+        self._train(self.log_dir)
+        print(f'Logged results in dir: {self.log_dir}')
 
     def _train(self, log_dir):
         pass
 
     def evaluate(self):
-        # TODO log your config and stuff here
-        return self.algo.run()
+        output = self.algo.run()
+        print(f'Logged results in dir: {self.log_dir}')
+        return output
 
 
 class RLTrainer(Trainer):
