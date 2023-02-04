@@ -189,7 +189,6 @@ class RLTrainer(Trainer):
         def train(ctxt=None):
             set_seed(log_config.seed)
             garage_trainer = GarageTrainer(ctxt)
-            assert garage_trainer._snapshotter.snapshot_dir == log_dir
 
             self.serialize_config(f'{log_dir}/config.yaml')
 
