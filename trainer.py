@@ -54,6 +54,8 @@ class Trainer:
     def __init__(self, *args, **kwargs):
         self.microgrid = self._setup_microgrid()
         self.algo = self._setup_algo()
+        self.log_dir = self._get_log_dir()
+        self.serialize_config(f'{self.log_dir}/config.yaml')
 
     def _setup_microgrid(self):
         if isinstance(self.config.microgrid, Microgrid):
