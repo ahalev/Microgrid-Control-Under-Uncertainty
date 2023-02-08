@@ -3,11 +3,6 @@ env:
 microgrid:
   config:
     scenario: 0
-  methods:
-    set_forecaster:
-      forecaster: 1.0
-      forecast_horizon: 24
-      forecaster_increase_uncertainty: false
 algo:
   type: rl
   package: garage
