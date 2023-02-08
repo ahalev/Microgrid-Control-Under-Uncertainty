@@ -1,0 +1,3 @@
+microgrid:
+  attributes:
+    reward_shaping_func: !BatteryDischargeShaper {}
