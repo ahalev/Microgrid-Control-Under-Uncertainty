@@ -15,6 +15,7 @@ from garage.torch.q_functions import DiscreteMLPQFunction
 from garage.replay_buffer import PathBuffer
 
 from envs import GymEnv
+from reward_shaping import *
 
 from pymgrid import envs
 from pymgrid.algos import ModelPredictiveControl, RuleBasedControl
