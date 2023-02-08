@@ -3,6 +3,13 @@ env:
 microgrid:
   config:
     scenario: 0
+  trajectory:
+    train:
+      initial_step: 0
+      final_step: -1
+    evaluate:
+      initial_step: 0
+      final_step: -1
 algo:
   type: rl
   package: garage
