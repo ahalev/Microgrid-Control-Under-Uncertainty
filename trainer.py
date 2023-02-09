@@ -17,7 +17,7 @@ from garage.replay_buffer import PathBuffer
 from envs import GymEnv
 from reward_shaping import *
 
-from pymgrid import envs
+from pymgrid import envs, Microgrid
 from pymgrid.algos import ModelPredictiveControl, RuleBasedControl
 
 ENVS = {
@@ -56,13 +56,18 @@ class Trainer:
         self.algo = self._setup_algo()
 
     def _setup_microgrid(self):
-        microgrid_yaml = f'!Microgrid\n{yaml.safe_dump(self.config.microgrid.config.data)}'
-        try:
-            microgrid = yaml.safe_load(microgrid_yaml)
-            self._post_process_microgrid(microgrid)
-            return microgrid
-        except yaml.YAMLError:
-            raise yaml.YAMLError(f'Unable to parse microgrid yaml:\n{microgrid_yaml}')
+        if isinstance(self.config.microgrid, Microgrid):
+            microgrid = self.config.microgrid
+        else:
+            microgrid_yaml = f'!Microgrid\n{yaml.safe_dump(self.config.microgrid.config.data)}'
+            try:
+                microgrid = yaml.safe_load(microgrid_yaml)
+                return microgrid
+            except yaml.YAMLError:
+                raise yaml.YAMLError(f'Unable to parse microgrid yaml:\n{microgrid_yaml}')
+
+        self._post_process_microgrid(microgrid)
+        return microgrid
 
     def _post_process_microgrid(self, microgrid):
         self._call_microgrid_methods(microgrid)
