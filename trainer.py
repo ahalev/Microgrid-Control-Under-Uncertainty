@@ -112,6 +112,7 @@ class Trainer:
         return self.evaluate()
 
     def train(self):
+        self._set_trajectories(train=True)
         self._train(self.log_dir)
         print(f'Logged results in dir: {self.log_dir}')
 
@@ -119,9 +120,27 @@ class Trainer:
         pass
 
     def evaluate(self):
+        self._set_trajectories(evaluate=True)
         output = self.algo.run()
         print(f'Logged results in dir: {self.log_dir}')
         return output
+
+    def _set_trajectories(self, train=False, evaluate=False):
+        self.set_trajectory(self.microgrid, train=train, evaluate=evaluate)
+
+    def set_trajectory(self, microgrid, train=False, evaluate=False):
+        if train + evaluate != 1:
+            raise RuntimeError('One of train and evaluate must be true. Both cannot be true.')
+
+        if train:
+            trajectory = self.config.microgrid.trajectory.train
+        else:
+            trajectory = self.config.microgrid.trajectory.evaluate
+
+        for attr, value in trajectory.items():
+            microgrid.set_module_attr(attr, value)
+
+        return microgrid
 
 
 class RLTrainer(Trainer):
