@@ -62,7 +62,6 @@ class Trainer:
             microgrid_yaml = f'!Microgrid\n{yaml.safe_dump(self.config.microgrid.config.data)}'
             try:
                 microgrid = yaml.safe_load(microgrid_yaml)
-                return microgrid
             except yaml.YAMLError:
                 raise yaml.YAMLError(f'Unable to parse microgrid yaml:\n{microgrid_yaml}')
 
