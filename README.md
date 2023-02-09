@@ -35,10 +35,18 @@ The location of results can be moved by modifying `context.log_dir` and `context
 
 There are three other ways to define custom settings/hyperparameters:
 
-  1. You can pass the `--config <path_to_a_config.yaml>` argument at the command line. `<path_to_a_config.yaml>` may
+  1. You can pass the `--config path_to_a_config.yaml` argument at the command line. 
+  
+     `path_to_a_config.yaml` may
      contain any combination of values as defined in `config/default_config.yaml`; they must be in the same format. 
-     Not that any values passed this way will be overridden by explicit arguments or arguments passed by the below 
-     two methods.
+     You may pass any number of config files this way:
+
+     ```shell script
+     --config path_to_a_config.yaml path_to_another_config.yaml
+     ```
+
+     If you pass multiple config files with conflicting values, the value from the ***last*** config file
+     will be used.
      
      For example, suppose you have a yaml file `custom_config.yaml`:
      ```yaml
@@ -52,13 +60,13 @@ There are three other ways to define custom settings/hyperparameters:
      context:
         verbose: 1
      ```
-     
+
      You can then use pass the path to your custom configuration file at the command line:
      ```shell script
      python trainer.py --config custom_config.yaml 
      ```
      and since `verbose=1`, this will print:
-     
+
      ```text
      Custom trainer config:
      GridRL:
@@ -72,6 +80,9 @@ There are three other ways to define custom settings/hyperparameters:
          context:
              verbose: 1
      ```
+
+     Note that any values passed this way will be overridden by explicit arguments or arguments passed by the below
+     two methods.
 
   2. You can pass a path to a `yaml` file containing settings to `trainer.Trainer`. You may pass any combination
      of values as defined in `config/default_config.yaml`; they must be in the same format. This is equivalent to
