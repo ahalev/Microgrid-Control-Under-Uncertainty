@@ -3,6 +3,7 @@ import yaml
 
 from pathlib import Path
 from abc import abstractmethod
+from copy import deepcopy
 
 from garage.torch.algos.dqn import DQN
 from garage import wrap_experiment
@@ -148,7 +149,7 @@ class RLTrainer(Trainer):
     env = None
 
     def _setup_algo(self):
-        self.env = self._setup_env()
+        self.env, self.eval_env = self._setup_env()
         qf, policy, exploration_policy = self._setup_policies()
         self.sampler = self._setup_sampler(exploration_policy)
         return self._setup_rl_algo(qf, policy, exploration_policy)
@@ -156,7 +157,17 @@ class RLTrainer(Trainer):
     def _setup_env(self):
         env_cls = ENVS[self.config.env.cls]
         env = env_cls(self.microgrid)
-        return GymEnv(env, max_episode_length=len(env))
+        env = GymEnv(env, max_episode_length=len(env))
+
+        env = self.set_trajectory(env, train=True)
+        eval_env = self.set_trajectory(deepcopy(env), evaluate=True)
+
+        return env, eval_env
+
+    def _set_trajectories(self, train=False, evaluate=False):
+        super()._set_trajectories(train=train, evaluate=evaluate)
+        self.set_trajectory(self.env, train=True, evaluate=False)
+        self.set_trajectory(self.eval_env, train=False, evaluate=True)
 
     def _setup_policies(self):
         policy_config = self.config.algo.policy
@@ -204,6 +215,7 @@ class RLTrainer(Trainer):
             replay_buffer=replay_buffer,
             sampler=self.sampler,
             exploration_policy=exploration_policy,
+            eval_env=self.eval_env,
             steps_per_epoch=self.config.algo.train.steps_per_epoch,
             **self.config.algo.dqn
         )
