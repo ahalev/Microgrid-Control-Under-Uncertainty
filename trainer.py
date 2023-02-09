@@ -270,4 +270,4 @@ class RBCTrainer(Trainer):
 
 
 if __name__ == '__main__':
-    Trainer().train()
+    Trainer().train_and_evaluate()
