@@ -59,8 +59,8 @@ class Trainer:
         self.serialize_config(f'{self.log_dir}/config.yaml')
 
     def _setup_microgrid(self):
-        if isinstance(self.config.microgrid, Microgrid):
-            microgrid = self.config.microgrid
+        if isinstance(self.config.microgrid.config, Microgrid):
+            microgrid = self.config.microgrid.config
         else:
             microgrid_yaml = f'!Microgrid\n{yaml.safe_dump(self.config.microgrid.config.data)}'
             try:
