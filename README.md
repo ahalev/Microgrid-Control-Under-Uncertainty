@@ -91,3 +91,33 @@ There are three other ways to define custom settings/hyperparameters:
      }
      Trainer(config=config).train()  
      ```
+
+### Defining a microgrid
+
+There are multiple ways of passing parameters to define your microgrid. 
+
+The simplest is 
+to use one of the saved *pymgrid25* scenarios; to use scenario two, for example, you can simply pass
+`--microgrid.config.scenario 2` at the command line or the equivalent according to methods 2 or 3 above.
+
+You can also take advantage of the yaml-serializability of microgrids to define a microgrid, by setting `microgrid.config`
+to be a serialized microgrid.
+
+For example, suppose `microgrid.yaml` contains:
+
+```yaml
+!Microgrid
+modules:
+- - balancing
+  - !UnbalancedEnergyModule
+    cls_params:
+      initial_step: 0
+      loss_load_cost: 10.0
+      overgeneration_cost: 2.0
+      raise_errors: false
+    name:
+    - balancing
+    - 0
+    state:
+      _current_step: 0
+```
