@@ -130,10 +130,18 @@ class Trainer:
         pass
 
     def evaluate(self):
+        log_dir = self.log_dirs['evaluate_log']
         self._set_trajectories(evaluate=True)
-        output = self.algo.run()
-        print(f'Logged results in dir: {self.log_dir}')
+
+        output = self._evaluate()
+
+        output.to_csv(os.path.join(log_dir, 'log.csv'))
+        output.sum().to_csv(os.path.join(log_dir, 'log_total.csv'))
+        print(f'Logged results in dir:\n\t{os.path.abspath(log_dir)}')
         return output
+
+    def _evaluate(self):
+        return self.algo.run(verbose=self.config.context.verbose > 0)
 
     def _set_trajectories(self, train=False, evaluate=False):
         self.set_trajectory(self.microgrid, train=train, evaluate=evaluate)
