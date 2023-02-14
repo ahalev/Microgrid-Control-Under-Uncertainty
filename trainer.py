@@ -252,8 +252,6 @@ class RLTrainer(Trainer):
             set_seed(log_config.seed)
             garage_trainer = GarageTrainer(ctxt)
 
-            self.serialize_config(f'{log_dir}/config.yaml')
-
             garage_trainer.setup(self.algo, self.env)
             garage_trainer.train(n_epochs=train_config.n_epochs, batch_size=train_config.batch_size)
 
