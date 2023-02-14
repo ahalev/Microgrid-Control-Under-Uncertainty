@@ -1,4 +1,5 @@
 import expfig
+import os
 import yaml
 
 from pathlib import Path
@@ -55,8 +56,8 @@ class Trainer:
     def __init__(self, *args, **kwargs):
         self.microgrid = self._setup_microgrid()
         self.algo = self._setup_algo()
-        self.log_dir = self._get_log_dir()
-        self.serialize_config(f'{self.log_dir}/config.yaml')
+        self.log_dirs = self._get_log_dir()
+        self.serialize_config(f'{self.log_dirs["config"]}/config.yaml')
 
     def _setup_microgrid(self):
         if isinstance(self.config.microgrid.config, Microgrid):
@@ -98,7 +99,15 @@ class Trainer:
         experiment_name = log_config.experiment_name if log_config.experiment_name is not None \
             else self.algo.__class__.__name__.lower()
 
-        return expfig.make_sequential_log_dir(f'{log_config.log_dir}/{self.algo_name}/{experiment_name}')
+        subdirs = ['config', 'train_log', 'evaluate_log']
+
+        log_dir = expfig.make_sequential_log_dir(f'{log_config.log_dir}/{self.algo_name}/{experiment_name}',
+                                                 subdirs=subdirs)
+
+        return {
+            'log_dir': log_dir,
+            **{subdir: os.path.join(log_dir, subdir) for subdir in subdirs}
+                }
 
     def serialize_config(self, fname):
         with open(fname, 'w') as f:
@@ -114,8 +123,8 @@ class Trainer:
 
     def train(self):
         self._set_trajectories(train=True)
-        self._train(self.log_dir)
-        print(f'Logged results in dir: {self.log_dir}')
+        self._train(self.log_dirs['train_log'])
+        print(f'Logged results in dir: {os.path.abspath(self.log_dirs["train_log"])}')
 
     def _train(self, log_dir):
         pass
