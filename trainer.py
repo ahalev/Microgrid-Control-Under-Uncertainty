@@ -155,10 +155,10 @@ class Trainer:
         else:
             trajectory = self.config.microgrid.trajectory.evaluate
 
-        microgrid.trajectory_func = trajectory.pop('trajectory_func')
-
         for attr, value in trajectory.items():
-            microgrid.set_module_attr(attr, value)
+            if not hasattr(microgrid, attr):
+                raise ValueError(f"Microgrid does not have attribute '{attr}' and it cannot be set.")
+            setattr(microgrid, attr, value)
 
         return microgrid
 
