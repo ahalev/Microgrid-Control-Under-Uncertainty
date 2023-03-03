@@ -273,6 +273,15 @@ class RLTrainer(Trainer):
 
         train()
 
+    def _evaluate(self):
+        obs = self.env.reset()
+        done = False
+
+        while not done:
+            obs, reward, done, _ = self.env.step(self.algo.policy.get_action(obs))
+
+        return self.env.log
+
 
 class MPCTrainer(Trainer):
     algo_name = 'mpc'
