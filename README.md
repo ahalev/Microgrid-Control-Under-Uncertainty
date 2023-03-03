@@ -2,7 +2,7 @@
 
 The script `scripts/dqn_simulated_modular_env.py` is a garage script.
 
-The script `scripts\dqn_simulated_env_rllib` is an RLLib script.
+The script `scripts/dqn_simulated_env_rllib` is an RLLib script.
 
 
 Even running in local mode, bugs in the environment that surface in RLLib
