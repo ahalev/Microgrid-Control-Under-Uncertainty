@@ -1,5 +1,7 @@
 import expfig
+import pandas as pd
 import os
+import json
 import yaml
 
 from pathlib import Path
@@ -135,13 +137,29 @@ class Trainer:
 
         output = self._evaluate()
 
-        output.to_csv(os.path.join(log_dir, 'log.csv'))
-        output.sum().to_csv(os.path.join(log_dir, 'log_total.csv'))
+        self.save_with_metadata(output, log_dir, 'log.csv')
+        self.save_with_metadata(output.sum(), log_dir, 'log_total.csv')
+
         print(f'Logged results in dir:\n\t{os.path.abspath(log_dir)}')
         return output
 
     def _evaluate(self):
         return self.algo.run(verbose=self.config.context.verbose > 0)
+
+    def save_with_metadata(self, table, log_dir, fname):
+        log_path = os.path.join(log_dir, fname)
+        table.to_csv(log_path)
+
+        metadata = self.get_metadata(table)
+        metadata_stream = Path(f'{log_path}.tag').open('w')
+        json.dump(metadata, metadata_stream)
+
+    @staticmethod
+    def get_metadata(table):
+        return {
+            'index_col': [j for j in range(table.index.nlevels)],
+            'header': [j for j in range(table.columns.nlevels)] if isinstance(table, pd.DataFrame) else 0
+        }
 
     def _set_trajectories(self, train=False, evaluate=False):
         self.set_trajectory(self.microgrid, train=train, evaluate=evaluate)
