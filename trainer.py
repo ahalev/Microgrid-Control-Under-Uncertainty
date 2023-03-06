@@ -103,8 +103,16 @@ class Trainer:
 
         subdirs = ['config', 'train_log', 'evaluate_log']
 
-        log_dir = expfig.make_sequential_log_dir(f'{log_config.log_dir}/{self.algo_name}/{experiment_name}',
-                                                 subdirs=subdirs)
+        log_dir_params = self._get_log_dir_params(log_config.log_dir.from_keys)
+
+        log_dir = os.path.join(
+            log_config.log_dir.parent,
+            self.algo_name,
+            experiment_name,
+            *log_dir_params
+        )
+
+        log_dir = expfig.make_sequential_log_dir(log_dir, subdirs=subdirs)
 
         return {
             'log_dir': log_dir,
