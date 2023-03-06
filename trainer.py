@@ -111,6 +111,17 @@ class Trainer:
             **{subdir: os.path.join(log_dir, subdir) for subdir in subdirs}
                 }
 
+    def _get_log_dir_params(self, log_dir_param_keys):
+        dirs = []
+
+        if log_dir_param_keys:
+            for keys in log_dir_param_keys:
+                split = tuple(keys.split('.'))
+                value = self.config[split]
+                dirs.append(f'{split[-1]}_{value}')
+
+        return dirs
+
     def serialize_config(self, fname):
         with open(fname, 'w') as f:
             self.config.serialize(f)
