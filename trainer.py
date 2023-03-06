@@ -103,10 +103,15 @@ class Trainer:
 
         subdirs = ['config', 'train_log', 'evaluate_log']
 
-        log_dir_params = self._get_log_dir_params(log_config.log_dir.from_keys)
+        if isinstance(log_config.log_dir, str):
+            parent = log_config.log_dir
+            log_dir_params = []
+        else:
+            parent = log_config.log_dir.parent
+            log_dir_params = self._get_log_dir_params(log_config.log_dir.from_keys)
 
         log_dir = os.path.join(
-            log_config.log_dir.parent,
+            parent,
             self.algo_name,
             experiment_name,
             *log_dir_params
