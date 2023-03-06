@@ -131,6 +131,8 @@ class Trainer:
             for keys in log_dir_param_keys:
                 split = tuple(keys.split('.'))
                 value = self.config[split]
+                if pd.api.types.is_number(value):
+                    value = round(value, 3)
                 dirs.append(f'{split[-1]}_{value}')
 
         return dirs
