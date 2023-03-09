@@ -56,3 +56,4 @@ context:
     use_existing_dir: false
   snapshot_gap: 50
   seed: 1
+verbose: 1
