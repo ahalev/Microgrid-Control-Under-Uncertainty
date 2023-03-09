@@ -41,7 +41,7 @@ class Trainer:
         algo = config.algo.type
 
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
-            pass
+            config.algo.type = cls.algo_name
         elif algo.lower() == 'rl':
             cls = RLTrainer
         elif algo.lower() == 'mpc':
@@ -51,7 +51,6 @@ class Trainer:
         else:
             raise ValueError(f"Unrecognized algo type '{algo}'.")
 
-        config.algo.type = algo
         cls.config = config
         return super().__new__(cls, *args, **kwargs)
 
