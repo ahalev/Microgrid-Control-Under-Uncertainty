@@ -117,7 +117,11 @@ class Trainer:
             *log_dir_params
         )
 
-        log_dir = expfig.make_sequential_log_dir(log_dir, subdirs=subdirs)
+        log_dir = expfig.make_sequential_log_dir(
+            log_dir,
+            subdirs=subdirs,
+            use_existing_dir=log_config.log_dir['use_existing_dir']
+        )
 
         return {
             'log_dir': log_dir,
