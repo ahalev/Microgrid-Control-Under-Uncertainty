@@ -1,4 +1,5 @@
 import expfig
+import logging
 import pandas as pd
 import os
 import json
@@ -37,6 +38,8 @@ class Trainer:
     config: expfig.Config
 
     def __new__(cls: type, config=None, *args, **kwargs):
+        logging.getLogger(__name__).setLevel(logging.INFO)
+
         config = expfig.Config(config=config, default=DEFAULT_CONFIG)
         algo = config.algo.type
 
