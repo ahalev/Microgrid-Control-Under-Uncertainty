@@ -147,8 +147,10 @@ class Trainer:
         return self.evaluate()
 
     def train(self):
+        set_seed(self.config.context.seed)
         self._set_trajectories(train=True)
         self._train(self.log_dirs['train_log'])
+
         print(f'Logged results in dir: {os.path.abspath(self.log_dirs["train_log"])}')
 
     def _train(self, log_dir):
@@ -300,7 +302,6 @@ class RLTrainer(Trainer):
                          log_dir=log_dir,
                          use_existing_dir=True)
         def train(ctxt=None):
-            set_seed(log_config.seed)
             garage_trainer = GarageTrainer(ctxt)
 
             garage_trainer.setup(self.algo, self.env)
