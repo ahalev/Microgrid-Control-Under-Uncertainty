@@ -33,6 +33,8 @@ ENVS = {
 
 DEFAULT_CONFIG = Path(__file__).parent / 'config/default_config.yaml'
 
+pymgrid.add_pymgrid_yaml_representers()
+
 
 class Trainer:
     algo_name: str
