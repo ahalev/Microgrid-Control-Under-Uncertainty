@@ -22,12 +22,13 @@ from garage.replay_buffer import PathBuffer
 from envs import GymEnv
 from reward_shaping import *
 
-from pymgrid import envs, Microgrid
+import pymgrid
+
 from pymgrid.algos import ModelPredictiveControl, RuleBasedControl
 
 ENVS = {
-    'DiscreteMicrogridEnv': envs.DiscreteMicrogridEnv,
-    'ContinuousMicrogridEnv': envs.ContinuousMicrogridEnv
+    'DiscreteMicrogridEnv': pymgrid.envs.DiscreteMicrogridEnv,
+    'ContinuousMicrogridEnv': pymgrid.envs.ContinuousMicrogridEnv
 }
 
 DEFAULT_CONFIG = Path(__file__).parent / 'config/default_config.yaml'
@@ -64,7 +65,7 @@ class Trainer:
         self.serialize_config(f'{self.log_dirs["config"]}/config.yaml')
 
     def _setup_microgrid(self):
-        if isinstance(self.config.microgrid.config, Microgrid):
+        if isinstance(self.config.microgrid.config, pymgrid.Microgrid):
             microgrid = self.config.microgrid.config
         else:
             microgrid_yaml = f'!Microgrid\n{yaml.safe_dump(self.config.microgrid.config.data)}'
