@@ -84,14 +84,12 @@ class ResultLoader(Namespacify):
         return None
 
     def plot_reward_cumsum(self, relative_to=None, hue=None, style=None, relplot_col=None):
-        rewards_dict = {}
-        for eval_log in self.evaluate_logs:
-            log = self[eval_log].log
-            rewards_dict[eval_log[:-1]] = log[('balance', '0', 'reward')].cumsum()
 
         cost_column_name = f'{"Relative "*(relative_to is not None)}Cumulative Cost'
 
-        rewards = -1 * pd.DataFrame(rewards_dict)
+        cost = self.get_value_from_logs(('balance', '0', 'reward'))
+        rewards = -1 * cost.cumsum()
+
         if relative_to is not None:
             relative_to_loc = [relative_to in level for level in rewards.columns.levels]
             idx = tuple(slice(None) if not loc else relative_to for loc in relative_to_loc)
