@@ -59,11 +59,12 @@ class Trainer:
         cls.config = config
         return super().__new__(cls, *args, **kwargs)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, serialize_config=True, *args, **kwargs):
         self.microgrid = self._setup_microgrid()
         self.algo = self._setup_algo()
         self.log_dirs = self._get_log_dir()
-        self.serialize_config(f'{self.log_dirs["config"]}/config.yaml')
+        if serialize_config:
+            self.serialize_config()
 
     def _setup_microgrid(self):
         if isinstance(self.config.microgrid.config, pymgrid.Microgrid):
