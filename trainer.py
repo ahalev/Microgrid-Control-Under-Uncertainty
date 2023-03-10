@@ -39,10 +39,10 @@ class Trainer:
     algo_name: str
     config: expfig.Config
 
-    def __new__(cls: type, config=None, *args, **kwargs):
+    def __new__(cls: type, config=None, default=DEFAULT_CONFIG, *args, **kwargs):
         logging.getLogger(__name__).setLevel(logging.INFO)
 
-        config = expfig.Config(config=config, default=DEFAULT_CONFIG)
+        config = expfig.Config(config=config, default=default)
         algo = config.algo.type
 
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
