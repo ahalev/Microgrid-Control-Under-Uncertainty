@@ -217,6 +217,21 @@ class Trainer:
 
         return microgrid
 
+    @classmethod
+    def load(cls, log_dir):
+        """
+        Load a previously trained trainer.
+        """
+        log_dir = Path(log_dir)
+        if not log_dir.exists():
+            raise FileNotFoundError(f'Cannot locate dir:\n\t{log_dir.absolute()}')
+
+        config = log_dir / 'config/config.yaml'
+        default = log_dir / 'config/config_default.yaml'
+
+        return cls(config=config, default=default, serialize_config=False)
+
+
 
 class RLTrainer(Trainer):
     algo_name = 'rl'
@@ -326,13 +341,26 @@ class RLTrainer(Trainer):
         train()
 
     def _evaluate(self):
-        obs = self.env.reset()
+        env = self.env.unwrapped
+        obs = env.reset()
         done = False
 
         while not done:
-            obs, reward, done, _ = self.env.step(self.algo.policy.get_action(obs))
+            obs, reward, done, _ = env.step(self.algo.policy.get_action(obs))
 
         return self.env.log
+
+    @classmethod
+    def load(cls, log_dir):
+        from garage.experiment import Snapshotter
+
+        garage_data = Snapshotter().load(log_dir / 'train_log')
+
+        instance = super().load(log_dir)
+        instance.algo = garage_data['algo']
+        instance.env = garage_data['env']
+
+        return instance
 
 
 class MPCTrainer(Trainer):
