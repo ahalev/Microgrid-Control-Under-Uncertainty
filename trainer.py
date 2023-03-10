@@ -147,9 +147,8 @@ class Trainer:
 
         return dirs
 
-    def serialize_config(self, fname):
-        with open(fname, 'w') as f:
-            self.config.serialize(f)
+    def serialize_config(self):
+        self.config.serialize_to_dir(self.log_dirs["config"], use_existing_dir=True, with_default=True)
 
     @abstractmethod
     def _setup_algo(self):
