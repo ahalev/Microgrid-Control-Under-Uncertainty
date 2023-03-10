@@ -83,7 +83,7 @@ class ResultLoader(Namespacify):
 
         return None
 
-    def plot_reward_cumsum(self, relative_to=None, hue=None, style=None, relplot_col=None):
+    def plot_reward_cumsum(self, relative_to=None, hue=None, style=None, relplot_col=None, save=True):
 
         cost_column_name = f'{"Relative "*(relative_to is not None)}Cumulative Cost'
 
@@ -132,7 +132,7 @@ class ResultLoader(Namespacify):
             g.set(ylim=(0.5, 1.5))
 
         save_file = self._save_file('reward_cumsum.png')
-        if save_file:
+        if save and save_file:
             plt.savefig(save_file)
 
         plt.show()
