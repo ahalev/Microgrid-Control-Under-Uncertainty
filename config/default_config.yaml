@@ -18,6 +18,8 @@ microgrid:
       forecaster: oracle
       forecaster_increase_uncertainty: false
       forecaster_relative_noise: false
+  attributes:
+    reward_shaping_func: null
 algo:
   type: rl
   package: garage
