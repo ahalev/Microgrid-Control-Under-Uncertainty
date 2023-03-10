@@ -12,6 +12,9 @@ from matplotlib import pyplot as plt
 from pathlib import Path
 
 
+pymgrid.add_pymgrid_yaml_representers()
+
+
 class ResultLoader(Namespacify):
     def __init__(self, result_dir):
         super().__init__(self._load_results(Path(result_dir)))
