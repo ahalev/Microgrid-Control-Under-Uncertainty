@@ -99,6 +99,12 @@ class Trainer:
             return
 
         for attr, value in attributes.items():
+            if isinstance(value, str) and value.startswith('!'):
+                try:
+                    value = yaml.safe_load(value)
+                except yaml.YAMLError:
+                    value = yaml.safe_load(f'{value} {{}}')
+
             setattr(microgrid, attr, value)
 
     def _get_log_dir(self):
