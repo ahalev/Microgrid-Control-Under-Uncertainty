@@ -37,7 +37,7 @@ class ResultLoader(Namespacify):
             elif contents.suffix == '.tag':
                 continue
             else:
-                raise NameError(contents)
+                warnings.warn(f'Ignoring file of unrecognized type {contents.name}')
 
         return results
 
