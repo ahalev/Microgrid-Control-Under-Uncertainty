@@ -63,6 +63,14 @@ class ResultLoader(Namespacify):
 
         return locations
 
+    def get_value_from_logs(self, log_column):
+        rewards_dict = {}
+        for eval_log in self.evaluate_logs:
+            log = self[eval_log].log
+            rewards_dict[eval_log[:-1]] = log[log_column]
+
+        return pd.DataFrame(rewards_dict)
+
     def _save_file(self, suffix):
         if self.save_dir is not None:
             file = self.save_dir / suffix
