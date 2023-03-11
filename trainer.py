@@ -340,22 +340,23 @@ class RLTrainer(Trainer):
         train()
 
     def _evaluate(self):
-        env = self.env.unwrapped
+        env = self.eval_env.unwrapped
         obs = env.reset()
         done = False
 
         while not done:
-            obs, reward, done, _ = env.step(self.algo.policy.get_action(obs))
+            obs, reward, done, _ = env.step(self.algo.policy.get_action(obs)[0])
 
-        return self.env.log
+        return env.log
 
     @classmethod
     def load(cls, log_dir):
         from garage.experiment import Snapshotter
 
-        garage_data = Snapshotter().load(log_dir / 'train_log')
-
         instance = super().load(log_dir)
+
+        garage_data = Snapshotter().load(Path(log_dir) / 'train_log')
+
         instance.algo = garage_data['algo']
         instance.env = garage_data['env']
 
