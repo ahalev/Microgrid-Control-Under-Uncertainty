@@ -22,6 +22,8 @@ class ResultLoader(Namespacify):
         self.passed_result_dir = Path(result_dir)
         self.save_dir = Path(save_dir) if save_dir else None
         self.evaluate_logs = self.locate_deep_key('evaluate_log')
+        self.configs = self.get_deep_values('config')
+        self.log_columns = self.get_all_log_columns()
 
     def _load_results(self, directory, relevant_vals=None):
         results = {}
@@ -56,6 +58,9 @@ class ResultLoader(Namespacify):
 
         return load_func(contents, **metadata)
 
+    def get_deep_values(self, key):
+        return [self[x] for x in self.locate_deep_key(key)]
+
     def locate_deep_key(self, key):
         return self._locate_deep_key(key, self)
 
@@ -68,6 +73,13 @@ class ResultLoader(Namespacify):
                 locations.extend(self._locate_deep_key(key, v, (*stack, k)))
 
         return locations
+
+    def get_all_log_columns(self):
+        cols = pd.Index([])
+        for eval_log in self.evaluate_logs:
+            cols = cols.intersection(self[eval_log].log.columns)
+
+        return cols
 
     def get_value_from_logs(self, log_column):
         rewards_dict = {}
