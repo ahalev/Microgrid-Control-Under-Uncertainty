@@ -23,12 +23,18 @@ class ResultLoader(Namespacify):
         self.save_dir = Path(save_dir) if save_dir else None
         self.evaluate_logs = self.locate_deep_key('evaluate_log')
 
-    def _load_results(self, directory):
+    def _load_results(self, directory, relevant_vals=None):
         results = {}
         for contents in directory.iterdir():
             if contents.is_dir():
-                results[contents.stem] = self._load_results(contents)
-            elif contents.suffix == '.yaml':
+                inner_res = self._load_results(contents, relevant_vals=relevant_vals)
+                if len(inner_res):
+                    results[contents.name] = inner_res
+                continue
+            elif relevant_vals is not None and not any(val in str(contents) for val in relevant_vals):
+                continue
+
+            if contents.suffix == '.yaml':
                 results[contents.stem] = yaml.safe_load(contents.open('r'))
             elif contents.suffix == '.csv':
                 results[contents.stem] = self._read_pandas(contents, pd.read_csv)
