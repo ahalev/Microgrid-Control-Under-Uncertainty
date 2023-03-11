@@ -232,7 +232,6 @@ class Trainer:
         return cls(config=config, default=default, serialize_config=False)
 
 
-
 class RLTrainer(Trainer):
     algo_name = 'rl'
     env = None
