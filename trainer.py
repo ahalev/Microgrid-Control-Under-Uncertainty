@@ -255,7 +255,7 @@ class RLTrainer(Trainer):
 
     def _set_trajectories(self, train=False, evaluate=False):
         super()._set_trajectories(train=train, evaluate=evaluate)
-        self.set_trajectory(self.env, train=True, evaluate=False)
+        self.set_trajectory(self.env, train=train, evaluate=evaluate)
         self.set_trajectory(self.eval_env, train=False, evaluate=True)
 
     def _setup_policies(self):
