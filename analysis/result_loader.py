@@ -87,7 +87,10 @@ class ResultLoader(Namespacify):
             log = self[eval_log].log
             rewards_dict[eval_log[:-1]] = log[log_column]
 
-        return pd.DataFrame(rewards_dict)
+        df = pd.concat(rewards_dict, axis=1)
+        df.index.name = 'Step'
+
+        return df
 
     def _save_file(self, suffix):
         if self.save_dir is not None:
