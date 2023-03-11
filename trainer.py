@@ -57,7 +57,7 @@ class Trainer:
             raise ValueError(f"Unrecognized algo type '{algo}'.")
 
         cls.config = config
-        return super().__new__(cls, *args, **kwargs)
+        return super().__new__(cls)
 
     def __init__(self, serialize_config=True, *args, **kwargs):
         self.microgrid = self._setup_microgrid()
