@@ -16,8 +16,8 @@ pymgrid.add_pymgrid_yaml_representers()
 
 
 class ResultLoader(Namespacify):
-    def __init__(self, result_dir, save_dir=None):
-        super().__init__(self._load_results(Path(result_dir)))
+    def __init__(self, result_dir, relevant_results=None, save_dir=None):
+        super().__init__(self._load_results(Path(result_dir), relevant_vals=relevant_results))
 
         self.passed_result_dir = Path(result_dir)
         self.save_dir = Path(save_dir) if save_dir else None
