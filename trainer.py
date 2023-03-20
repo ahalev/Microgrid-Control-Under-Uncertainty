@@ -181,7 +181,7 @@ class Trainer:
         return output
 
     def _evaluate(self):
-        return self.algo.run(verbose=self.config.context.verbose > 0)
+        return self.algo.run(verbose=self.config.verbosity > 0)
 
     def save_with_metadata(self, table, log_dir, fname):
         log_path = os.path.join(log_dir, fname)
