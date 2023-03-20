@@ -56,6 +56,6 @@ context:
     parent: experiment_logs
     from_keys: []
     use_existing_dir: false
-  snapshot_gap: 50
+  snapshot_gap: 10
   seed: 1
 verbose: 1
