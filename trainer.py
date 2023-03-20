@@ -188,8 +188,10 @@ class Trainer:
         table.to_csv(log_path)
 
         metadata = self.get_metadata(table)
-        metadata_stream = Path(f'{log_path}.tag').open('w')
-        json.dump(metadata, metadata_stream)
+        metadata_stream = Path(f'{log_path}.tag')
+
+        with metadata_stream.open('w') as f:
+            json.dump(metadata, f)
 
     @staticmethod
     def get_metadata(table):
