@@ -261,7 +261,7 @@ class RLTrainer(Trainer):
         policy_config = self.config.algo.policy
         train_config = self.config.algo.train
 
-        total_timesteps = train_config.batch_size * train_config.steps_per_epoch * train_config.batch_size
+        total_timesteps = train_config.n_epochs * train_config.steps_per_epoch * train_config.batch_size
 
         qf = DiscreteMLPQFunction(env_spec=self.env.spec, hidden_sizes=policy_config.hidden_sizes)
         policy = DiscreteQFArgmaxPolicy(env_spec=self.env.spec, qf=qf)
