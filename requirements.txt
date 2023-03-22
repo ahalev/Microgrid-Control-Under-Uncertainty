@@ -1,4 +1,4 @@
-expfig
+experiment-config
 garage
 gym
 matplotlib
