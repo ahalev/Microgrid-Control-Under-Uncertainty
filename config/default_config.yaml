@@ -1,5 +1,6 @@
 env:
   cls: DiscreteMicrogridEnv
+  observation_keys: []
 microgrid:
   config:
     scenario: 0

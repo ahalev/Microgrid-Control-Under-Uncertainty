@@ -246,7 +246,7 @@ class RLTrainer(Trainer):
 
     def _setup_env(self):
         env_cls = ENVS[self.config.env.cls]
-        env = env_cls(self.microgrid)
+        env = env_cls.from_microgrid(self.microgrid, observation_keys=self.config.env.observation_keys)
         env = GymEnv(env, max_episode_length=len(env))
 
         env = self.set_trajectory(env, train=True)
