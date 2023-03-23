@@ -31,6 +31,7 @@ class ResultLoader(Namespacify):
             if contents.is_dir():
                 inner_res = self._load_results(contents, relevant_vals=relevant_vals)
                 if len(inner_res):
+                    print(f'Loaded results from: {contents}')
                     results[contents.name] = inner_res
                 continue
             elif relevant_vals is not None and not any(val in str(contents) for val in relevant_vals):
