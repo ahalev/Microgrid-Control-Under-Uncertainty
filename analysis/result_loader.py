@@ -23,9 +23,11 @@ class ResultLoader(Namespacify):
         self.save_dir = Path(save_dir) if save_dir else None
         self.evaluate_logs = self.locate_deep_key('evaluate_log')
         self.configs = self.get_deep_values('config')
+        self.microgrids = self._load_microgrids()
         self.log_columns = self.get_all_log_columns()
 
     def _load_results(self, directory, relevant_vals=None):
+
         results = {}
         for contents in directory.iterdir():
             if contents.is_dir():
@@ -58,6 +60,9 @@ class ResultLoader(Namespacify):
             metadata = {}
 
         return load_func(contents, **metadata)
+
+    def _load_microgrids(self):
+        return [microgrid_from_config(config.config.microgrid) for config in self.configs]
 
     def get_deep_values(self, key):
         return [self[x] for x in self.locate_deep_key(key)]
