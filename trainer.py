@@ -3,7 +3,6 @@ import logging
 import pandas as pd
 import os
 import json
-import yaml
 
 from pathlib import Path
 from abc import abstractmethod
@@ -20,6 +19,8 @@ from garage.torch.q_functions import DiscreteMLPQFunction
 from garage.replay_buffer import PathBuffer
 
 from envs import GymEnv
+
+from microgrid_loader import microgrid_from_config
 
 import pymgrid
 
@@ -67,45 +68,7 @@ class Trainer:
             self.serialize_config()
 
     def _setup_microgrid(self):
-        if isinstance(self.config.microgrid.config, pymgrid.Microgrid):
-            microgrid = self.config.microgrid.config
-        else:
-            microgrid_yaml = f'!Microgrid\n{yaml.safe_dump(self.config.microgrid.config.data)}'
-            try:
-                microgrid = yaml.safe_load(microgrid_yaml)
-            except yaml.YAMLError:
-                raise yaml.YAMLError(f'Unable to parse microgrid yaml:\n{microgrid_yaml}')
-
-        self._post_process_microgrid(microgrid)
-        return microgrid
-
-    def _post_process_microgrid(self, microgrid):
-        self._call_microgrid_methods(microgrid)
-        self._set_microgrid_attributes(microgrid)
-
-    def _call_microgrid_methods(self, microgrid):
-        try:
-            methods = self.config.microgrid.methods
-        except AttributeError:
-            return
-
-        for method, method_params in methods.items():
-            getattr(microgrid, method)(**method_params)
-
-    def _set_microgrid_attributes(self, microgrid):
-        try:
-            attributes = self.config.microgrid.attributes
-        except AttributeError:
-            return
-
-        for attr, value in attributes.items():
-            if isinstance(value, str) and value.startswith('!'):
-                try:
-                    value = yaml.safe_load(value)
-                except yaml.YAMLError:
-                    value = yaml.safe_load(f'{value} {{}}')
-
-            setattr(microgrid, attr, value)
+        return microgrid_from_config(self.config.microgrid)
 
     def _get_log_dir(self):
         log_config = self.config.context
