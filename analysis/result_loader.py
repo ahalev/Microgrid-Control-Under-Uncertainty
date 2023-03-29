@@ -36,8 +36,9 @@ class ResultLoader(Namespacify):
                     print(f'Loaded results from: {contents}')
                     results[contents.name] = inner_res
                 continue
-            elif relevant_vals is not None and not any(val in str(contents) for val in relevant_vals):
-                continue
+            else:
+                if not self._is_relevant(contents, relevant_vals):
+                    continue
 
             if contents.suffix == '.yaml':
                 results[contents.stem] = yaml.safe_load(contents.open('r'))
@@ -51,6 +52,21 @@ class ResultLoader(Namespacify):
                 warnings.warn(f'Ignoring file of unrecognized type {contents.name}')
 
         return results
+
+    def _is_relevant(self, contents, relevant_vals):
+        if relevant_vals is None:
+            return True
+
+        if isinstance(relevant_vals, str):
+            relevant_vals = [relevant_vals]
+
+        for val in relevant_vals:
+            if isinstance(val, list):
+                return all(self._is_relevant(contents, inner_val) for inner_val in val)
+            elif any(val in contents.parts for val in relevant_vals):
+                return True
+
+        return False
 
     def _read_pandas(self, contents, load_func):
         metadata_file = contents.with_name(f'{contents.name}.tag')
