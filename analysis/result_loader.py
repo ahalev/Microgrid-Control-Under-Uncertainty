@@ -18,15 +18,45 @@ pymgrid.add_pymgrid_yaml_representers()
 
 
 class ResultLoader(Namespacify):
-    def __init__(self, result_dir, relevant_results=None, save_dir=None):
-        super().__init__(self._load_results(Path(result_dir), relevant_vals=relevant_results))
+    """
 
-        self.passed_result_dir = Path(result_dir)
+    Parameters
+    ----------
+    result_dir : str or Path
+        Directory to load results from.
+
+    relevant_results : list[Union[str, list[str]]] or None, default None
+        Results to collect. A list of strings to match as subdirectories in result_dir.
+        If an element is a list, it will only collect results that match every element in that list.
+
+        Example:
+        >>> relevant_results = ['scenario_0', ['scenario_1', 'forecaster_0.0']]
+        Will load results that match either 'scenario_0' or 'scenario_1' AND 'forecaster_0.0'.
+
+    save_dir : str, Path or None, default None
+        Location to save figures and other results. If None, do not save other results.
+    """
+
+    def __init__(self, results_or_dir, relevant_results=None, save_dir=None):
+
+        results, result_dir = self._get_dict_results(results_or_dir, relevant_results)
+        super().__init__(results)
+
+        self.passed_result_dir = result_dir
         self.save_dir = Path(save_dir) if save_dir else None
         self.evaluate_logs = self.locate_deep_key('evaluate_log')
         self.configs = self.get_deep_values('config')
         self.microgrids = self._load_microgrids()
         self.log_columns = self.get_all_log_columns()
+
+    def _get_dict_results(self, results_or_dir, relevant_results):
+        if isinstance(results_or_dir, dict):
+            if relevant_results:
+                warnings.warn('Non-empty relevant_results will be ignored when combining results.')
+            return results_or_dir, None
+
+        result_dir = Path(results_or_dir)
+        return self._load_results(result_dir, relevant_vals=relevant_results), result_dir
 
     def _load_results(self, directory, relevant_vals=None):
 
