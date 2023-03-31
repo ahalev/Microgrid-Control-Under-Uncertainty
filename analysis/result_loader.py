@@ -39,7 +39,7 @@ class ResultLoader(Namespacify):
                     results[contents.name] = inner_res
                 continue
             else:
-                if not self._is_relevant(contents, relevant_vals):
+                if not self.is_relevant(contents, relevant_vals):
                     continue
 
             if contents.suffix == '.yaml':
@@ -54,21 +54,6 @@ class ResultLoader(Namespacify):
                 warnings.warn(f'Ignoring file of unrecognized type {contents.name}')
 
         return results
-
-    def _is_relevant(self, contents, relevant_vals):
-        if relevant_vals is None:
-            return True
-
-        if isinstance(relevant_vals, str):
-            relevant_vals = [relevant_vals]
-
-        for val in relevant_vals:
-            if isinstance(val, list):
-                return all(self._is_relevant(contents, inner_val) for inner_val in val)
-            elif any(val in contents.parts for val in relevant_vals):
-                return True
-
-        return False
 
     def _read_pandas(self, contents, load_func):
         metadata_file = contents.with_name(f'{contents.name}.tag')
@@ -200,6 +185,59 @@ class ResultLoader(Namespacify):
             new_df[label] = pd.to_numeric(split.iloc[:, 1], errors='ignore')
 
         return pd.DataFrame(new_df, index=df.index)
+
+    @classmethod
+    def combine_loaders(cls, loaders_dict, relevant_results=None, save_dir=None):
+        loaders_dict = cls.nested_dict_relevance(loaders_dict, relevant_results)
+        return cls(loaders_dict, save_dir=save_dir)
+
+    @classmethod
+    def nested_dict_relevance(cls, nested_dict, relevant_results, parent_keys=()):
+        # TODO something is wrong here it's only getting the first relevant value
+        relevant = {}
+        for k, v in nested_dict.items():
+            if isinstance(v, (dict, UserDict)):
+                inner_relevant = cls.nested_dict_relevance(v, relevant_results, (*parent_keys, k))
+                if inner_relevant:
+                    relevant[k] = inner_relevant
+            elif cls.is_relevant((*parent_keys, k), relevant_results):
+                relevant[k] = v
+
+        return relevant
+
+    @staticmethod
+    def is_relevant(contents, relevant_vals):
+        if relevant_vals is None:
+            return True
+
+        if isinstance(relevant_vals, str):
+            relevant_vals = [relevant_vals]
+
+        try:
+            parts = contents.parts
+        except AttributeError:
+            parts = contents  # list-like
+
+        for val in relevant_vals:
+            if isinstance(val, list):
+                list_match = all(ResultLoader.is_relevant(contents, inner_val) for inner_val in val)
+                if list_match:
+                    return True
+            elif any(val in parts for val in relevant_vals):
+                return True
+
+        return False
+
+    @staticmethod
+    def log_without_forecasts(log, drop_singleton_level=False):
+        df = log.drop(columns=log.columns[log.columns.get_level_values(-1).str.contains('forecast')])
+
+        if drop_singleton_level:
+            cols = df.columns
+            df.columns = pd.MultiIndex.from_arrays([
+                cols.get_level_values(j) for j in range(cols.nlevels) if cols.get_level_values(j).nunique() > 1])
+
+        return df
 
 
 if __name__ == '__main__':
