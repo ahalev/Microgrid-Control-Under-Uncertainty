@@ -6,7 +6,7 @@ import json
 import yaml
 import warnings
 
-
+from collections import UserDict
 from expfig import Namespacify
 from matplotlib import pyplot as plt
 from pathlib import Path
@@ -88,7 +88,7 @@ class ResultLoader(Namespacify):
         for k, v in level.items():
             if k == key:
                 locations.append((*stack, k))
-            elif hasattr(v, 'items'):
+            elif isinstance(v, (dict, UserDict)):
                 locations.extend(self._locate_deep_key(key, v, (*stack, k)))
 
         return locations
