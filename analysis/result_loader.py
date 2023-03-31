@@ -94,9 +94,15 @@ class ResultLoader(Namespacify):
         return locations
 
     def get_all_log_columns(self):
-        cols = pd.Index([])
+        cols = None
         for eval_log in self.evaluate_logs:
-            cols = cols.intersection(self[eval_log].log.columns)
+            if cols is None:
+                cols = self[eval_log].log.columns
+            else:
+                cols = cols.intersection(self[eval_log].log.columns)
+
+        if len(cols) == 0:
+            raise RuntimeError
 
         return cols
 
