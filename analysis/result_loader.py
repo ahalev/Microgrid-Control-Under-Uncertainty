@@ -159,25 +159,102 @@ class ResultLoader(Namespacify):
 
         return None
 
-    def plot_reward_cumsum(self, relative_to=None, hue=None, style=None, relplot_col=None, save=True):
+    def plot_forecast_vs_true(
+            self,
+            module_name,
+            module_kind,
+            max_forecast_steps=None,
+            step_range=slice(None),
+            relative=False
+    ):
+        # Looks for forecast of the type f'{module_kind}_forecast_0, f'{module_kind}_forecast_1, etc
+        forecast_horizon = [c.config.microgrid.methods.set_forecaster.forecast_horizon for c in self.configs]
+        max_forecast_horizon = max(forecast_horizon)
+
+        applicable_cols = [f'{module_kind}_forecast_{j}' for j in range(max_forecast_horizon)]
+        forecasts = self.get_value_from_logs([(module_kind, '0', col) for col in applicable_cols])
+        true = self.get_value_from_logs((module_kind, '0', f'{module_kind}_current'))
+
+        forecasts = forecasts.loc[step_range]
+        forecasts = forecasts.unstack(level=-1).reset_index()
+        forecasts = self._extract_param_columns(forecasts)
+        forecasts = forecasts.rename(columns={0: module_kind.title()})
+
+        forecasts['Forecasted Step'] = forecasts['Step'] + forecasts['Load Forecast'] + 1
+
+        true = true.unstack(level=-1).reset_index()
+        true = self._extract_param_columns(true)
+        true = true.rename(columns={0: module_kind.title()})
+
+        true['Forecasted Step'] = 'True'
+
+        if relative:
+            forecasts = self._relative_forecasts(forecasts, true, module_kind)
+
+        if max_forecast_steps is not None:
+            forecasts = forecasts[forecasts['Load Forecast'] <= max_forecast_steps]
+
+        true = true[true['Step'].isin(forecasts['Forecasted Step'])]
+
+        grid = sns.relplot(
+            data=forecasts,
+            x='Forecasted Step',
+            y=module_kind.title(),
+            col='Scenario',
+            row='Forecaster',
+            hue='Step',
+            kind='line'
+        )
+
+        if not relative:
+            for ax in grid.axes_dict.values():
+                sns.lineplot(
+                    data=true,
+                    x='Step',
+                    y=module_kind.title(),
+                    hue='Forecasted Step',
+                    ax=ax,
+                    linewidth=2
+                )
+
+        plt.show()
+
+    def _relative_forecasts(self, forecasts, true, module_kind):
+        forecast_subset = forecasts[['Forecasted Step', module_kind.title()]]
+        forecast_subset = forecast_subset.set_index(['Forecasted Step'], append=True)
+
+        true_subset = true[['Step', module_kind.title()]].set_index('Step').drop_duplicates()
+
+        difference = forecast_subset.subtract(true_subset, level='Forecasted Step')
+        relative = difference.div(true_subset, level='Forecasted Step')
+
+        forecasts['Load'] = relative.droplevel(level=1)
+        return forecasts
+
+    def plot_reward_cumsum(self,
+                           *,
+                           module=None,
+                           relative_to=None,
+                           transient_steps=100,
+                           hue=None,
+                           style=None,
+                           units=None,
+                           relplot_col=None,
+                           save=True
+                           ):
 
         cost_column_name = f'{"Relative "*(relative_to is not None)}Cumulative Cost'
 
-        cost = self.get_value_from_logs(('balance', '0', 'reward'))
+        module = module if module else 'balance'
+
+        cost = self.get_value_from_logs((module, '0', 'reward'))
         rewards = -1 * cost.cumsum()
 
-        if relative_to is not None:
-            relative_to_loc = [relative_to in level for level in rewards.columns.levels]
-            idx = tuple(slice(None) if not loc else relative_to for loc in relative_to_loc)
-            values_relative_to = rewards.loc[:, idx]
-            values_relative_to = values_relative_to.droplevel(np.where(relative_to_loc)[0].item(), axis=1)
-
-            for col in values_relative_to.columns:
-                rewards[col] = rewards[col].div(values_relative_to[col], axis=0)
+        rewards = self._make_relative(rewards, relative_to)
 
         param_cols = [f'level_{j}' for j in range(len(self.evaluate_logs[0][:-1]))]
 
-        rewards = rewards.iloc[10:]
+        rewards = rewards.iloc[transient_steps:]
         rewards = rewards.unstack().reset_index(name=cost_column_name)
 
         rewards = pd.concat([rewards.drop(columns=param_cols), self._extract_param_columns(rewards[param_cols])], axis=1)
@@ -189,7 +266,11 @@ class ResultLoader(Namespacify):
         if relplot_col is not None:
             nunique_col = rewards[relplot_col].nunique()
             col_wrap = nunique_col / np.arange(min_col_wrap, max_col_wrap+1)
-            col_wrap = np.where(col_wrap > 2)[0].max() + min_col_wrap
+            col_wrap = np.where(col_wrap > 2)[0]
+            try:
+                col_wrap = col_wrap.max() + min_col_wrap
+            except ValueError:
+                col_wrap = None
         else:
             col_wrap = int((min_col_wrap+max_col_wrap) // 2)
 
@@ -200,25 +281,65 @@ class ResultLoader(Namespacify):
             kind='line',
             hue=hue,
             style=style,
+            units=units,
             col=relplot_col,
             col_wrap=col_wrap,
-            palette=sns.color_palette("rocket_r", n_colors=rewards[hue].nunique()))
+            palette=sns.color_palette("rocket_r", n_colors=rewards[hue].nunique()),
+            estimator='mean' if units is None else None
+        )
 
         if relative_to is not None:
-            g.set(ylim=(0.5, 1.5))
+            g.set(ylim=(0.75, 1.25))
 
-        save_file = self._save_file('reward_cumsum.png')
-        if save and save_file:
-            plt.savefig(save_file)
+        for ax in g.axes_dict.values():
+            ax.set_title(f'{ax.get_title()} ({module.title()} Cost)')
+
+        if save:
+            save_file = self._save_file('reward_cumsum.png')
+            if save_file:
+                plt.savefig(save_file)
 
         plt.show()
+
+    def _make_relative(self, rewards, relative_to):
+        if relative_to is None:
+            return rewards
+
+        if isinstance(relative_to, str):
+            relative_to = [relative_to]
+
+        relative_to_loc = {j: rel_to
+                           for j, level in enumerate(rewards.columns.levels)
+                           for rel_to in relative_to if rel_to in level
+                           }
+
+        idx = tuple(relative_to_loc[j] if j in relative_to_loc else slice(None) for j in range(rewards.columns.nlevels))
+        values_relative_to = rewards.loc[:, idx]
+        values_relative_to = values_relative_to.droplevel(list(relative_to_loc.keys()), axis=1)
+
+        # for col in values_relative_to.columns:
+        for col in rewards.columns:
+            relative_slice = tuple(c for j, c in enumerate(col) if j not in relative_to_loc.keys())
+            rewards[col] = rewards[col].div(values_relative_to[relative_slice], axis=0)
+
+        return rewards
 
     def _extract_param_columns(self, df):
         new_df = {}
         for col in df.columns:
-            split = df[col].str.split('_', expand=True)
-            label = split.iloc[:, 0].unique().item().title()
-            new_df[label] = pd.to_numeric(split.iloc[:, 1], errors='ignore')
+            try:
+                contains_underscore = df[col].str.contains('_').all()
+            except AttributeError:
+                new_df[col] = df[col]
+                continue
+
+            if contains_underscore:
+                split = df[col].str.split('_', expand=True)
+                label = split.iloc[:, :-1].value_counts().index.item()
+                label = ' '.join(x.title() for x in label)
+                new_df[label] = pd.to_numeric(split.iloc[:, -1], errors='ignore')
+            else:
+                new_df[col] = df[col]
 
         return pd.DataFrame(new_df, index=df.index)
 
