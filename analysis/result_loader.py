@@ -140,7 +140,7 @@ class ResultLoader(Namespacify):
         rewards_dict = {}
         for eval_log in self.evaluate_logs:
             log = self[eval_log].log
-            rewards_dict[eval_log[:-1]] = log[log_column]
+            rewards_dict[eval_log[:-1]] = log.loc[:, log_column]
 
         df = pd.concat(rewards_dict, axis=1)
         df.index.name = 'Step'
