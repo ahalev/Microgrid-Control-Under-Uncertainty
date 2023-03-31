@@ -11,6 +11,8 @@ from expfig import Namespacify
 from matplotlib import pyplot as plt
 from pathlib import Path
 
+from microgrid_loader import microgrid_from_config
+
 
 pymgrid.add_pymgrid_yaml_representers()
 
@@ -78,7 +80,17 @@ class ResultLoader(Namespacify):
         return load_func(contents, **metadata)
 
     def _load_microgrids(self):
-        return [microgrid_from_config(config.config.microgrid) for config in self.configs]
+        microgrid_locations = self.locate_deep_key('microgrid')
+        microgrid_locations = [loc for loc in microgrid_locations if loc[-2] == 'config']
+
+        microgrids = {
+            loc[:-3]: microgrid_from_config(self[loc]) for loc in microgrid_locations
+        }
+
+        for loc, microgrid in microgrids.items():
+            self[loc]['microgrid'] = microgrid
+
+        return microgrids
 
     def get_deep_values(self, key):
         return [self[x] for x in self.locate_deep_key(key)]
