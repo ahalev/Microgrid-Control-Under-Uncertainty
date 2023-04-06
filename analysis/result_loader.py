@@ -74,10 +74,13 @@ class ResultLoader(Namespacify):
 
             if contents.suffix == '.yaml':
                 results[contents.stem] = yaml.safe_load(contents.open('r'))
-            elif contents.suffix == '.csv':
-                results[contents.stem] = self._read_pandas(contents, pd.read_csv)
-            elif contents.suffix == '.xlsx':
-                results[contents.stem] = self._read_pandas(contents, pd.read_excel)
+            elif contents.suffix in ('.csv', '.xlsx'):
+                load_func = pd.read_csv if contents.suffix == '.csv' else pd.read_excel
+                try:
+                    results[contents.stem] = self._read_pandas(contents, load_func)
+                except ValueError as e:
+                    warnings.warn('Exception encountered when loading file into pandas DataFrame.\n\t'
+                                  f'File: {contents}\n\tException: {e.__class__.__name__}({e})')
             elif contents.suffix == '.tag':
                 continue
             else:
