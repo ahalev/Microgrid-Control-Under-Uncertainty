@@ -103,7 +103,13 @@ class Trainer:
         if log_dir_param_keys:
             for keys in log_dir_param_keys:
                 split = tuple(keys.split('.'))
-                value = self.config[split]
+
+                try:
+                    value = self.config[split]
+                except KeyError as e:
+                    deep_key = [s for j, s in enumerate(split) if e.args[0] not in split[:j]]
+                    raise KeyError(f'Missing deep key: {"->".join(deep_key)}')
+
                 if pd.api.types.is_number(value):
                     value = round(value, 3)
                 dirs.append(f'{split[-1]}_{value}')
