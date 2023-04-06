@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pymgrid
+import re
 import seaborn as sns
 import json
 import yaml
@@ -8,6 +9,7 @@ import warnings
 
 from collections import UserDict
 from expfig import Namespacify
+from functools import reduce
 from matplotlib import pyplot as plt
 from pathlib import Path
 
@@ -33,51 +35,69 @@ class ResultLoader(Namespacify):
         >>> relevant_results = ['scenario_0', ['scenario_1', 'forecaster_0.0']]
         Will load results that match either 'scenario_0' or 'scenario_1' AND 'forecaster_0.0'.
 
+    renamer : dict or None, default None
+        Rename keys in loaded results.
+
+    replacements : list of callable, default ()
+        Replacements of the keys. Takes in a key and and returns a new key. For example:
+        >>> replacements = [lambda x: x.replace('scenario', 'sro')]
+
+        will replace all keys of the form 'scenario<stuff>' with 'sro<stuff>'
+
+        .. warning::
+            This will be done to ALL keys. Be careful, easy to get bitten.
+
     save_dir : str, Path or None, default None
         Location to save figures and other results. If None, do not save other results.
     """
 
-    def __init__(self, results_or_dir, relevant_results=None, save_dir=None):
-
-        results, result_dir = self._get_dict_results(results_or_dir, relevant_results)
+    def __init__(self, results_or_dir, relevant_results=None, save_dir=None, renamer=None, replacements=()):
+        results, result_dir = self._get_dict_results(results_or_dir, relevant_results, replacements)
         super().__init__(results)
+        self._rename(renamer)
+        self._check_renamed(renamer)
 
         self.passed_result_dir = result_dir
         self.save_dir = Path(save_dir) if save_dir else None
+
         self.evaluate_logs = self.locate_deep_key('evaluate_log')
         self.configs = self.get_deep_values('config')
         self.microgrids = self._load_microgrids()
         self.log_columns = self.get_all_log_columns()
 
-    def _get_dict_results(self, results_or_dir, relevant_results):
+    def _get_dict_results(self, results_or_dir, relevant_results, replacements):
         if isinstance(results_or_dir, dict):
             if relevant_results:
                 warnings.warn('Non-empty relevant_results will be ignored when combining results.')
+            if replacements:
+                warnings.warn('Non-empty replacements will be ignored when combining results.')
             return results_or_dir, None
 
         result_dir = Path(results_or_dir)
-        return self._load_results(result_dir, relevant_vals=relevant_results), result_dir
+        replacement_func = lambda x: reduce(lambda string, f: f(string), replacements, x)
 
-    def _load_results(self, directory, relevant_vals=None):
+        return self._load_results(result_dir, relevant_results, replacement_func), result_dir
+
+    def _load_results(self, directory, relevant_vals, replacement_func):
 
         results = {}
         for contents in directory.iterdir():
             if contents.is_dir():
-                inner_res = self._load_results(contents, relevant_vals=relevant_vals)
+                inner_res = self._load_results(contents, relevant_vals, replacement_func)
                 if len(inner_res):
                     print(f'Loaded results from: {contents}')
-                    results[contents.name] = inner_res
+                    results[replacement_func(contents.name)] = inner_res
                 continue
             else:
                 if not self.is_relevant(contents, relevant_vals):
                     continue
 
             if contents.suffix == '.yaml':
-                results[contents.stem] = yaml.safe_load(contents.open('r'))
+                results[replacement_func(contents.stem)] = yaml.safe_load(contents.open('r'))
             elif contents.suffix in ('.csv', '.xlsx'):
                 load_func = pd.read_csv if contents.suffix == '.csv' else pd.read_excel
                 try:
-                    results[contents.stem] = self._read_pandas(contents, load_func)
+                    results[replacement_func(contents.stem)] = self._read_pandas(contents, load_func)
                 except ValueError as e:
                     warnings.warn('Exception encountered when loading file into pandas DataFrame.\n\t'
                                   f'File: {contents}\n\tException: {e.__class__.__name__}({e})')
@@ -96,6 +116,38 @@ class ResultLoader(Namespacify):
             metadata = {}
 
         return load_func(contents, **metadata)
+
+    def _rename(self, renamer, lvl=None):
+        if renamer is None:
+            return
+
+        if lvl is None:
+            lvl = self
+
+        for k, v in list(lvl.items()).copy():
+            if k in renamer.keys():
+                lvl.update({renamer[k]: lvl.pop(k)})
+                v = lvl[renamer[k]]
+
+            if isinstance(v, Namespacify):
+                self._rename(renamer, lvl=v)
+
+        # for old_key, new_key in renamer.items():
+        #     if old_key in
+
+        # self.update()
+
+    def _check_renamed(self, renamer):
+        if renamer is None:
+            return
+        for k in renamer:
+            try:
+                existing_key_locs =  self.locate_deep_key(k)
+            except AttributeError:
+                pass
+            else:
+                if existing_key_locs:
+                    raise RuntimeError
 
     def _load_microgrids(self):
         microgrid_locations = self.locate_deep_key('microgrid')
@@ -338,7 +390,13 @@ class ResultLoader(Namespacify):
 
             if contains_underscore:
                 split = df[col].str.split('_', expand=True)
-                label = split.iloc[:, :-1].value_counts().index.item()
+                label = split.iloc[:, :-1].value_counts().index
+                try:
+                    label = label.item()
+                except ValueError:
+                    nlnt = '\n\t'
+                    raise ValueError(f'Clashing labels for parameter:{nlnt}{nlnt.join(label)}')
+
                 label = ' '.join(x.title() for x in label)
                 new_df[label] = pd.to_numeric(split.iloc[:, -1], errors='ignore')
             else:
