@@ -202,7 +202,7 @@ class Trainer:
         return microgrid
 
     @classmethod
-    def load(cls, log_dir):
+    def load(cls, log_dir, additional_config=None):
         """
         Load a previously trained trainer.
         """
@@ -213,7 +213,7 @@ class Trainer:
         config = log_dir / 'config/config.yaml'
         default = log_dir / 'config/config_default.yaml'
 
-        return cls(config=config, default=default, serialize_config=False)
+        return cls(config=[config, additional_config], default=default, serialize_config=False)
 
 
 class RLTrainer(Trainer):
