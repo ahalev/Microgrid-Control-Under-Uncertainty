@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 import os
 import json
+import warnings
 
 from pathlib import Path
 from abc import abstractmethod
@@ -86,11 +87,23 @@ class Trainer:
             *log_dir_params
         )
 
-        log_dir = expfig.make_sequential_log_dir(
-            log_dir,
-            subdirs=subdirs,
-            use_existing_dir=log_config.log_dir.use_existing_dir
-        )
+        try:
+            log_dir = expfig.make_sequential_log_dir(
+                log_dir,
+                subdirs=subdirs,
+                use_existing_dir=log_config.log_dir.use_existing_dir
+            )
+        except OSError as e:
+            import tempfile
+            old_log_dir = log_dir
+            log_dir = expfig.make_sequential_log_dir(
+                tempfile.mkdtemp(),
+                subdirs=subdirs,
+                use_existing_dir=log_config.log_dir.use_existing_dir
+            )
+
+            warnings.warn(f"Exception encountered when creating log_dir '{old_log_dir}':\n\t{e.__class__.__name__}: {e}\n"
+                          f"Logging to temp dir: \n\t{log_dir}")
 
         return {
             'log_dir': log_dir,
