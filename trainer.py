@@ -213,7 +213,13 @@ class Trainer:
         config = log_dir / 'config/config.yaml'
         default = log_dir / 'config/config_default.yaml'
 
-        return cls(config=[config, additional_config], default=default, serialize_config=False)
+        instance = cls(config=[config, additional_config], default=default, serialize_config=False)
+        instance.load_additional_data(log_dir)
+
+        return instance
+
+    def load_additional_data(self, log_dir):
+        pass
 
 
 class RLTrainer(Trainer):
@@ -333,18 +339,12 @@ class RLTrainer(Trainer):
 
         return env.log
 
-    @classmethod
-    def load(cls, log_dir):
+    def load_additional_data(self, log_dir):
         from garage.experiment import Snapshotter
 
-        instance = super().load(log_dir)
-
         garage_data = Snapshotter().load(Path(log_dir) / 'train_log')
-
-        instance.algo = garage_data['algo']
-        instance.env = garage_data['env']
-
-        return instance
+        self.algo = garage_data['algo']
+        self.env = garage_data['env']
 
 
 class MPCTrainer(Trainer):
