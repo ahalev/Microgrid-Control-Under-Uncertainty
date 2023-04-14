@@ -19,8 +19,8 @@ from garage.torch.policies import DiscreteQFArgmaxPolicy
 from garage.torch.q_functions import DiscreteMLPQFunction
 from garage.replay_buffer import PathBuffer
 
+from callback import GarageCallback
 from envs import GymEnv
-
 from microgrid_loader import microgrid_from_config
 
 import pymgrid
@@ -239,6 +239,7 @@ class RLTrainer(Trainer):
 
         env = self.set_trajectory(env, train=True)
         eval_env = self.set_trajectory(deepcopy(env), evaluate=True)
+        self._set_callback(eval_env)
 
         return env, eval_env
 
@@ -297,6 +298,19 @@ class RLTrainer(Trainer):
             steps_per_epoch=self.config.algo.train.steps_per_epoch,
             **self.config.algo.dqn
         )
+
+    def _set_callback(self, eval_env):
+        if self.config.algo.package == 'garage':
+            num_eval_episodes = self.config.algo.dqn.get('num_eval_episodes', 10)
+            max_episode_length = self.config.algo.dqn.get('max_episode_length_eval') or eval_env.spec.max_episode_length
+
+            callback = GarageCallback(num_eval_episodes, max_episode_length)
+
+            eval_env.step_callback = callback.step
+            eval_env.reset_callback = callback.reset
+        else:
+            raise ValueError(self.config.algo.package)
+
 
     def _train(self, log_dir):
         if self.config.algo.package == 'garage':
