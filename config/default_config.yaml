@@ -40,6 +40,7 @@ algo:
   dqn:
     buffer_batch_size: 32
     clip_gradient: 10
+    deterministic_eval: true
     discount: 0.99
     double_q: false
     qf_lr: 0.0001
