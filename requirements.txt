@@ -4,6 +4,6 @@ gym
 matplotlib
 numpy
 pandas
-pymgrid
+python-microgrid
 pyyaml
 ray
