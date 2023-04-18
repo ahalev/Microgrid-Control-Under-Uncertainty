@@ -295,31 +295,94 @@ class ResultLoader(Namespacify):
                            style=None,
                            units=None,
                            relplot_col=None,
-                           save=True
-                           ):
-
-        cost_column_name = f'{"Relative "*(relative_to is not None)}Cumulative Cost'
-
+                           save=True):
         module = module if module else 'balance'
+        y = (module, '0', 'reward')
 
-        cost = self.get_value_from_logs((module, '0', 'reward'))
-        rewards = -1 * cost.cumsum()
+        return self.plot(
+            x=None,
+            y=y,
+            op=lambda x: -1 * x,
+            cumulative=True,
+            relative_to=relative_to,
+            transient_steps=transient_steps,
+            kind='line',
+            hue=hue,
+            style=style,
+            units=units,
+            relplot_col=relplot_col,
+            ylabel=f'{"Relative "*(relative_to is not None)}Cumulative Cost',
+            save=save
+        )
 
-        rewards = self._make_relative(rewards, relative_to)
+    def plot(self,
+             *,
+             x=None,
+             y=None,
+             op=None,
+             cumulative=False,
+             relative_to=None,
+             transient_steps=100,
+             kind='line',
+             hue=None,
+             style=None,
+             units=None,
+             relplot_col=None,
+             xlabel=None,
+             ylabel=None,
+             save=True):
+
+        if x is None:
+            x = 'Step'
+            xval = None
+            if xlabel is None:
+                xlabel = 'Step'
+        else:
+            xval = self.get_value_from_logs(x)
+            if xlabel is None:
+                xlabel = x[-1].title()
+
+        if y is None:
+            raise ValueError("Variable 'y' cannot be None")
+
+        if ylabel is None:
+            ylabel = y[-1].title()
+            if cumulative:
+                ylabel = f'Cumulative {ylabel}'
+            if relative_to is not None:
+                ylabel = f'Relative {ylabel}'
+
+        yval = self.get_value_from_logs(y)
+
+        if op is not None:
+            yval = op(yval)
+
+        if cumulative:
+            yval = yval.cumsum()
+        # rewards = -1 * cost.cumsum()
+
+        # rewards = self._make_relative(rewards, relative_to)
+        yval = self._make_relative(yval, relative_to)
 
         param_cols = [f'level_{j}' for j in range(len(self.evaluate_logs[0][:-1]))]
 
-        rewards = rewards.iloc[transient_steps:]
-        rewards = rewards.unstack().reset_index(name=cost_column_name)
+        yval = yval.iloc[transient_steps:]
+        yval = yval.unstack()
 
-        rewards = pd.concat([rewards.drop(columns=param_cols), self._extract_param_columns(rewards[param_cols])], axis=1)
+        if xval is not None:
+            xval = xval.iloc[transient_steps:]
+            xval = xval.unstack()
+            yval = pd.concat({xlabel: xval, ylabel: yval}, axis=1)
+            yval = yval.reset_index()
+        else:
+            yval = yval.reset_index(name=ylabel)
 
-        rewards = rewards.rename(columns={f'level_{len(self.evaluate_logs[0])-1}': 'Step'})
+        yval = pd.concat([yval.drop(columns=param_cols), self._extract_param_columns(yval[param_cols])], axis=1)
 
         min_col_wrap, max_col_wrap = 2, 5
 
         if relplot_col is not None:
-            nunique_col = rewards[relplot_col].nunique()
+            nunique_col = yval[relplot_col].nunique()
             col_wrap = nunique_col / np.arange(min_col_wrap, max_col_wrap+1)
             col_wrap = np.where(col_wrap > 2)[0]
             try:
@@ -329,25 +392,29 @@ class ResultLoader(Namespacify):
         else:
             col_wrap = int((min_col_wrap+max_col_wrap) // 2)
 
+        if kind == 'scatter' and units:
+            warnings.warn("Ignoring 'units' kwarg with kind='scatter'.")
+            units = None
+
         g = sns.relplot(
-            data=rewards,
-            x='Step',
-            y=cost_column_name,
-            kind='line',
+            data=yval,
+            x=xlabel,
+            y=ylabel,
+            kind=kind,
             hue=hue,
             style=style,
             units=units,
             col=relplot_col,
             col_wrap=col_wrap,
-            palette=sns.color_palette("rocket_r", n_colors=rewards[hue].nunique()),
+            palette=sns.color_palette("rocket_r", n_colors=yval[hue].nunique()) if hue is not None else None,
             estimator='mean' if units is None else None
         )
 
-        if relative_to is not None:
-            g.set(ylim=(0.75, 1.25))
+        # if relative_to is not None:
+        #     g.set(ylim=(0.75, 1.25))
 
         for ax in g.axes_dict.values():
-            ax.set_title(f'{ax.get_title()} ({module.title()} Cost)')
+            ax.set_title(f'{ax.get_title()} ({y[0].title()} {y[-1]})')
 
         if save:
             save_file = self._save_file('reward_cumsum.png')
