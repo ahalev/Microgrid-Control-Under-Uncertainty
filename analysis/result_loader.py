@@ -541,6 +541,133 @@ class ResultLoader(Namespacify):
 
 
 if __name__ == '__main__':
-    rl = ResultLoader('/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V2/local/paper_experiments/mpc/experiments/experiment_logs')
-    rl.plot_reward_cumsum()
-    print('done')
+    SCENARIOS = [0, 8, 9, 10, 12, 16]
+    RENAMER = {
+        'forecaster_oracle': 'forecaster_0.0',
+        'battery_transition_model_BatteryTransitionModel()': 'battery_transition_model_None',
+    }
+
+    relevant_forecasts = ['forecaster_0.2', 'forecaster_0.1', 'forecaster_0.0', 'forecaster_oracle']
+    relevant_scenarios = [f'scenario_{s}' for s in SCENARIOS]
+    relevant_battery_models = ['battery_transition_model_BatteryTransitionModel()', 'battery_transition_model_None']
+    relevant_seeds = ['seed_1']
+
+    relevant_results = [[s, f, b, sd] for s in relevant_scenarios for f in relevant_forecasts
+                        for b in relevant_battery_models for sd in relevant_seeds]
+
+    # relevant_results = [
+    #     'scenario_0',
+    #     # ['scenario_4', ['forecaster_0.0', 'forecaster_0.02', 'forecaster_0.1', 'forecaster_0.2']],
+    #     ['scenario_8', ['forecaster_0.0', 'forecaster_0.1']],
+    #     ['scenario_9', ['forecaster_0.0', 'forecaster_0.1']],
+    #     'scenario_10',
+    #     'scenario_12',
+    #     'scenario_16'
+    # ]
+
+    # This is a regex that replaces any underscores within parentheses to spaces.
+    # E.g.: battery_transition_model_Battery(total_efficiency=0.5) -> battery_transition_model_Battery(total efficiency=0.5)
+    replacements = [lambda key: re.sub("\([^]]*\)", lambda x:x.group(0).replace('_',' '), key)]
+
+    rl_results = ResultLoader(
+        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/server/gpfs/rl/dqn',
+        relevant_results=relevant_results,
+        save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/rl/with_seeds',
+        renamer=RENAMER,
+        replacements=replacements
+    )
+
+    rbc_results = ResultLoader(
+        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/rbc/experiments/experiment_logs/rbc/rulebasedcontrol',
+        relevant_results=relevant_results,
+        save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/rbc/with_seeds',
+        renamer=RENAMER,
+        replacements=replacements
+    )
+
+    mpc_results = ResultLoader(
+        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/mpc/experiments/experiment_logs/mpc/modelpredictivecontrol',
+        relevant_results=relevant_results,
+        save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/mpc/with_seeds',
+        renamer=RENAMER,
+        replacements=replacements
+    )
+
+    combined = ResultLoader.combine_loaders(
+        {
+            'algorithm_rbc': rbc_results,
+            # 'algorithm_mpc': mpc_results,
+            'algorithm_rl': rl_results
+        },
+        relevant_results=['forecaster_0.2', 'forecaster_0.1', 'forecaster_0.0', 'forecaster_oracle']
+        # relevant_results=['scenario_0', 'scenario_8']
+    )
+
+    rl_results.plot(
+        x=('balance', '0', 'reward'),
+        y=('balance', '0', 'shaped_reward'),
+        kind='line',
+        style='Seed',
+        units='Forecaster',
+        relplot_col='Scenario',
+    )
+
+    rl_results.plot_reward_cumsum(relative_to=None,
+                          hue='Forecaster',
+                          units='Seed',
+                          relplot_col='Scenario',
+                          save=True)
+
+    combined.plot_reward_cumsum(
+        relative_to=('algorithm_rbc', 'forecaster_0.0'),
+        style='Seed',
+        units='Forecaster',
+        hue='Algorithm',
+        relplot_col='Scenario',
+        save=True
+    )
+
+    rbc_results.plot_reward_cumsum(relative_to='forecaster_0.0',
+                          hue='Forecaster',
+                          units='Seed',
+                          relplot_col='Scenario',
+                          save=True)
+
+    mpc_results.plot_reward_cumsum(relative_to='forecaster_0.0',
+                          hue='Forecaster',
+                          units='Seed',
+                          relplot_col='Scenario',
+                          save=True)
+
+    mpc_results.plot_reward_cumsum(relative_to='forecaster_0.0',
+                          hue='Forecaster',
+                          units='Seed',
+                          relplot_col='Scenario',
+                          save=True)
+
+    mpc_results.plot_reward_cumsum(
+        module='unbalanced_energy',
+        relative_to=None,
+        hue='Forecaster',
+        units='seed',
+        relplot_col='Scenario',
+        save=False
+    )
+    #
+    # rl.plot_reward_cumsum(
+    #     module='battery',
+    #     relative_to='forecaster_0.0',
+    #     hue='Forecaster',
+    #     relplot_col='Scenario',
+    #     save=False
+    # )
+    #
+    # rl.plot_reward_cumsum(
+    #     module='grid',
+    #     relative_to='forecaster_0.0',
+    #     hue='Forecaster',
+    #     relplot_col='Scenario',
+    #     save=False
+    # )
+
+    mpc_results.plot_forecast_vs_true('load', 'load', max_forecast_steps=3, step_range=slice(5840, 5840+7*24), relative=False)
