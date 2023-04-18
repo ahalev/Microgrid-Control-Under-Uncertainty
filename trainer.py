@@ -322,10 +322,7 @@ class RLTrainer(Trainer):
         log_config = self.config.context
         train_config = self.config.algo.train
 
-        name = log_config.experiment_name if log_config.experiment_name is not None \
-            else self.algo.__class__.__name__.lower()
-
-        @wrap_experiment(name=name,
+        @wrap_experiment(name=log_dir,
                          snapshot_mode='gap',
                          snapshot_gap=log_config.snapshot_gap,
                          archive_launch_repo=False,
