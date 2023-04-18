@@ -442,7 +442,22 @@ class ResultLoader(Namespacify):
         # for col in values_relative_to.columns:
         for col in rewards.columns:
             relative_slice = tuple(c for j, c in enumerate(col) if j not in relative_to_loc.keys())
-            rewards[col] = rewards[col].div(values_relative_to[relative_slice], axis=0)
+            try:
+                rewards[col] = rewards[col].div(values_relative_to[relative_slice], axis=0)
+            except KeyError:
+                nlnt2 = '\n\t\t'
+
+                _zip = zip(relative_slice, values_relative_to.columns.to_frame(index=False).T.values)
+
+                missing = [(j, value, np.unique(level_values)) for j, (value, level_values) in enumerate(_zip) if value not in level_values]
+                missing = [f"Level: {j}{nlnt2}Missing Value: {val}{nlnt2}Existing Values:{lvl_vals}" for j, val, lvl_vals in missing]
+                missing = '\n\t'.join(missing)
+
+
+                msg = f'The combination {relative_slice} does not exist.\nThe following values are missing:' \
+                      f'\n\t{missing}\n\n\t Do you need to make your result relative to some value in this column ' \
+                      f'as well?'
+                raise ValueError(msg)
 
         return rewards
 
