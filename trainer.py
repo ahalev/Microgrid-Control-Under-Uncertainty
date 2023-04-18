@@ -311,7 +311,6 @@ class RLTrainer(Trainer):
         else:
             raise ValueError(self.config.algo.package)
 
-
     def _train(self, log_dir):
         if self.config.algo.package == 'garage':
             return self._train_garage(log_dir)
