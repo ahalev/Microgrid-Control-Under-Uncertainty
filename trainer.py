@@ -50,7 +50,11 @@ class Trainer:
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
             config.algo.type = cls.algo_name
         elif algo.lower() == 'rl':
-            cls = RLTrainer
+            raise ValueError("algo type 'rl' is depreciated. Use 'dqn' or 'ddpg' instead.")
+        elif algo.lower() == 'dqn':
+            cls = DQNTrainer
+        elif algo.lower() == 'ddqg':
+            cls = DDPGTrainer
         elif algo.lower() == 'mpc':
             cls = MPCTrainer
         elif algo.lower() == 'rbc':
@@ -355,6 +359,20 @@ class RLTrainer(Trainer):
         garage_data = Snapshotter().load(Path(log_dir) / 'train_log')
         self.algo = garage_data['algo']
         self.env = garage_data['env']
+
+
+class DQNTrainer(RLTrainer):
+    algo_name = 'dqn'
+
+    def _setup_algo(self):
+        pass
+
+
+class DDPGTrainer(RLTrainer):
+    algo_name = 'ddpg'
+
+    def _setup_algo(self):
+        pass
 
 
 class MPCTrainer(Trainer):
