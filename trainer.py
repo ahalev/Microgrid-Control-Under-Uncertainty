@@ -77,19 +77,20 @@ class Trainer:
 
     def _get_log_dir(self):
         log_config = self.config.context
-        experiment_name = log_config.experiment_name if log_config.experiment_name is not None \
-            else self.algo.__class__.__name__.lower()
+        experiment_name = log_config.experiment_name if log_config.experiment_name is not None else ''
 
         subdirs = ['config', 'train_log', 'evaluate_log']
 
-        log_dir_params = self._get_log_dir_params(log_config.log_dir.from_keys)
-
-        log_dir = os.path.join(
-            log_config.log_dir.parent,
-            self.algo_name,
-            experiment_name,
-            *log_dir_params
-        )
+        if log_config.log_dir.parent is None or log_config.log_dir.parent == 'null':
+            log_dir = None
+        else:
+            log_dir_params = self._get_log_dir_params(log_config.log_dir.from_keys)
+            log_dir = os.path.join(
+                log_config.log_dir.parent,
+                self.algo_name,
+                experiment_name,
+                *log_dir_params
+            )
 
         try:
             log_dir = expfig.make_sequential_log_dir(
