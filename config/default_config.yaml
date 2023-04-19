@@ -31,22 +31,32 @@ algo:
     hidden_sizes:
       - 8
       - 5
-    exploration:
-      decay_ratio: 0.5
-      max_epsilon: 1.0
-      min_epsilon: 0.05
   replay_buffer:
     buffer_size: 200000
-  dqn:
+  general_params:
     buffer_batch_size: 32
-    clip_gradient: 10
-    deterministic_eval: true
     discount: 0.99
-    double_q: false
     qf_lr: 0.0001
     min_buffer_size: 10000
     n_train_steps: 500
-    target_update_freq: 2
+  dqn:
+    params:
+      clip_gradient: 10
+      deterministic_eval: true
+      double_q: false
+      target_update_freq: 2
+    policy:
+      exploration:
+        decay_ratio: 0.5
+        max_epsilon: 1.0
+        min_epsilon: 0.05
+  ddpg:
+    params:
+      target_update_tau: 0.01
+    policy:
+        exploration:
+          sigma: 0.3
+          theta: 0.15
   train:
     batch_size: 10000
     steps_per_epoch: 32
