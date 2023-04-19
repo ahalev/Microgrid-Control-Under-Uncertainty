@@ -233,43 +233,27 @@ class RLTrainer(Trainer):
     env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv]
 
     def _setup_algo(self):
+        self.warn_custom_params()
         self.env, self.eval_env = self._setup_env()
         qf, policy, exploration_policy = self._setup_policies()
         self.sampler = self._setup_sampler(exploration_policy)
         return self._setup_rl_algo(qf, policy, exploration_policy)
 
     def _setup_env(self):
-        env_cls = ENVS[self.config.env.cls]
-        env = env_cls.from_microgrid(self.microgrid, observation_keys=self.config.env.observation_keys)
+        env = self.env_class.from_microgrid(self.microgrid, observation_keys=self.config.env.observation_keys)
         env = GymEnv(env, max_episode_length=len(env))
-
         env = self.set_trajectory(env, train=True)
         eval_env = self.set_trajectory(deepcopy(env), evaluate=True)
-        self._set_callback(eval_env)
 
         return env, eval_env
 
     def _set_trajectories(self, train=False, evaluate=False):
         super()._set_trajectories(train=train, evaluate=evaluate)
         self.set_trajectory(self.env, train=train, evaluate=evaluate)
-        self.set_trajectory(self.eval_env, train=False, evaluate=True)
 
+    @abstractmethod
     def _setup_policies(self):
-        policy_config = self.config.algo.policy
-        train_config = self.config.algo.train
-
-        total_timesteps = train_config.n_epochs * train_config.steps_per_epoch * train_config.batch_size
-
-        qf = DiscreteMLPQFunction(env_spec=self.env.spec, hidden_sizes=policy_config.hidden_sizes)
-        policy = DiscreteQFArgmaxPolicy(env_spec=self.env.spec, qf=qf)
-
-        exploration_policy = EpsilonGreedyPolicy(env_spec=self.env.spec,
-                                                 policy=policy,
-                                                 total_timesteps=total_timesteps,
-                                                 min_epsilon=policy_config.exploration.min_epsilon,
-                                                 max_epsilon=policy_config.exploration.max_epsilon,
-                                                 decay_ratio=policy_config.exploration.decay_ratio)
-        return qf, policy, exploration_policy
+        pass
 
     def _setup_sampler(self, exploration_policy):
         sampler_config = self.config.algo.sampler
@@ -289,33 +273,19 @@ class RLTrainer(Trainer):
         else:
             raise ValueError(f"Invalid sampler config type {sampler_config.type}, must be 'local' or 'ray'.")
 
+    @abstractmethod
     def _setup_rl_algo(self, qf, policy, exploration_policy):
+        pass
 
-        replay_buffer = PathBuffer(capacity_in_transitions=self.config.algo.replay_buffer.buffer_size)
+    def warn_custom_params(self):
+        algos = ['dqn', 'ddpg']
+        algos.remove(self.algo_name)
+        other_algo = algos[0]
+        custom_in_other = self.config.algo[other_algo].symmetric_difference(self.config.default_config.algo[other_algo])
 
-        return DQN(
-            env_spec=self.env.spec,
-            policy=policy,
-            qf=qf,
-            replay_buffer=replay_buffer,
-            sampler=self.sampler,
-            exploration_policy=exploration_policy,
-            eval_env=self.eval_env,
-            steps_per_epoch=self.config.algo.train.steps_per_epoch,
-            **self.config.algo.dqn
-        )
-
-    def _set_callback(self, eval_env):
-        if self.config.algo.package == 'garage':
-            num_eval_episodes = self.config.algo.dqn.get('num_eval_episodes', 10)
-            max_episode_length = self.config.algo.dqn.get('max_episode_length_eval') or eval_env.spec.max_episode_length
-
-            callback = GarageCallback(num_eval_episodes, max_episode_length)
-
-            eval_env.step_callback = callback.step
-            eval_env.reset_callback = callback.reset
-        else:
-            raise ValueError(self.config.algo.package)
+        if custom_in_other:
+            warnings.warn(f"Custom parameters for algorithm '{other_algo}' will be ignored with "
+                          f"algo='{self.algo_name}': \n{custom_in_other.pprint(indent=4)}")
 
     def _train(self, log_dir):
         if self.config.algo.package == 'garage':
