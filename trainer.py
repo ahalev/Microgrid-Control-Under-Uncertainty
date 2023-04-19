@@ -50,10 +50,10 @@ class Trainer:
         if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
             config.algo.type = cls.algo_name
         elif algo.lower() == 'rl':
-            raise ValueError("algo type 'rl' is depreciated. Use 'dqn' or 'ddpg' instead.")
+            raise ValueError("algo type 'rl' is depreciated. Use 'dqn' or 'ddpg' accordingly, instead.")
         elif algo.lower() == 'dqn':
             cls = DQNTrainer
-        elif algo.lower() == 'ddqg':
+        elif algo.lower() == 'ddpg':
             cls = DDPGTrainer
         elif algo.lower() == 'mpc':
             cls = MPCTrainer
