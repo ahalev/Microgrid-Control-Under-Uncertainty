@@ -228,7 +228,9 @@ class Trainer:
 
 class RLTrainer(Trainer):
     algo_name = 'rl'
-    env = None
+    env: GymEnv
+    eval_env: GymEnv
+    env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv]
 
     def _setup_algo(self):
         self.env, self.eval_env = self._setup_env()
