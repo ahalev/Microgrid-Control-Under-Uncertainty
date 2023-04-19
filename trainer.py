@@ -335,16 +335,98 @@ class RLTrainer(Trainer):
 
 class DQNTrainer(RLTrainer):
     algo_name = 'dqn'
+    env_class = DiscreteMicrogridEnv
+    eval_env: DiscreteMicrogridEnv
 
-    def _setup_algo(self):
-        pass
+    def _setup_env(self):
+        env, eval_env = super()._setup_env()
+        self._set_callback(eval_env)
+
+        return env, eval_env
+
+    def _set_callback(self, eval_env):
+        if self.config.algo.package == 'garage':
+            num_eval_episodes = self.config.algo.dqn.get('num_eval_episodes', 10)
+            max_episode_length = self.config.algo.dqn.get('max_episode_length_eval') or eval_env.spec.max_episode_length
+
+            callback = GarageCallback(num_eval_episodes, max_episode_length)
+
+            eval_env.step_callback = callback.step
+            eval_env.reset_callback = callback.reset
+        else:
+            raise ValueError(self.config.algo.package)
+
+    def _set_trajectories(self, train=False, evaluate=False):
+        super()._set_trajectories(train=train, evaluate=evaluate)
+        self.set_trajectory(self.eval_env, train=False, evaluate=True)
+
+    def _setup_policies(self):
+        train_config = self.config.algo.train
+
+        total_timesteps = train_config.n_epochs * train_config.steps_per_epoch * train_config.batch_size
+
+        qf = DiscreteMLPQFunction(env_spec=self.env.spec, hidden_sizes=self.config.algo.policy.hidden_sizes)
+        policy = DiscreteQFArgmaxPolicy(env_spec=self.env.spec, qf=qf)
+
+        exploration_policy = EpsilonGreedyPolicy(env_spec=self.env.spec,
+                                                 policy=policy,
+                                                 total_timesteps=total_timesteps,
+                                                 min_epsilon=self.config.algo.dqn.policy.exploration.min_epsilon,
+                                                 max_epsilon=self.config.algo.dqn.policy.exploration.max_epsilon,
+                                                 decay_ratio=self.config.algo.dqn.policy.exploration.decay_ratio)
+        return qf, policy, exploration_policy
+
+    def _setup_rl_algo(self, qf, policy, exploration_policy):
+
+        replay_buffer = PathBuffer(capacity_in_transitions=self.config.algo.replay_buffer.buffer_size)
+
+        return DQN(
+            env_spec=self.env.spec,
+            policy=policy,
+            qf=qf,
+            replay_buffer=replay_buffer,
+            sampler=self.sampler,
+            exploration_policy=exploration_policy,
+            eval_env=self.eval_env,
+            steps_per_epoch=self.config.algo.train.steps_per_epoch,
+            **self.config.algo.dqn.params
+        )
 
 
 class DDPGTrainer(RLTrainer):
     algo_name = 'ddpg'
+    env_class = ContinuousMicrogridEnv
 
-    def _setup_algo(self):
-        pass
+    def _setup_policies(self):
+
+        qf = ContinuousMLPQFunction(env_spec=self.env.spec,
+                                    hidden_sizes=self.config.algo.policy.hidden_sizes)
+
+        policy = DeterministicMLPPolicy(env_spec=self.env.spec,
+                                        hidden_sizes=self.config.algo.policy.hidden_sizes,
+                                        output_nonlinearity=torch.sigmoid)
+
+        exploration_policy = AddOrnsteinUhlenbeckNoise(self.env.spec, policy,
+                                                       sigma=self.config.algo.ddpg.policy.exploration.sigma,
+                                                       theta=self.config.algo.ddpg.policy.exploration.theta)
+
+        return qf, policy, exploration_policy
+
+    def _setup_rl_algo(self, qf, policy, exploration_policy):
+
+        replay_buffer = PathBuffer(capacity_in_transitions=self.config.algo.replay_buffer.buffer_size)
+
+        return DDPG(
+            env_spec=self.env.spec,
+            policy=policy,
+            qf=qf,
+            replay_buffer=replay_buffer,
+            sampler=self.sampler,
+            exploration_policy=exploration_policy,
+            steps_per_epoch=self.config.algo.train.steps_per_epoch,
+            **self.config.algo.general_params,
+            **self.config.algo.ddpg.params
+        )
 
 
 class MPCTrainer(Trainer):
