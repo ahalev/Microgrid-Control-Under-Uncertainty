@@ -2,21 +2,24 @@ import expfig
 import logging
 import pandas as pd
 import os
+import torch
 import json
 import warnings
 
 from pathlib import Path
 from abc import abstractmethod
 from copy import deepcopy
+from typing import Union
 
 from garage.torch.algos.dqn import DQN
+from garage.torch.algos.ddpg import DDPG
 from garage import wrap_experiment
 from garage.experiment.deterministic import set_seed
 from garage.sampler import LocalSampler, RaySampler
 from garage.trainer import Trainer as GarageTrainer
-from garage.np.exploration_policies import EpsilonGreedyPolicy
-from garage.torch.policies import DiscreteQFArgmaxPolicy
-from garage.torch.q_functions import DiscreteMLPQFunction
+from garage.np.exploration_policies import EpsilonGreedyPolicy, AddOrnsteinUhlenbeckNoise
+from garage.torch.policies import DiscreteQFArgmaxPolicy, DeterministicMLPPolicy
+from garage.torch.q_functions import DiscreteMLPQFunction, ContinuousMLPQFunction
 from garage.replay_buffer import PathBuffer
 
 from callback import GarageCallback
@@ -26,11 +29,8 @@ from microgrid_loader import microgrid_from_config
 import pymgrid
 
 from pymgrid.algos import ModelPredictiveControl, RuleBasedControl
+from pymgrid.envs import ContinuousMicrogridEnv, DiscreteMicrogridEnv
 
-ENVS = {
-    'DiscreteMicrogridEnv': pymgrid.envs.DiscreteMicrogridEnv,
-    'ContinuousMicrogridEnv': pymgrid.envs.ContinuousMicrogridEnv
-}
 
 DEFAULT_CONFIG = Path(__file__).parent / 'config/default_config.yaml'
 
