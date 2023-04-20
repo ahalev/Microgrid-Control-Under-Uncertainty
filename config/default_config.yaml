@@ -19,6 +19,8 @@ microgrid:
       forecaster: oracle
       forecaster_increase_uncertainty: false
       forecaster_relative_noise: false
+    set_module_attrs:
+      normalized_action_bounds: [-1, 1]
   attributes:
     reward_shaping_func: null
 algo:
