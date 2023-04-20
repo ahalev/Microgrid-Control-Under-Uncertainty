@@ -60,6 +60,9 @@ algo:
         exploration:
           sigma: 0.3
           theta: 0.15
+  ppo:
+    params:
+      center_adv: false
   train:
     batch_size: 10000
     steps_per_epoch: 32
