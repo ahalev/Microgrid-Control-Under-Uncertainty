@@ -13,13 +13,15 @@ from typing import Union
 
 from garage.torch.algos.dqn import DQN
 from garage.torch.algos.ddpg import DDPG
+from garage.torch.algos.ppo import PPO
 from garage import wrap_experiment
 from garage.experiment.deterministic import set_seed
 from garage.sampler import LocalSampler, RaySampler
 from garage.trainer import Trainer as GarageTrainer
 from garage.np.exploration_policies import EpsilonGreedyPolicy, AddOrnsteinUhlenbeckNoise
-from garage.torch.policies import DiscreteQFArgmaxPolicy, DeterministicMLPPolicy
+from garage.torch.policies import DiscreteQFArgmaxPolicy, DeterministicMLPPolicy, GaussianMLPPolicy
 from garage.torch.q_functions import DiscreteMLPQFunction, ContinuousMLPQFunction
+from garage.torch.value_functions import GaussianMLPValueFunction
 from garage.replay_buffer import PathBuffer
 
 from callback import GarageCallback
@@ -431,11 +433,40 @@ class DDPGTrainer(RLTrainer):
             policy=policy,
             qf=qf,
             replay_buffer=replay_buffer,
-            sampler=self.sampler,
+            sampler=sampler,
             exploration_policy=exploration_policy,
             steps_per_epoch=self.config.algo.train.steps_per_epoch,
             **self.config.algo.general_params,
+            **self.config.algo.deterministic_params,
             **self.config.algo.ddpg.params
+        )
+
+
+class PPOTrainer(RLTrainer):
+    algo_name = 'ppo'
+    env_class = ContinuousMicrogridEnv
+
+    def setup_rl_algo(self):
+        policy = self._setup_policy()
+        value_function = self._setup_value_func()
+        sampler = self._setup_sampler(policy)
+
+        return self._setup_rl_algo(policy, value_function, sampler), sampler
+
+    def _setup_policy(self):
+        return GaussianMLPPolicy(self.env.spec, hidden_sizes=self.config.algo.policy.hidden_sizes)
+
+    def _setup_value_func(self):
+        return GaussianMLPValueFunction(env_spec=self.env.spec, hidden_sizes=self.config.algo.policy.hidden_sizes)
+
+    def _setup_rl_algo(self, policy, value_function, sampler):
+        return PPO(
+            env_spec=self.env.spec,
+            policy=policy,
+            value_function=value_function,
+            sampler=sampler,
+            **self.config.algo.general_params,
+            **self.config.algo.ppo.params
         )
 
 
