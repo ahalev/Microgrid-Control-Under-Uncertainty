@@ -49,14 +49,19 @@ class Trainer:
         config = expfig.Config(config=config, default=default)
         algo = config.algo.type
 
-        if issubclass(cls, (RLTrainer, MPCTrainer, RBCTrainer)):
+        if issubclass(cls, (MPCTrainer, RBCTrainer, DQNTrainer, DDPGTrainer, PPOTrainer)):
             config.algo.type = cls.algo_name
+        elif isinstance(cls, RLTrainer):
+            raise TypeError("Initiating 'RLTrainer' directly is deprecated. Use 'dqn', 'ddpg' or 'ppo' accordingly, "
+                            "instead.")
         elif algo.lower() == 'rl':
-            raise ValueError("algo type 'rl' is depreciated. Use 'dqn' or 'ddpg' accordingly, instead.")
+            raise ValueError("algo type 'rl' is deprecated. Use 'dqn', 'ddpg' or 'ppo', accordingly, instead.")
         elif algo.lower() == 'dqn':
             cls = DQNTrainer
         elif algo.lower() == 'ddpg':
             cls = DDPGTrainer
+        elif algo.lower() == 'ppo':
+            cls = PPOTrainer
         elif algo.lower() == 'mpc':
             cls = MPCTrainer
         elif algo.lower() == 'rbc':
