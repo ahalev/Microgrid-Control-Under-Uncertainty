@@ -279,19 +279,16 @@ class RLTrainer(Trainer):
         else:
             raise ValueError(f"Invalid sampler config type {sampler_config.type}, must be 'local' or 'ray'.")
 
-    @abstractmethod
-    def _setup_rl_algo(self, qf, policy, exploration_policy):
-        pass
-
     def warn_custom_params(self):
-        algos = ['dqn', 'ddpg']
+        algos = ['dqn', 'ddpg', 'ppo']
         algos.remove(self.algo_name)
-        other_algo = algos[0]
-        custom_in_other = self.config.algo[other_algo].symmetric_difference(self.config.default_config.algo[other_algo])
+        for other_algo in algos:
+            custom_in_other = self.config.algo[other_algo].symmetric_difference(
+                self.config.default_config.algo[other_algo])
 
-        if custom_in_other:
-            warnings.warn(f"Custom parameters for algorithm '{other_algo}' will be ignored with "
-                          f"algo='{self.algo_name}': \n{custom_in_other.pprint(indent=4)}")
+            if custom_in_other:
+                warnings.warn(f"Custom parameters for algorithm '{other_algo}' will be ignored with "
+                              f"algo='{self.algo_name}': \n{custom_in_other.pprint(indent=4)}")
 
     def _train(self, log_dir):
         if self.config.algo.package == 'garage':
