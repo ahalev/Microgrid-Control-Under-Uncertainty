@@ -235,9 +235,8 @@ class RLTrainer(Trainer):
     def _setup_algo(self):
         self.warn_custom_params()
         self.env, self.eval_env = self._setup_env()
-        qf, policy, exploration_policy = self._setup_policies()
-        self.sampler = self._setup_sampler(exploration_policy)
-        return self._setup_rl_algo(qf, policy, exploration_policy)
+        algo, self.sampler = self.setup_rl_algo()
+        return algo
 
     def _setup_env(self):
         env = self.env_class.from_microgrid(self.microgrid, observation_keys=self.config.env.observation_keys)
@@ -252,7 +251,7 @@ class RLTrainer(Trainer):
         self.set_trajectory(self.env, train=train, evaluate=evaluate)
 
     @abstractmethod
-    def _setup_policies(self):
+    def setup_rl_algo(self):
         pass
 
     def _setup_sampler(self, exploration_policy):
@@ -376,7 +375,12 @@ class DQNTrainer(RLTrainer):
                                                  decay_ratio=self.config.algo.dqn.policy.exploration.decay_ratio)
         return qf, policy, exploration_policy
 
-    def _setup_rl_algo(self, qf, policy, exploration_policy):
+    def setup_rl_algo(self):
+        qf, policy, exploration_policy = self._setup_policies()
+        sampler = self._setup_sampler(exploration_policy)
+        return self._setup_rl_algo(qf, policy, exploration_policy, sampler), sampler
+
+    def _setup_rl_algo(self, qf, policy, exploration_policy, sampler):
 
         replay_buffer = PathBuffer(capacity_in_transitions=self.config.algo.replay_buffer.buffer_size)
 
@@ -385,10 +389,12 @@ class DQNTrainer(RLTrainer):
             policy=policy,
             qf=qf,
             replay_buffer=replay_buffer,
-            sampler=self.sampler,
+            sampler=sampler,
             exploration_policy=exploration_policy,
             eval_env=self.eval_env,
             steps_per_epoch=self.config.algo.train.steps_per_epoch,
+            **self.config.algo.general_params,
+            **self.config.algo.deterministic_params,
             **self.config.algo.dqn.params
         )
 
@@ -397,14 +403,18 @@ class DDPGTrainer(RLTrainer):
     algo_name = 'ddpg'
     env_class = ContinuousMicrogridEnv
 
-    def _setup_policies(self):
+    def setup_rl_algo(self):
+        qf, policy, exploration_policy = self._setup_policies()
+        sampler = self._setup_sampler(exploration_policy)
+        return self._setup_rl_algo(qf, policy, exploration_policy, sampler), sampler
 
+    def _setup_policies(self):
         qf = ContinuousMLPQFunction(env_spec=self.env.spec,
                                     hidden_sizes=self.config.algo.policy.hidden_sizes)
 
         policy = DeterministicMLPPolicy(env_spec=self.env.spec,
                                         hidden_sizes=self.config.algo.policy.hidden_sizes,
-                                        output_nonlinearity=torch.sigmoid)
+                                        output_nonlinearity=torch.tanh)
 
         exploration_policy = AddOrnsteinUhlenbeckNoise(self.env.spec, policy,
                                                        sigma=self.config.algo.ddpg.policy.exploration.sigma,
@@ -412,7 +422,7 @@ class DDPGTrainer(RLTrainer):
 
         return qf, policy, exploration_policy
 
-    def _setup_rl_algo(self, qf, policy, exploration_policy):
+    def _setup_rl_algo(self, qf, policy, exploration_policy, sampler):
 
         replay_buffer = PathBuffer(capacity_in_transitions=self.config.algo.replay_buffer.buffer_size)
 
