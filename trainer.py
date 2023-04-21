@@ -301,7 +301,7 @@ class RLTrainer(Trainer):
         train_config = self.config.algo.train
 
         @wrap_experiment(name=log_dir,
-                         snapshot_mode='gap',
+                         snapshot_mode='gap_overwrite',
                          snapshot_gap=log_config.snapshot_gap,
                          archive_launch_repo=False,
                          log_dir=log_dir,
