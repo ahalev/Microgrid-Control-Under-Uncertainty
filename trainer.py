@@ -464,15 +464,17 @@ class DDPGTrainer(RLTrainer):
         qf = ContinuousMLPQFunction(env_spec=self.env.spec,
                                     hidden_sizes=self.config.algo.policy.hidden_sizes)
 
-        policy = DeterministicMLPPolicy(env_spec=self.env.spec,
-                                        hidden_sizes=self.config.algo.policy.hidden_sizes,
-                                        output_nonlinearity=torch.tanh)
+        policy = self.setup_policy(self.env.spec, hidden_sizes=self.config.algo.policy.hidden_sizes)
 
         exploration_policy = AddOrnsteinUhlenbeckNoise(self.env.spec, policy,
                                                        sigma=self.config.algo.ddpg.policy.exploration.sigma,
                                                        theta=self.config.algo.ddpg.policy.exploration.theta)
 
         return qf, policy, exploration_policy
+
+    @staticmethod
+    def setup_policy(env_spec, hidden_sizes):
+        return DeterministicMLPPolicy(env_spec, hidden_sizes=hidden_sizes, output_nonlinearity=torch.tanh)
 
     def _setup_rl_algo(self, qf, policy, exploration_policy, sampler):
 
@@ -497,14 +499,15 @@ class PPOTrainer(RLTrainer):
     env_class = ContinuousMicrogridEnv
 
     def setup_rl_algo(self):
-        policy = self._setup_policy()
+        policy = self.setup_policy(self.env.spec, self.config.algo.policy.hidden_sizes)
         value_function = self._setup_value_func()
         sampler = self._setup_sampler(policy)
 
         return self._setup_rl_algo(policy, value_function, sampler), sampler
 
-    def _setup_policy(self):
-        return GaussianMLPPolicy(self.env.spec, hidden_sizes=self.config.algo.policy.hidden_sizes)
+    @staticmethod
+    def setup_policy(env_spec, hidden_sizes):
+        return GaussianMLPPolicy(env_spec, hidden_sizes=hidden_sizes)
 
     def _setup_value_func(self):
         return GaussianMLPValueFunction(env_spec=self.env.spec, hidden_sizes=self.config.algo.policy.hidden_sizes)
