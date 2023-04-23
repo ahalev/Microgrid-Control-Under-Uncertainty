@@ -40,6 +40,7 @@ pymgrid.add_pymgrid_yaml_representers()
 class Trainer:
     algo_name: str
     config: expfig.Config
+    env_class = ContinuousMicrogridEnv
 
     def __new__(cls: type, config=None, default=DEFAULT_CONFIG, *args, **kwargs):
         logging.getLogger(__name__).setLevel(logging.INFO)
@@ -72,6 +73,7 @@ class Trainer:
 
     def __init__(self, serialize_config=True, *args, **kwargs):
         self.microgrid = self._setup_microgrid()
+        self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo()
         self.log_dirs = self._get_log_dir()
         if serialize_config:
@@ -79,6 +81,14 @@ class Trainer:
 
     def _setup_microgrid(self):
         return microgrid_from_config(self.config.microgrid)
+
+    def _setup_env(self):
+        env = self.env_class.from_microgrid(self.microgrid, observation_keys=self.config.env.observation_keys)
+        env = GymEnv(env, max_episode_length=len(env))
+        env = self.set_trajectory(env, train=True)
+        eval_env = self.set_trajectory(deepcopy(env), evaluate=True)
+
+        return env, eval_env
 
     def _get_log_dir(self):
         log_config = self.config.context
@@ -246,23 +256,12 @@ class Trainer:
 
 class RLTrainer(Trainer):
     algo_name = 'rl'
-    env: GymEnv
-    eval_env: GymEnv
     env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv]
 
     def _setup_algo(self):
         self.warn_custom_params()
-        self.env, self.eval_env = self._setup_env()
         algo, self.sampler = self.setup_rl_algo()
         return algo
-
-    def _setup_env(self):
-        env = self.env_class.from_microgrid(self.microgrid, observation_keys=self.config.env.observation_keys)
-        env = GymEnv(env, max_episode_length=len(env))
-        env = self.set_trajectory(env, train=True)
-        eval_env = self.set_trajectory(deepcopy(env), evaluate=True)
-
-        return env, eval_env
 
     def _set_trajectories(self, train=False, evaluate=False):
         super()._set_trajectories(train=train, evaluate=evaluate)
@@ -381,7 +380,6 @@ class RLTrainer(Trainer):
             warnings.warn(f'Logging to directory that already exists:\n\t{log_dir}'
                           f'{contents_str}\nContinuing in five seconds.')
             time.sleep(5)
-
 
 
 class DQNTrainer(RLTrainer):
