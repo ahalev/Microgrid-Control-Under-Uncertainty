@@ -570,7 +570,7 @@ if __name__ == '__main__':
     replacements = [lambda key: re.sub("\([^]]*\)", lambda x:x.group(0).replace('_',' '), key)]
 
     rl_results = ResultLoader(
-        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/server/gpfs/rl/dqn',
+        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/server/gpfs/ppo',
         relevant_results=relevant_results,
         save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/rl/with_seeds',
         renamer=RENAMER,
@@ -578,7 +578,7 @@ if __name__ == '__main__':
     )
 
     rbc_results = ResultLoader(
-        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/rbc/experiments/experiment_logs/rbc/rulebasedcontrol',
+        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/rbc/experiments/experiment_logs/rbc',
         relevant_results=relevant_results,
         save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/rbc/with_seeds',
         renamer=RENAMER,
@@ -597,7 +597,7 @@ if __name__ == '__main__':
         {
             'algorithm_rbc': rbc_results,
             # 'algorithm_mpc': mpc_results,
-            'algorithm_rl': rl_results
+            'algorithm_ppo': rl_results
         },
         relevant_results=['forecaster_0.2', 'forecaster_0.1', 'forecaster_0.0', 'forecaster_oracle']
         # relevant_results=['scenario_0', 'scenario_8']
