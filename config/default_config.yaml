@@ -63,6 +63,11 @@ algo:
   ppo:
     params:
       center_adv: false
+  pretrain:
+    pretrain_algo: null
+    params:
+      loss: log_loss
+      policy_lr: 0.01
   train:
     batch_size: 10000
     steps_per_epoch: 32
