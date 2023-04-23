@@ -161,8 +161,10 @@ class Trainer:
     def _train(self, log_dir):
         pass
 
-    def evaluate(self):
-        log_dir = self.log_dirs['evaluate_log']
+    def evaluate(self, log_dir=None):
+        if log_dir is None:
+            log_dir = self.log_dirs['evaluate_log']
+
         self._set_trajectories(evaluate=True)
 
         output = self._evaluate()
