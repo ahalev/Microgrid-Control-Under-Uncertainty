@@ -65,6 +65,8 @@ class Trainer:
             cls = MPCTrainer
         elif algo.lower() == 'rbc':
             cls = RBCTrainer
+        elif algo.lower() == 'bc':
+            cls = BCTrainer
         else:
             raise ValueError(f"Unrecognized algo type '{algo}'.")
 
@@ -292,7 +294,7 @@ class RLTrainer(Trainer):
             raise ValueError(f"Invalid sampler config type {sampler_config.type}, must be 'local' or 'ray'.")
 
     def warn_custom_params(self):
-        algos = ['dqn', 'ddpg', 'ppo']
+        algos = ['dqn', 'ddpg', 'ppo', 'bc']
         algos.remove(self.algo_name)
         for other_algo in algos:
             custom_in_other = self.config.algo[other_algo].symmetric_difference(
