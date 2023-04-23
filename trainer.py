@@ -215,7 +215,7 @@ class Trainer:
         return microgrid
 
     @classmethod
-    def load(cls, log_dir, additional_config=None):
+    def load(cls, log_dir, additional_config=None, additional_garage_data=None):
         """
         Load a previously trained trainer.
         """
@@ -223,15 +223,21 @@ class Trainer:
         if not log_dir.exists():
             raise FileNotFoundError(f'Cannot locate dir:\n\t{log_dir.absolute()}')
 
-        config = log_dir / 'config/config.yaml'
         default = log_dir / 'config/config_default.yaml'
+        config = [log_dir / 'config/config.yaml']
 
-        instance = cls(config=[config, additional_config], default=default, serialize_config=False)
-        instance.load_additional_data(log_dir)
+        if additional_config is not None:
+            config.append(additional_config)
+
+        instance = cls(config=config, default=default, serialize_config=False)
+        garage_data = instance.load_additional_data(log_dir, additional_garage_data)
+
+        if garage_data:
+            return instance, garage_data
 
         return instance
 
-    def load_additional_data(self, log_dir):
+    def load_additional_data(self, log_dir, additional_garage_data):
         pass
 
 
@@ -330,12 +336,20 @@ class RLTrainer(Trainer):
 
         return env.log
 
-    def load_additional_data(self, log_dir):
+    def load_additional_data(self, log_dir, additional_garage_data=None):
         from garage.experiment import Snapshotter
 
         garage_data = Snapshotter().load(Path(log_dir) / 'train_log')
         self.algo = garage_data['algo']
         self.env = garage_data['env']
+
+        if additional_garage_data is not None:
+            if isinstance(additional_garage_data, str):
+                return garage_data[additional_garage_data]
+
+            assert pd.api.types.is_list_like(additional_garage_data), 'additional_garage_data should be a key (str)' \
+                                                                      'or list of keys (list-like of str).'
+            return {k: garage_data[k] for k in additional_garage_data}
 
 
 class DQNTrainer(RLTrainer):
