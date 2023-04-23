@@ -240,6 +240,11 @@ class Trainer:
     def load_additional_data(self, log_dir, additional_garage_data):
         pass
 
+    @classmethod
+    def evaluate_last_epoch(cls, log_dir, suffix=lambda epoch: f'evaluate_log_epoch_{epoch}'):
+        raise NotImplementedError(f'evaluate_last_epoch is implemented for subclasses of RLTrainer,'
+                                  f'not {cls.__name__}')
+
 
 class RLTrainer(Trainer):
     algo_name = 'rl'
@@ -350,6 +355,35 @@ class RLTrainer(Trainer):
             assert pd.api.types.is_list_like(additional_garage_data), 'additional_garage_data should be a key (str)' \
                                                                       'or list of keys (list-like of str).'
             return {k: garage_data[k] for k in additional_garage_data}
+
+    @classmethod
+    def evaluate_last_epoch(cls, log_dir, suffix=lambda epoch: f'evaluate_log_epoch_{epoch}'):
+        trainer, experiment_stats = cls.load(log_dir, additional_garage_data='stats')
+        last_epoch = experiment_stats.total_epoch
+
+        evaluate_log_dir = os.path.join(log_dir, suffix(last_epoch))
+        trainer.check_logdir_existence(evaluate_log_dir)
+
+        return trainer.evaluate(evaluate_log_dir)
+
+    @staticmethod
+    def check_logdir_existence(log_dir):
+        try:
+            os.mkdir(log_dir)
+        except FileExistsError:
+            import time
+            contents = [x.name for x in Path(log_dir).iterdir()]
+
+            if contents:
+                contents_str = '\n\t\t'.join(contents)
+                contents_str = f'\nContains contents:\n\t\t{contents_str}'
+            else:
+                contents_str = '\nDirectory is empty.'
+
+            warnings.warn(f'Logging to directory that already exists:\n\t{log_dir}'
+                          f'{contents_str}\nContinuing in five seconds.')
+            time.sleep(5)
+
 
 
 class DQNTrainer(RLTrainer):
