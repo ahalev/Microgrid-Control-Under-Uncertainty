@@ -294,6 +294,7 @@ class ResultLoader(Namespacify):
                            hue=None,
                            style=None,
                            units=None,
+                           palette='rocket_r',
                            relplot_col=None,
                            save=True):
         module = module if module else 'balance'
@@ -310,6 +311,7 @@ class ResultLoader(Namespacify):
             hue=hue,
             style=style,
             units=units,
+            palette=palette,
             relplot_col=relplot_col,
             ylabel=f'{"Relative "*(relative_to is not None)}Cumulative Cost',
             save=save
@@ -327,6 +329,7 @@ class ResultLoader(Namespacify):
              hue=None,
              style=None,
              units=None,
+             palette='rocket_r',
              relplot_col=None,
              xlabel=None,
              ylabel=None,
@@ -406,7 +409,7 @@ class ResultLoader(Namespacify):
             units=units,
             col=relplot_col,
             col_wrap=col_wrap,
-            palette=sns.color_palette("rocket_r", n_colors=yval[hue].nunique()) if hue is not None else None,
+            palette=sns.color_palette(palette, n_colors=yval[hue].nunique()) if hue is not None else None,
             estimator='mean' if units is None else None
         )
 
