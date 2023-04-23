@@ -64,7 +64,8 @@ algo:
     params:
       center_adv: false
   pretrain:
-    pretrain_algo: null
+    algo_to_pretrain: null
+    pretrain_algo: rbc
     params:
       loss: log_loss
       policy_lr: 0.01
