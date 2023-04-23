@@ -569,8 +569,16 @@ if __name__ == '__main__':
     # E.g.: battery_transition_model_Battery(total_efficiency=0.5) -> battery_transition_model_Battery(total efficiency=0.5)
     replacements = [lambda key: re.sub("\([^]]*\)", lambda x:x.group(0).replace('_',' '), key)]
 
-    rl_results = ResultLoader(
+    ppo_results = ResultLoader(
         '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/server/gpfs/ppo',
+        relevant_results=relevant_results,
+        save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/rl/with_seeds',
+        renamer=RENAMER,
+        replacements=replacements
+    )
+
+    ddpg_results = ResultLoader(
+        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/server/gpfs/ddpg',
         relevant_results=relevant_results,
         save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/rl/with_seeds',
         renamer=RENAMER,
@@ -596,14 +604,15 @@ if __name__ == '__main__':
     combined = ResultLoader.combine_loaders(
         {
             'algorithm_rbc': rbc_results,
-            # 'algorithm_mpc': mpc_results,
-            'algorithm_ppo': rl_results
+            'algorithm_mpc': mpc_results,
+            'algorithm_ddpg': ddpg_results,
+            'algorithm_ppo': ppo_results
         },
         relevant_results=['forecaster_0.2', 'forecaster_0.1', 'forecaster_0.0', 'forecaster_oracle']
         # relevant_results=['scenario_0', 'scenario_8']
     )
 
-    rl_results.plot(
+    ddpg_results.plot(
         x=('balance', '0', 'reward'),
         y=('balance', '0', 'shaped_reward'),
         kind='line',
@@ -612,7 +621,7 @@ if __name__ == '__main__':
         relplot_col='Scenario',
     )
 
-    rl_results.plot_reward_cumsum(relative_to=None,
+    ddpg_results.plot_reward_cumsum(relative_to=None,
                           hue='Forecaster',
                           units='Seed',
                           relplot_col='Scenario',
@@ -624,6 +633,17 @@ if __name__ == '__main__':
         units='Forecaster',
         hue='Algorithm',
         relplot_col='Scenario',
+        palette=None,
+        save=True
+    )
+
+    combined.plot_reward_cumsum(
+        relative_to=None,
+        style='Seed',
+        units='Forecaster',
+        hue='Algorithm',
+        relplot_col='Scenario',
+        palette=None,
         save=True
     )
 
