@@ -535,22 +535,27 @@ class BCTrainer(RLTrainer):
         return self._setup_rl_algo(learner, expert_batches, sampler), sampler
 
     def _setup_learner(self):
-        pretrain_algo = self.config.pretrain.pretrain_algo
+        algo_to_pretrain = self.config.pretrain.algo_to_pretrain
 
-        if pretrain_algo not in ('ddpg', 'ppo'):
-            raise ValueError(f"config.pretrain.pretrain_algo must be 'ddpg' or 'ppo', not '{pretrain_algo}'.")
-        elif pretrain_algo == 'ddpg':
-            learner = DDPGTrainer.setup_policy(self.env.spec, self.config.algo.policy.hidden_sizes)
-        elif pretrain_algo == 'ppo':
-            learner = PPOTrainer.setup_policy(self.env.spec, self.config.algo.policy.hidden_sizes)
-        else:
-            raise RuntimeError
+        if algo_to_pretrain == 'ddpg':
+            return DDPGTrainer.setup_policy(self.env.spec, self.config.algo.policy.hidden_sizes)
+        elif algo_to_pretrain == 'ppo':
+            return PPOTrainer.setup_policy(self.env.spec, self.config.algo.policy.hidden_sizes)
 
-        return learner
+        raise ValueError(f"config.pretrain.algo_to_pretrain must be 'ddpg' or 'ppo', not '{algo_to_pretrain}'.")
 
     def _get_expert_batches(self):
         # TODO generate timestepbatches to use as source
-        return None
+        from .pretrain_experts import RBCExpert, MPCExpert
+
+        pretrain_algo = self.config.pretrain.pretrain_algo
+
+        if pretrain_algo == 'rbc':
+            return RBCExpert()
+        elif pretrain_algo == 'mpc':
+            return MPCExpert()
+
+        raise ValueError(f"config.pretrain.pretrain_algo must be 'rbc' or 'mpc', not '{pretrain_algo}'.")
 
     def _setup_rl_algo(self, learner, expert_batches, sampler):
         return BC(
