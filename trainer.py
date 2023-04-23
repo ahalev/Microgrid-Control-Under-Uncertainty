@@ -537,7 +537,7 @@ class BCTrainer(RLTrainer):
         return self._setup_rl_algo(learner, expert_batches, sampler), sampler
 
     def _setup_learner(self):
-        algo_to_pretrain = self.config.pretrain.algo_to_pretrain
+        algo_to_pretrain = self.config.algo.pretrain.algo_to_pretrain
 
         if algo_to_pretrain == 'ddpg':
             return DDPGTrainer.setup_policy(self.env.spec, self.config.algo.policy.hidden_sizes)
@@ -548,9 +548,9 @@ class BCTrainer(RLTrainer):
 
     def _get_expert_batches(self):
         # TODO generate timestepbatches to use as source
-        from .pretrain_experts import RBCExpert, MPCExpert
+        from pretrain_experts import RBCExpert, MPCExpert
 
-        pretrain_algo = self.config.pretrain.pretrain_algo
+        pretrain_algo = self.config.algo.pretrain.pretrain_algo
 
         if pretrain_algo == 'rbc':
             return RBCExpert()
@@ -566,8 +566,8 @@ class BCTrainer(RLTrainer):
             batch_size=self.config.algo.train.batch_size,
             source=expert_batches,
             sampler=sampler,
-            loss=self.config.algo.policy.pretrain.params.loss,
-            policy_lr=self.config.algo.policy.pretrain.params.policy_lr
+            loss=self.config.algo.pretrain.params.loss,
+            policy_lr=self.config.algo.pretrain.params.policy_lr
         )
 
 
