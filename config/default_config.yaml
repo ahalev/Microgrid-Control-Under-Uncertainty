@@ -67,7 +67,7 @@ algo:
     algo_to_pretrain: null
     pretrain_algo: rbc
     params:
-      loss: log_loss
+      loss: log_prob
       policy_lr: 0.01
   train:
     batch_size: 10000
