@@ -11,14 +11,12 @@ from abc import abstractmethod
 from copy import deepcopy
 from typing import Union
 
-from garage.torch.algos.dqn import DQN
-from garage.torch.algos.ddpg import DDPG
-from garage.torch.algos.ppo import PPO
 from garage import wrap_experiment
 from garage.experiment.deterministic import set_seed
 from garage.sampler import LocalSampler, RaySampler
 from garage.trainer import Trainer as GarageTrainer
 from garage.np.exploration_policies import EpsilonGreedyPolicy, AddOrnsteinUhlenbeckNoise
+from garage.torch.algos import DQN, DDPG, PPO, BC
 from garage.torch.policies import DiscreteQFArgmaxPolicy, DeterministicMLPPolicy, GaussianMLPPolicy
 from garage.torch.q_functions import DiscreteMLPQFunction, ContinuousMLPQFunction
 from garage.torch.value_functions import GaussianMLPValueFunction
