@@ -162,18 +162,20 @@ class Trainer:
     def train(self):
         set_seed(self.config.context.seed)
         self._set_trajectories(train=True)
-        self._train(self.log_dirs['train_log'])
+        train_output = self._train(self.log_dirs['train_log'])
 
         print(f'Logged results in dir: {os.path.abspath(self.log_dirs["train_log"])}')
+        return train_output
 
     def _train(self, log_dir):
         pass
 
-    def evaluate(self, log_dir=None):
+    def evaluate(self, log_dir=None, set_eval_trajectory=True):
         if log_dir is None:
             log_dir = self.log_dirs['evaluate_log']
 
-        self._set_trajectories(evaluate=True)
+        if set_eval_trajectory:
+            self._set_trajectories(evaluate=True)
 
         output = self._evaluate()
 
@@ -568,12 +570,18 @@ class MPCTrainer(Trainer):
     def _setup_algo(self):
         return ModelPredictiveControl(self.microgrid)
 
+    def _train(self, log_dir):
+        return self.evaluate(log_dir, set_eval_trajectory=False)
+
 
 class RBCTrainer(Trainer):
     algo_name = 'rbc'
 
     def _setup_algo(self):
         return RuleBasedControl(self.microgrid)
+
+    def _train(self, log_dir):
+        return self.evaluate(log_dir, set_eval_trajectory=False)
 
 
 if __name__ == '__main__':
