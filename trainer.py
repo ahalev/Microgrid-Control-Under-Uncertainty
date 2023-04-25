@@ -570,6 +570,15 @@ class BCTrainer(RLTrainer):
             policy_lr=self.config.algo.pretrain.params.policy_lr
         )
 
+    def _evaluate(self):
+        old_policy = self.algo.policy
+        self.algo.policy = self.algo.learner
+
+        eval = super()._evaluate()
+        self.algo.policy = old_policy
+
+        return eval
+
 
 class MPCTrainer(Trainer):
     algo_name = 'mpc'
