@@ -70,7 +70,7 @@ algo:
       loss: log_prob
       policy_lr: 0.01
   train:
-    batch_size: 10000
+    batch_size: 50000
     steps_per_epoch: 32
     n_epochs: 100
 context:
