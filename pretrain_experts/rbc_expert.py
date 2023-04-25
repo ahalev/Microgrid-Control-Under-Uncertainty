@@ -42,8 +42,35 @@ class RBCExpert(Iterator):
         """
         yield self.generate_batch()
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state['worker'] = None
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.worker = self._get_worker()
+
     def __iter__(self):
         return self
 
     def __next__(self):
         return self.generate_batch()
+
+
+class RBCAgent:
+    def __init__(self, rbc, env):
+        self.rbc = rbc
+        self.env = env
+        self.rbc.microgrid = env
+
+    def get_action(self, obs):
+        rbc_action = self.rbc.get_action()
+        converted = self.env.convert_action(rbc_action, to_microgrid=False, normalize=True)
+        return converted, {}
+
+    def unwrapped(self):
+        return self.rbc
+
+    def __getattr__(self, item):
+        return getattr(self.rbc, item)
