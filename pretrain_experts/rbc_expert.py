@@ -26,15 +26,6 @@ class RBCExpert(Iterator):
     def generate_batch(self):
         return self.worker.rollout()
 
-    def generate_batches(self):
-        """
-
-        Returns
-        -------
-        Union[TimeStepBatch, EpisodeBatch]
-        """
-        yield self.generate_batch()
-
     def __getstate__(self):
         state = self.__dict__.copy()
         state['worker'] = None
