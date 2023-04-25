@@ -5,8 +5,10 @@ from collections import Iterator
 
 from trainer import RBCTrainer
 
+from pretrain_experts.expert import BaseExpert
 
-class RBCExpert(Iterator):
+
+class RBCExpert(BaseExpert):
     def __init__(self):
         self.trainer = RBCTrainer()
         self.env = self.trainer.env
@@ -26,6 +28,12 @@ class RBCExpert(Iterator):
     def generate_batch(self):
         return self.worker.rollout()
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.generate_batch()
+
     def __getstate__(self):
         state = self.__dict__.copy()
         state['worker'] = None
@@ -34,12 +42,6 @@ class RBCExpert(Iterator):
     def __setstate__(self, state):
         self.__dict__.update(state)
         self.worker = self._get_worker()
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        return self.generate_batch()
 
 
 class RBCAgent:
