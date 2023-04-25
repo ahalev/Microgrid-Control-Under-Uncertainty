@@ -1,37 +1,30 @@
-import numpy as np
+from garage.sampler import WorkerFactory
+from garage.experiment.deterministic import get_seed
+
+from collections import Iterator
 
 from trainer import RBCTrainer
-from garage import TimeStepBatch, EpisodeBatch
-from collections import Iterator
 
 
 class RBCExpert(Iterator):
     def __init__(self):
         self.trainer = RBCTrainer()
         self.env = self.trainer.env
-        self.rbc = self.trainer.algo
+        self.rbc = RBCAgent(rbc=self.trainer.algo, env=self.env)
+        self.worker = self._get_worker()
+
+    def _get_worker(self):
+        worker = WorkerFactory(
+            max_episode_length=self.env.spec.max_episode_length,
+            seed=get_seed(),
+            n_workers=1
+        )(0)
+        worker.update_env(self.env)
+        worker.update_agent(self.rbc)
+        return worker
 
     def generate_batch(self):
-        obs = self.env.reset()
-        done = False
-
-        while not done:
-            action = self.rbc.get_action(obs)
-            obs, reward, done, info = self.env.step(action)
-
-        return None
-
-    def collect_episode(self):
-        return EpisodeBatch(env_spec=self.env.spec,
-                     episode_infos=episode_infos,
-                     observations=np.asarray(observations),
-                     last_observations=np.asarray(last_observations),
-                     actions=np.asarray(actions),
-                     rewards=np.asarray(rewards),
-                     step_types=np.asarray(step_types, dtype=StepType),
-                     env_infos=dict(env_infos),
-                     agent_infos=dict(agent_infos),
-                     lengths=np.asarray(lengths, dtype='i'))
+        return self.worker.rollout()
 
     def generate_batches(self):
         """
