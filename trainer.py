@@ -554,15 +554,7 @@ class BCTrainer(RLTrainer):
 
     def _get_expert(self):
         from pretrain_expert import Expert
-
-        pretrain_algo = self.config.algo.pretrain.pretrain_algo
-
-        if pretrain_algo == 'rbc':
-            return RBCExpert()
-        elif pretrain_algo == 'mpc':
-            return MPCExpert()
-
-        raise ValueError(f"config.pretrain.pretrain_algo must be 'rbc' or 'mpc', not '{pretrain_algo}'.")
+        return Expert(self.config.algo.pretrain.pretrain_algo)
 
     def _setup_rl_algo(self, learner, expert_batches, sampler):
         return BC(
