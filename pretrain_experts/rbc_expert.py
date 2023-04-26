@@ -12,7 +12,7 @@ class RBCExpert(Iterator):
     def __init__(self):
         self.trainer = RBCTrainer()
         self.env = self.trainer.env
-        self.rbc = RBCAgent(rbc=self.trainer.algo, env=self.env)
+        self.agent = ExpertAgent(algo=self.trainer.algo, env=self.env)
         self.worker = self._get_worker()
         self.stats = None
 
@@ -23,7 +23,7 @@ class RBCExpert(Iterator):
             n_workers=1
         )(0)
         worker.update_env(self.env)
-        worker.update_agent(self.rbc)
+        worker.update_agent(self.agent)
         return worker
 
     def generate_batch(self):
