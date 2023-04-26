@@ -5,7 +5,7 @@ from garage.trainer import ExperimentStats
 
 from collections import Iterator
 
-from trainer import RBCTrainer
+from trainer import RBCTrainer, MPCTrainer
 
 
 class RBCExpert(Iterator):
