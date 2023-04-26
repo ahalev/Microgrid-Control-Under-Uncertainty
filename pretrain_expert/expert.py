@@ -4,8 +4,11 @@ from garage import log_performance, EpisodeBatch
 from garage.trainer import ExperimentStats
 
 from collections import Iterator
+from typing import Union
 
 from trainer import RBCTrainer, MPCTrainer
+
+from pymgrid import algos
 
 
 class Expert(Iterator):
@@ -65,7 +68,7 @@ class Expert(Iterator):
 
 
 class ExpertAgent:
-    def __init__(self, algo, env):
+    def __init__(self, algo: Union['algos.ModelPredictiveControl', 'algos.RuleBasedControl'], env):
         self.algo = algo
         self.env = env
         self.algo.microgrid = env
