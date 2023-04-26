@@ -553,7 +553,7 @@ class BCTrainer(RLTrainer):
         raise ValueError(f"config.pretrain.algo_to_pretrain must be 'ddpg' or 'ppo', not '{algo_to_pretrain}'.")
 
     def _get_expert(self):
-        from pretrain_experts import RBCExpert, MPCExpert
+        from pretrain_expert import Expert
 
         pretrain_algo = self.config.algo.pretrain.pretrain_algo
 
