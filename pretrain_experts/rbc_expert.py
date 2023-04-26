@@ -8,13 +8,21 @@ from collections import Iterator
 from trainer import RBCTrainer, MPCTrainer
 
 
-class RBCExpert(Iterator):
-    def __init__(self):
-        self.trainer = RBCTrainer()
+class Expert(Iterator):
+    def __init__(self, expert_type):
+        self.trainer = self._get_trainer(expert_type)
         self.env = self.trainer.env
         self.agent = ExpertAgent(algo=self.trainer.algo, env=self.env)
         self.worker = self._get_worker()
         self.stats = None
+
+    def _get_trainer(self, expert_type):
+        if expert_type == 'rbc':
+            return RBCTrainer()
+        elif expert_type == 'mpc':
+            return MPCTrainer()
+
+        raise ValueError(f"expert_type must be 'rbc' or 'mpc', not '{expert_type}'.")
 
     def _get_worker(self):
         worker = WorkerFactory(
