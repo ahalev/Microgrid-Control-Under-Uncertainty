@@ -1,5 +1,7 @@
 from garage.sampler import WorkerFactory
 from garage.experiment.deterministic import get_seed
+from garage import log_performance
+from garage.trainer import ExperimentStats
 
 from collections import Iterator
 
@@ -12,6 +14,7 @@ class RBCExpert(Iterator):
         self.env = self.trainer.env
         self.rbc = RBCAgent(rbc=self.trainer.algo, env=self.env)
         self.worker = self._get_worker()
+        self.stats = None
 
     def _get_worker(self):
         worker = WorkerFactory(
@@ -24,7 +27,16 @@ class RBCExpert(Iterator):
         return worker
 
     def generate_batch(self):
-        return self.worker.rollout()
+        samples = self.worker.rollout()
+        self._log_rollout(samples)
+        return samples
+
+    def _log_rollout(self, samples):
+        self.stats.total_env_steps += sum(samples.lengths)
+        log_performance(self.stats, samples, discount=1.0, prefix='Expert')
+
+    def set_stats(self, experiment_stats: ExperimentStats):
+        self.stats = experiment_stats
 
     def __getstate__(self):
         state = self.__dict__.copy()
