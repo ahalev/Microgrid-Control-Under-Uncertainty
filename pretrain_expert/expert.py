@@ -1,6 +1,6 @@
 from garage.sampler import WorkerFactory
 from garage.experiment.deterministic import get_seed
-from garage import log_performance
+from garage import log_performance, EpisodeBatch
 from garage.trainer import ExperimentStats
 
 from collections import Iterator
@@ -9,8 +9,9 @@ from trainer import RBCTrainer, MPCTrainer
 
 
 class Expert(Iterator):
-    def __init__(self, expert_type):
+    def __init__(self, expert_type, episodes_per_batch):
         self.trainer = self._get_trainer(expert_type)
+        self.episodes_per_batch = episodes_per_batch
         self.env = self.trainer.env
         self.agent = ExpertAgent(algo=self.trainer.algo, env=self.env)
         self.worker = self._get_worker()
@@ -35,7 +36,8 @@ class Expert(Iterator):
         return worker
 
     def generate_batch(self):
-        samples = self.worker.rollout()
+        batches = [self.worker.rollout() for _ in range(self.episodes_per_batch)]
+        samples = EpisodeBatch.concatenate(*batches)
         self._log_rollout(samples)
         return samples
 
