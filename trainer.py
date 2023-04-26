@@ -554,7 +554,8 @@ class BCTrainer(RLTrainer):
 
     def _get_expert(self):
         from pretrain_expert import Expert
-        return Expert(self.config.algo.pretrain.pretrain_algo)
+        return Expert(expert_type=self.config.algo.pretrain.pretrain_algo,
+                      episodes_per_batch=self.config.algo.pretrain.params.episodes_per_batch)
 
     def _setup_rl_algo(self, learner, expert_batches, sampler):
         return BC(
