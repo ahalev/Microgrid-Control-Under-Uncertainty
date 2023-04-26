@@ -54,19 +54,19 @@ class RBCExpert(Iterator):
         return self.generate_batch()
 
 
-class RBCAgent:
-    def __init__(self, rbc, env):
-        self.rbc = rbc
+class ExpertAgent:
+    def __init__(self, algo, env):
+        self.algo = algo
         self.env = env
-        self.rbc.microgrid = env
+        self.algo.microgrid = env
 
     def get_action(self, obs):
-        rbc_action = self.rbc.get_action()
+        rbc_action = self.algo.get_action()
         converted = self.env.convert_action(rbc_action, to_microgrid=False, normalize=True)
         return converted, {}
 
     def unwrapped(self):
-        return self.rbc
+        return self.algo
 
     def __getattr__(self, item):
-        return getattr(self.rbc, item)
+        return getattr(self.algo, item)
