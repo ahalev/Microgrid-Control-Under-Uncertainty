@@ -74,8 +74,8 @@ class ExpertAgent:
         self.algo.microgrid = env
 
     def get_action(self, obs):
-        rbc_action = self.algo.get_action()
-        converted = self.env.convert_action(rbc_action, to_microgrid=False, normalize=True)
+        algo_action = self.algo.get_action()
+        converted = self.env.convert_action(algo_action, to_microgrid=False, normalize=True)
         return converted, {}
 
     def unwrapped(self):
