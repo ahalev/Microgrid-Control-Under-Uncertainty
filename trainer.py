@@ -533,13 +533,14 @@ class PPOTrainer(RLTrainer):
 class BCTrainer(RLTrainer):
     algo_name = 'bc'
     env_class = ContinuousMicrogridEnv
+    expert = None
 
     def setup_rl_algo(self):
         learner = self._setup_learner()
-        expert_batches = self._get_expert_batches()
-        sampler = self._setup_sampler(expert_batches)
+        self.expert = self._get_expert()
+        sampler = self._setup_sampler(self.expert)
 
-        return self._setup_rl_algo(learner, expert_batches, sampler), sampler
+        return self._setup_rl_algo(learner, self.expert, sampler), sampler
 
     def _setup_learner(self):
         algo_to_pretrain = self.config.algo.pretrain.algo_to_pretrain
@@ -551,8 +552,7 @@ class BCTrainer(RLTrainer):
 
         raise ValueError(f"config.pretrain.algo_to_pretrain must be 'ddpg' or 'ppo', not '{algo_to_pretrain}'.")
 
-    def _get_expert_batches(self):
-        # TODO generate timestepbatches to use as source
+    def _get_expert(self):
         from pretrain_experts import RBCExpert, MPCExpert
 
         pretrain_algo = self.config.algo.pretrain.pretrain_algo
