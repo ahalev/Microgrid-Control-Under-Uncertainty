@@ -323,6 +323,8 @@ class RLTrainer(Trainer):
         def train(ctxt=None):
             garage_trainer = GarageTrainer(ctxt)
 
+            self.update_trainer(garage_trainer)
+
             garage_trainer.setup(self.algo, self.env)
             garage_trainer.train(n_epochs=train_config.n_epochs, batch_size=train_config.batch_size)
 
@@ -341,6 +343,9 @@ class RLTrainer(Trainer):
             obs, reward, done, _ = env.step(self.algo.policy.get_action(obs)[0])
 
         return env.log
+
+    def update_trainer(self, trainer):
+        pass
 
     def load_additional_data(self, log_dir, additional_garage_data=None):
         from garage.experiment import Snapshotter
@@ -569,6 +574,9 @@ class BCTrainer(RLTrainer):
             loss=self.config.algo.pretrain.params.loss,
             policy_lr=self.config.algo.pretrain.params.policy_lr
         )
+
+    def update_trainer(self, trainer):
+        self.expert.set_stats(trainer._stats)
 
     def _evaluate(self):
         old_policy = self.algo.policy
