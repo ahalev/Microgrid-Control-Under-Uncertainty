@@ -65,7 +65,7 @@ class DomainRandomizationWrapper(GymEnv):
 
     def reset(self, **kwargs):
         self.randomize_timeseries()
-        return self._env.reset()
+        return super().reset()
 
     def randomize_timeseries(self):
         for module, noisemaker, og_ts in zip(self._env.modules.iterlist(), self._noisemakers, self._og_time_series):
