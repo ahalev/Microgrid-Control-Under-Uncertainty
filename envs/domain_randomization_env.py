@@ -10,10 +10,14 @@ class DomainRandomizationWrapper(Env):
                  env: Union[DiscreteMicrogridEnv, ContinuousMicrogridEnv],
                  noise_std,
                  relative_noise=True):
+
+        self._post_init = False
         self._env = env
         self._noisemakers, self._og_time_series = self._get_noisemakers(noise_std,
-                                                                       False,
-                                                                       relative_noise=relative_noise)
+                                                                        False,
+                                                                        relative_noise=relative_noise)
+        super().__init__()
+        self._post_init = True
 
     def _get_noisemakers(self, noise_std, increase_uncertainty, relative_noise):
         noisemakers = []
@@ -66,7 +70,13 @@ class DomainRandomizationWrapper(Env):
         return getattr(self._env, item)
 
     def __setattr__(self, key, value):
-        if key != '_env' and hasattr(self._env, key):
+        try:
+            self.__getattribute__(key)
+            toplevel_attr = True
+        except AttributeError:
+            toplevel_attr = False
+
+        if key != '_post_init' and self._post_init and not toplevel_attr and hasattr(self._env, key):
             setattr(self._env, key, value)
         else:
             super().__setattr__(key, value)
