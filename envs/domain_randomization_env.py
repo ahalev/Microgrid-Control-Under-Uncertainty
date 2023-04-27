@@ -93,3 +93,38 @@ class DomainRandomizationWrapper(GymEnv):
     @property
     def unwrapped(self):
         return self._env
+
+    @property
+    def noise_std(self):
+        return self._noise_std
+
+    @noise_std.setter
+    def noise_std(self, value):
+        self._noise_std = value
+        self._noisemakers, self._og_time_series = self._get_noisemakers(False)
+
+    @property
+    def relative_noise(self):
+        return self._relative_noise
+
+    @relative_noise.setter
+    def relative_noise(self, value):
+        self._relative_noise = value
+        self._noisemakers, self._og_time_series = self._get_noisemakers(False)
+
+    @property
+    def max_episode_length(self):
+        return self.spec.max_episode_length
+
+    def __getstate__(self):
+        self.reset_timeseries()
+        return super().__getstate__()
+
+    def __setstate__(self, state):
+
+        self.__init__(
+            env=state['_env'],
+            noise_std=state['_noise_std'],
+            relative_noise=state['_relative_noise'],
+            max_episode_length=state['_max_episode_length']
+        )
