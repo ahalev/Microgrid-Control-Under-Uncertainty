@@ -23,7 +23,7 @@ from garage.torch.value_functions import GaussianMLPValueFunction
 from garage.replay_buffer import PathBuffer
 
 from callback import GarageCallback
-from envs import GymEnv
+from envs import GymEnv, DomainRandomizationWrapper
 from microgrid_loader import microgrid_from_config
 
 import pymgrid
@@ -261,6 +261,22 @@ class Trainer:
 class RLTrainer(Trainer):
     algo_name = 'rl'
     env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv]
+
+    def _setup_env(self):
+        env, eval_env = super()._setup_env()
+        env = self._setup_domain_randomization(env)
+        return env, eval_env
+
+    def _setup_domain_randomization(self, env):
+        dr_config = self.config.env.domain_randomization
+
+        if dr_config is None:
+            return env
+
+        return DomainRandomizationWrapper(env,
+                                          noise_std=dr_config.noise_std,
+                                          relative_noise=dr_config.relative_noise
+                                          )
 
     def _setup_algo(self):
         self.warn_custom_params()
