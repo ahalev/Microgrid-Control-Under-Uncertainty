@@ -77,26 +77,10 @@ class DomainRandomizationWrapper(GymEnv):
 
             module.time_series = noisemaker(None, og_ts, len(og_ts))
 
-    def render(self):
-        return self._env.render()
-
-    def __getattr__(self, item):
-        return getattr(self._env, item)
-
-    def __setattr__(self, key, value):
-        try:
-            self.__getattribute__(key)
-            toplevel_attr = True
-        except AttributeError:
-            toplevel_attr = False
-
-        if key != '_post_init' and self._post_init and not toplevel_attr and hasattr(self._env, key):
-            setattr(self._env, key, value)
-        else:
-            super().__setattr__(key, value)
-
-    def __getstate__(self):
-        raise RuntimeError
+    def reset_timeseries(self):
+        for module, og_ts in zip(self._env.modules.iterlist(), self._og_time_series):
+            if og_ts is not None:
+                module.time_series = og_ts
 
     @classmethod
     def to_yaml(cls, dumper, data):
