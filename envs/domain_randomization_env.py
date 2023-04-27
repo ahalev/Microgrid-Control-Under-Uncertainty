@@ -1,25 +1,35 @@
-from gym import Env
-from typing import Union
+from envs import GymEnv
 
-from pymgrid.envs import DiscreteMicrogridEnv, ContinuousMicrogridEnv
+from pymgrid import dry_run
 from pymgrid.forecast import GaussianNoiseForecaster
 
 
-class DomainRandomizationWrapper(Env):
+class DomainRandomizationWrapper(GymEnv):
     def __init__(self,
-                 env: Union[DiscreteMicrogridEnv, ContinuousMicrogridEnv],
+                 env,
                  noise_std,
-                 relative_noise=True):
+                 relative_noise=True,
+                 is_image=False,
+                 max_episode_length=None):
 
         self._post_init = False
-        self._env = env
-        self._noisemakers, self._og_time_series = self._get_noisemakers(noise_std,
-                                                                        False,
-                                                                        relative_noise=relative_noise)
-        super().__init__()
+        super().__init__(**self.parse_env(env, is_image, max_episode_length))
+
+        self._noise_std = noise_std
+        self._relative_noise = relative_noise
+
+        self._noisemakers, self._og_time_series = self._get_noisemakers(False)
         self._post_init = True
 
-    def _get_noisemakers(self, noise_std, increase_uncertainty, relative_noise):
+    def parse_env(self, env, is_image, max_episode_length):
+        if isinstance(env, GymEnv):
+            is_image = env.observation_space.__class__.__name__ == 'Image'
+            max_episode_length = env.spec.max_episode_length
+            env = env.unwrapped
+
+        return {'env': env, 'is_image': is_image, 'max_episode_length': max_episode_length}
+
+    def _get_noisemakers(self, increase_uncertainty):
         noisemakers = []
         ts = []
         for module in self._env.modules.iterlist():
@@ -31,19 +41,21 @@ class DomainRandomizationWrapper(Env):
                 ts.append(None)
             else:
                 noisemakers.append(
-                    self._get_time_series_module_noisemaker(module, noise_std, increase_uncertainty, relative_noise)
+                    self._get_time_series_module_noisemaker(module, increase_uncertainty)
                 )
 
         return noisemakers, ts
 
-    def _get_time_series_module_noisemaker(self, module, noise_std, increase_uncertainty, relative_noise):
+    def _get_time_series_module_noisemaker(self, module, increase_uncertainty):
+        observation_space = self._extend_obs_space(module)
+
         return GaussianNoiseForecaster(
-                noise_std=noise_std,
-                observation_space=module.observation_space,
+                noise_std=self._noise_std,
+                observation_space=observation_space,
                 forecast_shape=module.time_series.shape,
                 time_series=module.time_series,
                 increase_uncertainty=increase_uncertainty,
-                relative_noise=relative_noise
+                relative_noise=self._relative_noise
             )
 
     def step(self, action):
