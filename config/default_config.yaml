@@ -1,7 +1,9 @@
 env:
   cls: DiscreteMicrogridEnv
   observation_keys: []
-  domain_randomization: null
+  domain_randomization:
+    noise_std: null
+    relative_noise: false
 microgrid:
   config:
     scenario: 0
