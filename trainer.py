@@ -270,11 +270,11 @@ class RLTrainer(Trainer):
     def _setup_domain_randomization(self, env):
         dr_config = self.config.env.domain_randomization
 
-        if dr_config is None:
+        if dr_config.noise_std is None:
             return env
 
         return DomainRandomizationWrapper(env,
-                                          noise_std=dr_config.noise_std,
+                                          noise_std=float(dr_config.noise_std),
                                           relative_noise=dr_config.relative_noise
                                           )
 
