@@ -310,7 +310,7 @@ class RLTrainer(Trainer):
             raise ValueError(f"Invalid sampler config type {sampler_config.type}, must be 'local' or 'ray'.")
 
     def warn_custom_params(self):
-        algos = ['dqn', 'ddpg', 'ppo', 'bc']
+        algos = ['dqn', 'ddpg', 'ppo', 'pretrain']
         algos.remove(self.algo_name)
         for other_algo in algos:
             custom_in_other = self.config.algo[other_algo].symmetric_difference(
