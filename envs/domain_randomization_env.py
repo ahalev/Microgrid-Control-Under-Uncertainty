@@ -58,8 +58,10 @@ class DomainRandomizationWrapper(GymEnv):
                 relative_noise=self._relative_noise
             )
 
-    def step(self, action):
-        return self._env.step(action)
+    def _extend_obs_space(self, module):
+        with dry_run(module) as m:
+            m.forecast_horizon = len(module.time_series) - 1
+            return m.observation_space
 
     def reset(self, **kwargs):
         self.randomize_timeseries()
