@@ -33,6 +33,7 @@ algo:
     type: ray
     n_workers: 16
   policy:
+    pretrained_policy: null
     hidden_sizes:
       - 8
       - 5
