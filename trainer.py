@@ -584,12 +584,12 @@ class BCTrainer(RLTrainer):
         return Expert(expert_type=self.config.algo.pretrain.pretrain_algo,
                       episodes_per_batch=self.config.algo.pretrain.params.episodes_per_batch)
 
-    def _setup_rl_algo(self, learner, expert_batches, sampler):
+    def _setup_rl_algo(self, learner, expert, sampler):
         return BC(
             env_spec=self.env.spec,
             learner=learner,
             batch_size=self.config.algo.train.batch_size,
-            source=expert_batches,
+            source=expert,
             sampler=sampler,
             loss=self.config.algo.pretrain.params.loss,
             policy_lr=self.config.algo.pretrain.params.policy_lr
