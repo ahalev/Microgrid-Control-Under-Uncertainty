@@ -224,6 +224,8 @@ class Trainer:
                 raise ValueError(f"Microgrid does not have attribute '{attr}' and it cannot be set.")
             setattr(microgrid, attr, value)
 
+        microgrid.reset()
+
         return microgrid
 
     @classmethod
