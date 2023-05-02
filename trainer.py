@@ -48,7 +48,7 @@ class Trainer:
         config = expfig.Config(config=config, default=default)
         algo = config.algo.type
 
-        if issubclass(cls, (MPCTrainer, RBCTrainer, DQNTrainer, DDPGTrainer, PPOTrainer)):
+        if issubclass(cls, (MPCTrainer, RBCTrainer, DQNTrainer, DDPGTrainer, PPOTrainer, PreTrainer)):
             config.algo.type = cls.algo_name
         elif isinstance(cls, RLTrainer):
             raise TypeError("Initiating 'RLTrainer' directly is deprecated. Use 'dqn', 'ddpg' or 'ppo' accordingly, "
@@ -65,8 +65,8 @@ class Trainer:
             cls = MPCTrainer
         elif algo.lower() == 'rbc':
             cls = RBCTrainer
-        elif algo.lower() == 'bc':
-            cls = BCTrainer
+        elif algo.lower() == 'pretrain':
+            cls = PreTrainer
         else:
             raise ValueError(f"Unrecognized algo type '{algo}'.")
 
@@ -557,8 +557,8 @@ class PPOTrainer(RLTrainer):
         )
 
 
-class BCTrainer(RLTrainer):
-    algo_name = 'bc'
+class PreTrainer(RLTrainer):
+    algo_name = 'pretrain'
     env_class = ContinuousMicrogridEnv
     expert = None
 
