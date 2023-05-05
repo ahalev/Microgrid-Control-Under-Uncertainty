@@ -519,7 +519,6 @@ class ResultLoader(Namespacify):
 
     @classmethod
     def nested_dict_relevance(cls, nested_dict, relevant_results, parent_keys=()):
-        # TODO something is wrong here it's only getting the first relevant value
         relevant = {}
         for k, v in nested_dict.items():
             if isinstance(v, (dict, UserDict)):
