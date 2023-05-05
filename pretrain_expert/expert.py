@@ -82,4 +82,7 @@ class ExpertAgent:
         return self.algo
 
     def __getattr__(self, item):
+        if item == 'algo' or not hasattr(self, 'algo'):
+            raise AttributeError(item)
+
         return getattr(self.algo, item)
