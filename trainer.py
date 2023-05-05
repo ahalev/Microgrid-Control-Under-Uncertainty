@@ -73,10 +73,10 @@ class Trainer:
         cls.config = config
         return super().__new__(cls)
 
-    def __init__(self, serialize_config=True, *args, **kwargs):
+    def __init__(self, setup_algo=True, serialize_config=True, *args, **kwargs):
         self.microgrid = self._setup_microgrid()
         self.env, self.eval_env = self._setup_env()
-        self.algo = self._setup_algo()
+        self.algo = self._setup_algo(setup_algo=setup_algo)
         self.log_dirs = self._get_log_dir()
         if serialize_config:
             self.serialize_config()
@@ -154,7 +154,7 @@ class Trainer:
         self.config.serialize_to_dir(self.log_dirs["config"], use_existing_dir=True, with_default=True)
 
     @abstractmethod
-    def _setup_algo(self):
+    def _setup_algo(self, setup_algo):
         pass
 
     def train_and_evaluate(self):
@@ -229,7 +229,7 @@ class Trainer:
         return microgrid
 
     @classmethod
-    def load(cls, log_dir, additional_config=None, additional_garage_data=None):
+    def load(cls, log_dir, additional_config=None, additional_garage_data=None, setup_algo=False):
         """
         Load a previously trained trainer.
         """
@@ -243,7 +243,7 @@ class Trainer:
         if additional_config is not None:
             config.append(additional_config)
 
-        instance = cls(config=config, default=default, serialize_config=False)
+        instance = cls(config=config, default=default, setup_algo=setup_algo, serialize_config=False)
         garage_data = instance.load_additional_data(log_dir, additional_garage_data)
 
         if garage_data:
@@ -280,7 +280,12 @@ class RLTrainer(Trainer):
                                           relative_noise=dr_config.relative_noise
                                           )
 
-    def _setup_algo(self):
+    def _setup_algo(self, setup_algo=True):
+        if not setup_algo:
+            warnings.warn('Skipping algo setup.')
+            self.sampler = None
+            return None
+
         self.warn_custom_params()
         algo, self.sampler = self.setup_rl_algo()
         return algo
@@ -382,7 +387,7 @@ class RLTrainer(Trainer):
 
     @classmethod
     def evaluate_last_epoch(cls, log_dir, suffix=lambda epoch: f'evaluate_log_epoch_{epoch}'):
-        trainer, experiment_stats = cls.load(log_dir, additional_garage_data='stats')
+        trainer, experiment_stats = cls.load(log_dir, additional_garage_data='stats', setup_algo=False)
         last_epoch = experiment_stats.total_epoch
 
         evaluate_log_dir = os.path.join(log_dir, suffix(last_epoch))
@@ -613,7 +618,11 @@ class PreTrainer(RLTrainer):
 class MPCTrainer(Trainer):
     algo_name = 'mpc'
 
-    def _setup_algo(self):
+    def _setup_algo(self, setup_algo=True):
+        if not setup_algo:
+            warnings.warn('Skipping algo setup.')
+            return None
+
         return ModelPredictiveControl(self.microgrid)
 
     def _train(self, log_dir):
@@ -623,7 +632,11 @@ class MPCTrainer(Trainer):
 class RBCTrainer(Trainer):
     algo_name = 'rbc'
 
-    def _setup_algo(self):
+    def _setup_algo(self, setup_algo=True):
+        if not setup_algo:
+            warnings.warn('Skipping algo setup.')
+            return None
+
         return RuleBasedControl(self.microgrid)
 
     def _train(self, log_dir):
