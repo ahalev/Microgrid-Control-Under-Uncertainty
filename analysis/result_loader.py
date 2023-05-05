@@ -191,16 +191,39 @@ class ResultLoader(Namespacify):
 
         return cols
 
-    def get_value_from_logs(self, log_column):
+    def get_value_from_logs(self, log_column, fill_missing_levels=True, missing_level_fill_val='MISSING'):
         rewards_dict = {}
         for eval_log in self.evaluate_logs:
             log = self[eval_log].log
             rewards_dict[eval_log[:-1]] = log.loc[:, log_column]
 
+        if fill_missing_levels:
+            rewards_dict = self._fill_missing_levels(rewards_dict, missing_level_fill_val)
+
         df = pd.concat(rewards_dict, axis=1)
         df.index.name = 'Step'
 
         return df
+
+    def _fill_missing_levels(self, rewards_dict, missing_level_fill_val):
+        key_groups = []
+
+        for key in rewards_dict.keys():
+            key_group = {k.rpartition('_')[0]: k.rpartition('_')[-1] for k in key}
+            key_groups.append(key_group)
+
+        group_frame = pd.DataFrame(key_groups)
+        group_frame = group_frame.fillna(missing_level_fill_val)
+
+        filled_key_groups = group_frame.to_dict(orient='records')
+        filled_keys = [tuple(f'{k}_{v}' for k, v in group.items()) for group in filled_key_groups]
+
+        for old_key, filled_key in zip(rewards_dict.keys(), filled_keys):
+            assert all(k in filled_key for k in old_key)
+
+        rewards_dict = dict(zip(filled_keys, rewards_dict.values()))
+
+        return rewards_dict
 
     def _save_file(self, suffix):
         if self.save_dir is not None:
