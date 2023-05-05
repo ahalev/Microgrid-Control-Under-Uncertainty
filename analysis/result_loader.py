@@ -594,21 +594,21 @@ if __name__ == '__main__':
     # E.g.: battery_transition_model_Battery(total_efficiency=0.5) -> battery_transition_model_Battery(total efficiency=0.5)
     replacements = [lambda key: re.sub("\([^]]*\)", lambda x:x.group(0).replace('_',' '), key)]
 
-    ppo_results = ResultLoader(
-        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/server/gpfs/ppo',
+    ddpg_pretrain_only_results = ResultLoader(
+        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/server/paw/pretrain',
         relevant_results=relevant_results,
         save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/rl/with_seeds',
         renamer=RENAMER,
         replacements=replacements
     )
 
-    ddpg_results = ResultLoader(
-        '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/server/gpfs/ddpg',
-        relevant_results=relevant_results,
-        save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/rl/with_seeds',
-        renamer=RENAMER,
-        replacements=replacements
-    )
+    # ddpg_results = ResultLoader(
+    #     '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/server/gpfs/ddpg',
+    #     relevant_results=relevant_results,
+    #     save_dir='/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/results/rl/with_seeds',
+    #     renamer=RENAMER,
+    #     replacements=replacements
+    # )
 
     rbc_results = ResultLoader(
         '/Users/ahalev/Dropbox/Avishai/gradSchool/internships/totalInternship/GridRL-V3/local/paper_experiments/rbc/experiments/experiment_logs/rbc',
@@ -630,14 +630,24 @@ if __name__ == '__main__':
         {
             'algorithm_rbc': rbc_results,
             'algorithm_mpc': mpc_results,
-            'algorithm_ddpg': ddpg_results,
-            'algorithm_ppo': ppo_results
+            'algorithm_ddpgPretrain': ddpg_pretrain_only_results,
+            # 'algorithm_ppo': ppo_results
         },
         relevant_results=['forecaster_0.2', 'forecaster_0.1', 'forecaster_0.0', 'forecaster_oracle']
         # relevant_results=['scenario_0', 'scenario_8']
     )
 
-    ddpg_results.plot(
+    combined.plot_reward_cumsum(
+        relative_to=('algorithm_rbc', 'forecaster_0.0', 'noise_std_None', 'algo_to_pretrain_MISSING', 'pretrain_algo_MISSING'),
+        style='Seed',
+        units='Forecaster',
+        hue='Algorithm',
+        relplot_col='Scenario',
+        palette=None,
+        save=True
+    )
+
+    ddpg_pretrain_only_results.plot(
         x=('balance', '0', 'reward'),
         y=('balance', '0', 'shaped_reward'),
         kind='line',
@@ -646,21 +656,11 @@ if __name__ == '__main__':
         relplot_col='Scenario',
     )
 
-    ddpg_results.plot_reward_cumsum(relative_to=None,
+    ddpg_pretrain_only_results.plot_reward_cumsum(relative_to=None,
                           hue='Forecaster',
                           units='Seed',
                           relplot_col='Scenario',
                           save=True)
-
-    combined.plot_reward_cumsum(
-        relative_to=('algorithm_rbc', 'forecaster_0.0'),
-        style='Seed',
-        units='Forecaster',
-        hue='Algorithm',
-        relplot_col='Scenario',
-        palette=None,
-        save=True
-    )
 
     combined.plot_reward_cumsum(
         relative_to=None,
