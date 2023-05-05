@@ -476,12 +476,12 @@ class ResultLoader(Namespacify):
                 _zip = zip(relative_slice, values_relative_to.columns.to_frame(index=False).T.values)
 
                 missing = [(j, value, np.unique(level_values)) for j, (value, level_values) in enumerate(_zip) if value not in level_values]
-                missing = [f"Level: {j}{nlnt2}Missing Value: {val}{nlnt2}Existing Values:{lvl_vals}" for j, val, lvl_vals in missing]
+                missing = [f"Level: {j}{nlnt2}Missing Value: {val}{nlnt2}Existing Values: {lvl_vals}" for j, val, lvl_vals in missing]
                 missing = '\n\t'.join(missing)
 
 
                 msg = f'The combination {relative_slice} does not exist.\nThe following values are missing:' \
-                      f'\n\t{missing}\n\n\t Do you need to make your result relative to some value in this column ' \
+                      f'\n\t{missing}\n\n\t Do you need to make your result relative to some value in these column(s) ' \
                       f'as well?'
                 raise ValueError(msg)
 
