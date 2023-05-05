@@ -317,7 +317,7 @@ class ResultLoader(Namespacify):
                            hue=None,
                            style=None,
                            units=None,
-                           palette='rocket_r',
+                           palette=None,
                            relplot_col=None,
                            save=True):
         module = module if module else 'balance'
@@ -352,7 +352,7 @@ class ResultLoader(Namespacify):
              hue=None,
              style=None,
              units=None,
-             palette='rocket_r',
+             palette=None,
              relplot_col=None,
              xlabel=None,
              ylabel=None,
@@ -677,25 +677,29 @@ if __name__ == '__main__':
                           hue='Forecaster',
                           units='Seed',
                           relplot_col='Scenario',
+                                   palette='rocket_r',
                           save=True)
 
     mpc_results.plot_reward_cumsum(relative_to='forecaster_0.0',
                           hue='Forecaster',
                           units='Seed',
                           relplot_col='Scenario',
-                          save=True)
+                                   palette='rocket_r',
+                                   save=True)
 
     mpc_results.plot_reward_cumsum(relative_to='forecaster_0.0',
                           hue='Forecaster',
                           units='Seed',
                           relplot_col='Scenario',
-                          save=True)
+                                   palette='rocket_r',
+                                   save=True)
 
     mpc_results.plot_reward_cumsum(
         module='unbalanced_energy',
         relative_to=None,
         hue='Forecaster',
         units='seed',
+        palette='rocket_r',
         relplot_col='Scenario',
         save=False
     )
