@@ -1,0 +1,4 @@
+microgrid:
+  trajectory:
+    train:
+      trajectory_func: null
