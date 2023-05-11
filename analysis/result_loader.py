@@ -65,7 +65,7 @@ class ResultLoader(Namespacify):
         self.log_columns = self.get_all_log_columns()
 
     def _get_dict_results(self, results_or_dir, relevant_results, replacements):
-        if isinstance(results_or_dir, dict):
+        if isinstance(results_or_dir, (dict, UserDict)):
             if relevant_results:
                 warnings.warn('Non-empty relevant_results will be ignored when combining results.')
             if replacements:
