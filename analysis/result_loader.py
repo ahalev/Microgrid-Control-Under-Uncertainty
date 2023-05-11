@@ -211,8 +211,15 @@ class ResultLoader(Namespacify):
     def _fill_missing_levels(self, rewards_dict, missing_level_fill_val):
         key_groups = []
 
+        def get_group(key):
+            partition = key.rpartition('_')
+            if not partition[1]:
+                raise TypeError(f"Key '{key}' is missing delimiter '_' and cannot be split properly. ")
+
+            return partition[0], partition[2]
+
         for key in rewards_dict.keys():
-            key_group = {k.rpartition('_')[0]: k.rpartition('_')[-1] for k in key}
+            key_group = dict(get_group(k) for k in key)
             key_groups.append(key_group)
 
         group_frame = pd.DataFrame(key_groups)
