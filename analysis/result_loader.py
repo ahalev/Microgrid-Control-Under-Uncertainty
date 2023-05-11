@@ -553,6 +553,18 @@ class ResultLoader(Namespacify):
 
     @staticmethod
     def is_relevant(contents, relevant_vals):
+        """
+
+        Parameters
+        ----------
+        contents : Path or tuple
+        relevant_vals : str or list-like
+
+        Returns
+        -------
+        bool
+
+        """
         if relevant_vals is None:
             return True
 
