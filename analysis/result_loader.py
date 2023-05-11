@@ -395,12 +395,8 @@ class ResultLoader(Namespacify):
 
         if cumulative:
             yval = yval.cumsum()
-        # rewards = -1 * cost.cumsum()
 
-        # rewards = self._make_relative(rewards, relative_to)
         yval = self._make_relative(yval, relative_to)
-
-        param_cols = [f'level_{j}' for j in range(len(self.evaluate_logs[0][:-1]))]
 
         yval = yval.iloc[transient_steps:]
         yval = yval.unstack()
@@ -413,6 +409,7 @@ class ResultLoader(Namespacify):
         else:
             yval = yval.reset_index(name=ylabel)
 
+        param_cols = yval.columns[yval.columns.str.contains('level_')]
         yval = pd.concat([yval.drop(columns=param_cols), self._extract_param_columns(yval[param_cols])], axis=1)
 
         min_col_wrap, max_col_wrap = 2, 5
