@@ -577,11 +577,11 @@ class ResultLoader(Namespacify):
             parts = contents  # list-like
 
         for val in relevant_vals:
-            if isinstance(val, list):
+            if pd.api.types.is_list_like(val):
                 list_match = all(ResultLoader.is_relevant(contents, inner_val) for inner_val in val)
                 if list_match:
                     return True
-            elif any(val in parts for val in relevant_vals):
+            elif val in parts:
                 return True
 
         return False
