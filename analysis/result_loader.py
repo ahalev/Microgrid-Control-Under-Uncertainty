@@ -472,27 +472,41 @@ class ResultLoader(Namespacify):
         values_relative_to = rewards.loc[:, idx]
         values_relative_to = values_relative_to.droplevel(list(relative_to_loc.keys()), axis=1)
 
-        # for col in values_relative_to.columns:
         for col in rewards.columns:
-            relative_slice = tuple(c for j, c in enumerate(col) if j not in relative_to_loc.keys())
-            try:
-                rewards[col] = rewards[col].div(values_relative_to[relative_slice], axis=0)
-            except KeyError:
+            rewards[col] = self._get_relative_column(rewards[col], values_relative_to, relative_to_loc.keys())
+
+        return rewards
+
+    def _get_relative_column(self, original_col, values_relative_to, levels_with_relative_vals):
+        relative_slice = tuple(c for j, c in enumerate(original_col.name) if j not in levels_with_relative_vals)
+        try:
+            relative_col = original_col.div(values_relative_to[relative_slice], axis=0)
+        except KeyError:
+            relative_slice = list(relative_slice)
+            missing = []
+
+            for lvl, value in enumerate(relative_slice):
+                unique_in_lvl = values_relative_to.columns.get_level_values(lvl).unique()
+
+                if len(unique_in_lvl) == 1:
+                    relative_slice[lvl] = unique_in_lvl.item()
+                else:
+                    missing.append((lvl, value, unique_in_lvl))
+
+            if missing:
                 nlnt2 = '\n\t\t'
-
-                _zip = zip(relative_slice, values_relative_to.columns.to_frame(index=False).T.values)
-
-                missing = [(j, value, np.unique(level_values)) for j, (value, level_values) in enumerate(_zip) if value not in level_values]
-                missing = [f"Level: {j}{nlnt2}Missing Value: {val}{nlnt2}Existing Values: {lvl_vals}" for j, val, lvl_vals in missing]
+                missing = [f"Level: {j}{nlnt2}Missing Value: {val}{nlnt2}Existing Values: {lvl_vals}" for
+                           j, val, lvl_vals in missing]
                 missing = '\n\t'.join(missing)
-
 
                 msg = f'The combination {relative_slice} does not exist.\nThe following values are missing:' \
                       f'\n\t{missing}\n\n\t Do you need to make your result relative to some value in these column(s) ' \
                       f'as well?'
                 raise ValueError(msg)
 
-        return rewards
+            relative_col = original_col.div(values_relative_to[tuple(relative_slice)], axis=0)
+
+        return relative_col
 
     def _extract_param_columns(self, df):
         new_df = {}
