@@ -60,8 +60,7 @@ class ResultLoader(Namespacify):
         self.passed_result_dir = result_dir
         self.save_dir = Path(save_dir) if save_dir else None
 
-        self.evaluate_logs = self.locate_deep_key('evaluate_log')
-        self.configs = self.get_deep_values('config')
+        self.result_list = self._get_result_list()
         self.microgrids = self._load_microgrids()
         self.log_columns = self.get_all_log_columns()
 
@@ -162,6 +161,9 @@ class ResultLoader(Namespacify):
 
         return microgrids
 
+    def _get_result_list(self):
+        return [x[:-1] for x in self.locate_deep_key('config')]
+
     def get_deep_values(self, key):
         return [self[x] for x in self.locate_deep_key(key)]
 
@@ -180,11 +182,11 @@ class ResultLoader(Namespacify):
 
     def get_all_log_columns(self):
         cols = None
-        for eval_log in self.evaluate_logs:
+        for result in self.iterlist():
             if cols is None:
-                cols = self[eval_log].log.columns
+                cols = result.evaluate_log.log.columns
             else:
-                cols = cols.intersection(self[eval_log].log.columns)
+                cols = cols.intersection(result.evaluate_log.log.columns)
 
         if len(cols) == 0:
             raise RuntimeError
@@ -193,9 +195,9 @@ class ResultLoader(Namespacify):
 
     def get_value_from_logs(self, log_column, fill_missing_levels=True, missing_level_fill_val='MISSING'):
         rewards_dict = {}
-        for eval_log in self.evaluate_logs:
-            log = self[eval_log].log
-            rewards_dict[eval_log[:-1]] = log.loc[:, log_column]
+        for loc, result in self.iterdict():
+            log = result.evaluate_log.log
+            rewards_dict[loc] = log.loc[:, log_column]
 
         if fill_missing_levels:
             rewards_dict = self._fill_missing_levels(rewards_dict, missing_level_fill_val)
@@ -246,7 +248,7 @@ class ResultLoader(Namespacify):
             relative=False
     ):
         # Looks for forecast of the type f'{module_kind}_forecast_0, f'{module_kind}_forecast_1, etc
-        forecast_horizon = [c.config.microgrid.methods.set_forecaster.forecast_horizon for c in self.configs]
+        forecast_horizon = [c.config.config.microgrid.methods.set_forecaster.forecast_horizon for c in self.iterlist()]
         max_forecast_horizon = max(forecast_horizon)
 
         applicable_cols = [f'{module_kind}_forecast_{j}' for j in range(max_forecast_horizon)]
@@ -563,3 +565,11 @@ class ResultLoader(Namespacify):
                 cols.get_level_values(j) for j in range(cols.nlevels) if cols.get_level_values(j).nunique() > 1])
 
         return df
+
+    def iterlist(self):
+        for loc in self.result_list:
+            yield self[loc]
+
+    def iterdict(self):
+        for loc in self.result_list:
+            yield loc, self[loc]
