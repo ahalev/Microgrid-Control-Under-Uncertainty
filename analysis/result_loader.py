@@ -84,7 +84,8 @@ class ResultLoader(Namespacify):
             if contents.is_dir():
                 inner_res = self._load_results(contents, relevant_vals, replacement_func)
                 if len(inner_res):
-                    print(f'Loaded results from: {contents}')
+                    if any(k in inner_res.keys() for k in ('train_log', 'evaluate_log')):
+                        print(f'Loaded results from: {contents}')
                     results[replacement_func(contents.name)] = inner_res
                 continue
             else:
