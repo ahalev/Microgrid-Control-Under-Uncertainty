@@ -74,6 +74,7 @@ algo:
       loss: log_prob
       policy_lr: 0.01
       episodes_per_batch: 10
+    additional_config: null
   train:
     batch_size: 50000
     steps_per_epoch: 32
