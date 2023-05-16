@@ -540,7 +540,9 @@ class ResultLoader(Namespacify):
 
     @classmethod
     def nested_dict_relevance(cls, nested_dict, relevant_results, parent_keys=()):
-        relevant = {}
+        relevant = nested_dict.copy()
+        relevant.clear()
+
         for k, v in nested_dict.items():
             if isinstance(v, (dict, UserDict)):
                 inner_relevant = cls.nested_dict_relevance(v, relevant_results, (*parent_keys, k))
