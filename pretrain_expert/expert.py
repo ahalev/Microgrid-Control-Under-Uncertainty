@@ -12,19 +12,22 @@ from pymgrid import algos
 
 
 class Expert(Iterator):
-    def __init__(self, expert_type, episodes_per_batch):
-        self.trainer = self._get_trainer(expert_type)
+    def __init__(self, expert_type, episodes_per_batch, additional_config=None):
+        self.trainer = self._get_trainer(expert_type, additional_config)
         self.episodes_per_batch = episodes_per_batch
         self.env = self.trainer.env
         self.agent = ExpertAgent(algo=self.trainer.algo, env=self.env)
         self.worker = self._get_worker()
         self.stats = None
 
-    def _get_trainer(self, expert_type):
+    def _get_trainer(self, expert_type, additional_config):
+        if additional_config is None:
+            additional_config = {}
+
         if expert_type == 'rbc':
-            return RBCTrainer()
+            return RBCTrainer(additional_config)
         elif expert_type == 'mpc':
-            return MPCTrainer()
+            return MPCTrainer(additional_config)
 
         raise ValueError(f"expert_type must be 'rbc' or 'mpc', not '{expert_type}'.")
 
