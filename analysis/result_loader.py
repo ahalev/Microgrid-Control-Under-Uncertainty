@@ -599,6 +599,12 @@ class ResultLoader(Namespacify):
 
         return df
 
+    def absolute_result_paths(self):
+        if isinstance(self.result_dir, (dict, UserDict)):
+            return [self.result_dir[loc[0]].joinpath(*loc[1:]) for loc in self.result_list]
+
+        return [self.result_dir.joinpath(*loc) for loc in self.result_list]
+
     def iterlist(self):
         for loc in self.result_list:
             yield self[loc]
