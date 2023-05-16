@@ -51,7 +51,9 @@ class ResultLoader(Namespacify):
         Location to save figures and other results. If None, do not save other results.
     """
 
-    def __init__(self, results_or_dir, relevant_results=None, save_dir=None, renamer=None, replacements=()):
+    def __init__(self, results_or_dir, relevant_results=None, save_dir=None, renamer=None, replacements=(), verbose=1):
+        self.verbose = verbose
+
         results, result_dir = self._get_dict_results(results_or_dir, relevant_results, replacements)
         super().__init__(results)
         self._rename(renamer)
@@ -90,6 +92,8 @@ class ResultLoader(Namespacify):
                 continue
             else:
                 if not self.is_relevant(contents, relevant_vals):
+                    if self.verbose >= 2:
+                        print(f'Ignoring non-relevant contents:\n\t{contents}')
                     continue
 
             if contents.suffix == '.yaml':
