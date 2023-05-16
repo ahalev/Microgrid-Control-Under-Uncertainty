@@ -535,8 +535,8 @@ class ResultLoader(Namespacify):
 
     @classmethod
     def combine_loaders(cls, loaders_dict, relevant_results=None, save_dir=None):
-        loaders_dict = cls.nested_dict_relevance(loaders_dict, relevant_results)
-        return cls(loaders_dict, save_dir=save_dir)
+        relevant_loaders = cls.nested_dict_relevance(loaders_dict, relevant_results)
+        return cls(relevant_loaders, save_dir=save_dir)
 
     @classmethod
     def nested_dict_relevance(cls, nested_dict, relevant_results, parent_keys=()):
