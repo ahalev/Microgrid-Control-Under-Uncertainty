@@ -73,7 +73,7 @@ class Trainer:
         cls.config = config
         return super().__new__(cls)
 
-    def __init__(self, setup_algo=True, serialize_config=True, *args, **kwargs):
+    def __init__(self, *args, setup_algo=True, serialize_config=True, **kwargs):
         self.microgrid = self._setup_microgrid()
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
