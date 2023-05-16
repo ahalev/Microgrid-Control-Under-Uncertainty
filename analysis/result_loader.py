@@ -57,7 +57,7 @@ class ResultLoader(Namespacify):
         self._rename(renamer)
         self._check_renamed(renamer)
 
-        self.passed_result_dir = result_dir
+        self.result_dir = result_dir
         self.save_dir = Path(save_dir) if save_dir else None
 
         self.result_list = self._get_result_list()
@@ -70,7 +70,7 @@ class ResultLoader(Namespacify):
                 warnings.warn('Non-empty relevant_results will be ignored when combining results.')
             if replacements:
                 warnings.warn('Non-empty replacements will be ignored when combining results.')
-            return results_or_dir, None
+            return results_or_dir, {name: results.result_dir for name, results in results_or_dir.items()}
 
         result_dir = Path(results_or_dir)
         replacement_func = lambda x: reduce(lambda string, f: f(string), replacements, x)
