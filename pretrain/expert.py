@@ -26,8 +26,10 @@ class Expert(Iterator):
 
         if expert_type == 'rbc':
             return RBCTrainer(additional_config)
+            # return RBCTrainer([additional_config, {'env.observation_keys': 'exclude_forecast'}])
         elif expert_type == 'mpc':
             return MPCTrainer(additional_config)
+            # return MPCTrainer([additional_config, {'env.observation_keys': 'exclude_forecast'}])
 
         raise ValueError(f"expert_type must be 'rbc' or 'mpc', not '{expert_type}'.")
 
