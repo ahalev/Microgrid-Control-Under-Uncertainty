@@ -601,7 +601,7 @@ class PreTrainer(RLTrainer):
         raise ValueError(f"config.pretrain.algo_to_pretrain must be 'ddpg' or 'ppo', not '{algo_to_pretrain}'.")
 
     def _get_expert(self):
-        from pretrain_expert import Expert
+        from pretrain import Expert
         return Expert(expert_type=self.config.algo.pretrain.pretrain_algo,
                       episodes_per_batch=self.config.algo.pretrain.params.episodes_per_batch,
                       additional_config=self.config.algo.pretrain.additional_config)
