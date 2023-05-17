@@ -190,11 +190,12 @@ class Trainer:
     def _evaluate(self):
         return self.algo.run(verbose=self.config.verbosity > 0)
 
-    def save_with_metadata(self, table, log_dir, fname):
+    @staticmethod
+    def save_with_metadata(table, log_dir, fname):
         log_path = os.path.join(log_dir, fname)
         table.to_csv(log_path)
 
-        metadata = self.get_metadata(table)
+        metadata = Trainer.get_metadata(table)
         metadata_stream = Path(f'{log_path}.tag')
 
         with metadata_stream.open('w') as f:
