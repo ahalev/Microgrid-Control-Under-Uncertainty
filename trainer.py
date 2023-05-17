@@ -228,6 +228,18 @@ class Trainer:
 
         return microgrid
 
+    @staticmethod
+    def load_pretrained_policy(pretrained_policy_dir, self_config=None):
+        pretrainer = RLTrainer.load(pretrained_policy_dir, setup_algo=False)
+
+        if self_config is not None:
+            symmetric_config_diff = self_config.symmetric_difference(pretrainer.config)
+            if symmetric_config_diff:
+                warnings.warn(f'Difference between config and pretrained config exists:\n'
+                              f'{symmetric_config_diff.pprint(log_func=lambda x: None)}')
+
+        return pretrainer.algo.learner
+
     @classmethod
     def load(cls, log_dir, additional_config=None, additional_garage_data=None, setup_algo=False):
         """
@@ -496,7 +508,8 @@ class DDPGTrainer(RLTrainer):
 
         policy = self.setup_policy(self.env.spec,
                                    self.config.algo.policy.hidden_sizes,
-                                   pretrained_policy=self.config.algo.policy.pretrained_policy)
+                                   pretrained_policy=self.config.algo.policy.pretrained_policy,
+                                   self_config=self.config)
 
         exploration_policy = AddOrnsteinUhlenbeckNoise(self.env.spec, policy,
                                                        sigma=self.config.algo.ddpg.policy.exploration.sigma,
@@ -505,10 +518,10 @@ class DDPGTrainer(RLTrainer):
         return qf, policy, exploration_policy
 
     @staticmethod
-    def setup_policy(env_spec, hidden_sizes, pretrained_policy=None):
+    def setup_policy(env_spec, hidden_sizes, pretrained_policy=None, self_config=None):
         if pretrained_policy is not None:
-            pretrainer = RLTrainer.load(pretrained_policy)
-            return pretrainer.algo.policy
+            return RLTrainer.load_pretrained_policy(pretrained_policy, self_config=self_config)
+
         return DeterministicMLPPolicy(env_spec, hidden_sizes=hidden_sizes, output_nonlinearity=torch.tanh)
 
     def _setup_rl_algo(self, qf, policy, exploration_policy, sampler):
@@ -536,17 +549,17 @@ class PPOTrainer(RLTrainer):
     def setup_rl_algo(self):
         policy = self.setup_policy(self.env.spec,
                                    self.config.algo.policy.hidden_sizes,
-                                   pretrained_policy=self.config.algo.policy.pretrained_policy)
+                                   pretrained_policy=self.config.algo.policy.pretrained_policy,
+                                   self_config=self.config)
         value_function = self._setup_value_func()
         sampler = self._setup_sampler(policy)
 
         return self._setup_rl_algo(policy, value_function, sampler), sampler
 
     @staticmethod
-    def setup_policy(env_spec, hidden_sizes, pretrained_policy=None):
+    def setup_policy(env_spec, hidden_sizes, pretrained_policy=None, self_config=None):
         if pretrained_policy is not None:
-            pretrainer = RLTrainer.load(pretrained_policy, additional_config={'algo.policy.pretrained_policy': None})
-            return pretrainer.algo.policy
+            return RLTrainer.load_pretrained_policy(pretrained_policy, self_config=self_config)
 
         return GaussianMLPPolicy(env_spec, hidden_sizes=hidden_sizes)
 
