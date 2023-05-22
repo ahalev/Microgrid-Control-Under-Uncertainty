@@ -29,7 +29,7 @@ from microgrid_loader import microgrid_from_config
 import pymgrid
 
 from pymgrid.algos import ModelPredictiveControl, RuleBasedControl
-from pymgrid.envs import ContinuousMicrogridEnv, DiscreteMicrogridEnv
+from pymgrid.envs import ContinuousMicrogridEnv, DiscreteMicrogridEnv, NetLoadContinuousMicrogridEnv
 
 
 DEFAULT_CONFIG = Path(__file__).parent / 'config/default_config.yaml'
@@ -84,8 +84,10 @@ class Trainer:
     def _setup_microgrid(self):
         return microgrid_from_config(self.config.microgrid)
 
-    def _setup_env(self):
-        env = self.env_class.from_microgrid(self.microgrid, observation_keys=self.config.env.observation_keys)
+    def _setup_env(self, **env_kwargs):
+        env = self.env_class.from_microgrid(self.microgrid,
+                                            observation_keys=self.config.env.observation_keys,
+                                            **env_kwargs)
         env = GymEnv(env, max_episode_length=len(env))
         env = self.set_trajectory(env, train=True)
         eval_env = self.set_trajectory(deepcopy(env), evaluate=True)
@@ -275,12 +277,20 @@ class Trainer:
 
 class RLTrainer(Trainer):
     algo_name = 'rl'
-    env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv]
+    env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv, NetLoadContinuousMicrogridEnv]
 
     def _setup_env(self):
-        env, eval_env = super()._setup_env()
+        env_kwargs = self._pre_env_setup()
+        env, eval_env = super()._setup_env(**env_kwargs)
         env = self._setup_domain_randomization(env)
         return env, eval_env
+
+    def _pre_env_setup(self):
+        if self.config.env.net_load.use:
+            self.env_class = NetLoadContinuousMicrogridEnv
+            return {'slack_module': self.config.env.net_load.slack_module}
+
+        return {}
 
     def _setup_domain_randomization(self, env):
         dr_config = self.config.env.domain_randomization
