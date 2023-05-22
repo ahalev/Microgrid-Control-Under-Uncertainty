@@ -4,6 +4,9 @@ env:
   domain_randomization:
     noise_std: null
     relative_noise: false
+  net_load:
+    use: false
+    slack_module: grid
 microgrid:
   config:
     scenario: 0
