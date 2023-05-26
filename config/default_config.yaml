@@ -38,8 +38,8 @@ algo:
   policy:
     pretrained_policy: null
     hidden_sizes:
-      - 8
-      - 5
+      - 32
+      - 32
   replay_buffer:
     buffer_size: 200000
   general_params:
