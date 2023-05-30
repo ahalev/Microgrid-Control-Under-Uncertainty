@@ -1,6 +1,10 @@
 import yaml
 
+from functools import reduce
 from pymgrid import Microgrid
+
+
+CMD_LINE_YAML_REPLACEMENTS = [('(', ' '), (')', ' '), (':', ': ')]
 
 
 def microgrid_from_config(microgrid_config):
@@ -43,6 +47,10 @@ def _set_microgrid_attributes(microgrid, config):
             try:
                 value = yaml.safe_load(value)
             except yaml.YAMLError:
-                value = yaml.safe_load(f'{value} {{}}')
+                try:
+                    value = yaml.safe_load(f'{value} {{}}')
+                except yaml.YAMLError:
+                    value = reduce(lambda _str, kv: _str.replace(*kv), CMD_LINE_YAML_REPLACEMENTS, value)
+                    value = yaml.safe_load(value)
 
         setattr(microgrid, attr, value)
