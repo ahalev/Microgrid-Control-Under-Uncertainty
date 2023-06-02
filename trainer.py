@@ -1,5 +1,4 @@
 import expfig
-import logging
 import pandas as pd
 import os
 import torch
@@ -43,8 +42,6 @@ class Trainer:
     env_class = ContinuousMicrogridEnv
 
     def __new__(cls: type, config=None, default=DEFAULT_CONFIG, *args, **kwargs):
-        logging.getLogger(__name__).setLevel(logging.INFO)
-
         config = expfig.Config(config=config, default=default)
         algo = config.algo.type
 
@@ -78,6 +75,7 @@ class Trainer:
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
         self.log_dirs = self._get_log_dir()
+        self.logger = expfig.logging.get_logger()
         if serialize_config:
             self.serialize_config()
 
@@ -412,6 +410,8 @@ class RLTrainer(Trainer):
     def evaluate_last_epoch(cls, log_dir, suffix=lambda epoch: f'evaluate_log_epoch_{epoch}'):
         trainer, experiment_stats = cls.load(log_dir, additional_garage_data='stats', setup_algo=False)
         last_epoch = experiment_stats.total_epoch
+
+        expfig.logging.get_logger().info(f'Evaluating last saved epoch ({last_epoch}).')
 
         evaluate_log_dir = os.path.join(log_dir, suffix(last_epoch))
         trainer.check_logdir_existence(evaluate_log_dir)
