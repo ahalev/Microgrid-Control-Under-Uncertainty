@@ -82,7 +82,8 @@ class Trainer:
     def _setup_microgrid(self):
         return microgrid_from_config(self.config.microgrid)
 
-    def _setup_env(self, **env_kwargs):
+    def _setup_env(self):
+        env_kwargs = self._pre_env_setup()
         env = self.env_class.from_microgrid(self.microgrid,
                                             observation_keys=self.config.env.observation_keys,
                                             **env_kwargs)
@@ -272,23 +273,22 @@ class Trainer:
         raise NotImplementedError(f'evaluate_last_epoch is implemented for subclasses of RLTrainer,'
                                   f'not {cls.__name__}')
 
-
-class RLTrainer(Trainer):
-    algo_name = 'rl'
-    env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv, NetLoadContinuousMicrogridEnv]
-
-    def _setup_env(self):
-        env_kwargs = self._pre_env_setup()
-        env, eval_env = super()._setup_env(**env_kwargs)
-        env = self._setup_domain_randomization(env)
-        return env, eval_env
-
     def _pre_env_setup(self):
         if self.config.env.net_load.use:
             self.env_class = NetLoadContinuousMicrogridEnv
             return {'slack_module': self.config.env.net_load.slack_module}
 
         return {}
+
+
+class RLTrainer(Trainer):
+    algo_name = 'rl'
+    env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv, NetLoadContinuousMicrogridEnv]
+
+    def _setup_env(self):
+        env, eval_env = super()._setup_env()
+        env = self._setup_domain_randomization(env)
+        return env, eval_env
 
     def _setup_domain_randomization(self, env):
         dr_config = self.config.env.domain_randomization
