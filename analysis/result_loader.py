@@ -167,7 +167,7 @@ class ResultLoader(Namespacify):
         return microgrids
 
     def _get_result_list(self):
-        return [x[:-1] for x in self.locate_deep_key('config')]
+        return [x[:-1] for x in self.locate_deep_key('evaluate_log')]
 
     def get_deep_values(self, key):
         return [self[x] for x in self.locate_deep_key(key)]
