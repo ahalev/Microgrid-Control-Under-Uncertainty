@@ -193,6 +193,9 @@ class ResultLoader(Namespacify):
             else:
                 cols = cols.intersection(result.evaluate_log.log.columns)
 
+        if cols is None:
+            raise RuntimeError('No results found in self.result_list.')
+
         if len(cols) == 0:
             raise RuntimeError
 
