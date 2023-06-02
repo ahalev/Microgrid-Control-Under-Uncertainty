@@ -50,6 +50,9 @@ class Expert(Iterator):
         return samples
 
     def _log_rollout(self, samples):
+        if self.stats is None:
+            self.stats = ExperimentStats(total_itr=0, total_env_steps=0, total_epoch=0, last_episode=None)
+
         self.stats.total_env_steps += sum(samples.lengths)
         log_performance(self.stats, samples, discount=1.0, prefix='Expert')
 
