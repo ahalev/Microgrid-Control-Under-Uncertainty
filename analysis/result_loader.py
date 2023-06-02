@@ -238,7 +238,7 @@ class ResultLoader(Namespacify):
             return partition[0], partition[2]
 
         for key in rewards_dict.keys():
-            key_group = dict(get_group(k) for k in key)
+            key_group = dict([get_group(k) for k in key])
             key_groups.append(key_group)
 
         group_frame = pd.DataFrame(key_groups)
