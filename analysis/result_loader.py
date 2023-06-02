@@ -201,11 +201,23 @@ class ResultLoader(Namespacify):
 
         return cols
 
-    def get_value_from_logs(self, log_column, fill_missing_levels=True, missing_level_fill_val='MISSING'):
+    def get_value_from_logs(self, log_column,
+                            fill_missing_levels=True,
+                            missing_level_fill_val='MISSING',
+                            errors='ignore'):
         rewards_dict = {}
         for loc, result in self.iterdict():
             log = result.evaluate_log.log
-            rewards_dict[loc] = log.loc[:, log_column]
+            try:
+                rewards_dict[loc] = log.loc[:, log_column]
+            except KeyError:
+                if errors == 'ignore':
+                    pass
+                elif errors == 'raise':
+                    msg = f'Evaluate log at position below does not contain key.\n\tPosition: {loc}\n\tkey: {log_column}'
+                    raise KeyError(msg)
+                else:
+                    raise ValueError(f"Unrecognized error handling '{errors}'")
 
         if fill_missing_levels:
             rewards_dict = self._fill_missing_levels(rewards_dict, missing_level_fill_val)
