@@ -533,7 +533,7 @@ class DDPGTrainer(RLTrainer):
         if pretrained_policy is not None:
             return RLTrainer.load_pretrained_policy(pretrained_policy, self_config=self_config)
 
-        return DeterministicMLPPolicy(env_spec, hidden_sizes=hidden_sizes, output_nonlinearity=torch.tanh)
+        return DeterministicMLPPolicy(env_spec, hidden_sizes=hidden_sizes, output_nonlinearity=torch.sigmoid)
 
     def _setup_rl_algo(self, qf, policy, exploration_policy, sampler):
 
