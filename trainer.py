@@ -16,7 +16,7 @@ from garage.sampler import LocalSampler, RaySampler
 from garage.trainer import Trainer as GarageTrainer
 from garage.np.exploration_policies import EpsilonGreedyPolicy, AddOrnsteinUhlenbeckNoise
 from garage.torch.algos import DQN, DDPG, PPO, BC
-from garage.torch.policies import DiscreteQFArgmaxPolicy, DeterministicMLPPolicy, GaussianMLPPolicy
+from garage.torch.policies import DiscreteQFArgmaxPolicy, DeterministicMLPPolicy, GaussianMLPPolicy, TanhGaussianMLPPolicy
 from garage.torch.q_functions import DiscreteMLPQFunction, ContinuousMLPQFunction
 from garage.torch.value_functions import GaussianMLPValueFunction
 from garage.replay_buffer import PathBuffer
@@ -571,6 +571,12 @@ class PPOTrainer(RLTrainer):
     def setup_policy(env_spec, hidden_sizes, pretrained_policy=None, self_config=None):
         if pretrained_policy is not None:
             return RLTrainer.load_pretrained_policy(pretrained_policy, self_config=self_config)
+
+        from utils.kl_register import register_tanhnormal
+
+        register_tanhnormal()
+
+        return TanhGaussianMLPPolicy(env_spec, hidden_sizes=hidden_sizes)
 
         return GaussianMLPPolicy(env_spec, hidden_sizes=hidden_sizes)
 
