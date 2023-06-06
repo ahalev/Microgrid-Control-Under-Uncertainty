@@ -459,14 +459,12 @@ class ResultLoader(Namespacify):
             hue=hue,
             style=style,
             units=units,
+            markers=markers,
             col=relplot_col,
             col_wrap=col_wrap,
             palette=sns.color_palette(palette, n_colors=yval[hue].nunique()) if hue is not None else None,
             estimator='mean' if units is None else None
         )
-
-        # if relative_to is not None:
-        #     g.set(ylim=(0.75, 1.25))
 
         for ax in g.axes_dict.values():
             ax.set_title(f'{ax.get_title()} ({y[0].title()} {y[-1]})')
