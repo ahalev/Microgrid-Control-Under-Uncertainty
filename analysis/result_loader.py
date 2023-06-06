@@ -347,6 +347,7 @@ class ResultLoader(Namespacify):
                            style=None,
                            units=None,
                            palette=None,
+                           markers=None,
                            relplot_col=None,
                            save=True):
         module = module if module else 'balance'
@@ -364,6 +365,7 @@ class ResultLoader(Namespacify):
             style=style,
             units=units,
             palette=palette,
+            markers=markers,
             relplot_col=relplot_col,
             ylabel=f'{"Relative "*(relative_to is not None)}Cumulative Cost',
             save=save
@@ -382,6 +384,7 @@ class ResultLoader(Namespacify):
              style=None,
              units=None,
              palette=None,
+             markers=None,
              relplot_col=None,
              xlabel=None,
              ylabel=None,
