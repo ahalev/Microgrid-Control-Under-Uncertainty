@@ -420,6 +420,9 @@ class RLTrainer(Trainer):
 
     @staticmethod
     def check_logdir_existence(log_dir):
+
+        logger = expfig.logging.get_logger()
+
         try:
             os.mkdir(log_dir)
         except FileExistsError:
@@ -432,9 +435,10 @@ class RLTrainer(Trainer):
             else:
                 contents_str = '\nDirectory is empty.'
 
-            warnings.warn(f'Logging to directory that already exists:\n\t{log_dir}'
-                          f'{contents_str}\nContinuing in five seconds.')
+            logger.warning(f'Logging to directory that already exists:\n\t{log_dir}'
+                           f'{contents_str}\nContinuing in five seconds.')
             time.sleep(5)
+            logger.info('Continuing...')
 
 
 class DQNTrainer(RLTrainer):
