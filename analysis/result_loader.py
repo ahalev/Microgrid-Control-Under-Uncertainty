@@ -515,12 +515,12 @@ class ResultLoader(Namespacify):
 
             if missing:
                 nlnt2 = '\n\t\t'
-                missing = [f"Level: {j}{nlnt2}Missing Value: {val}{nlnt2}Existing Values: {lvl_vals}" for
-                           j, val, lvl_vals in missing]
-                missing = '\n\t'.join(missing)
+                missing_msg = [f"Level: {j}{nlnt2}Missing or non-unique Value: {val}{nlnt2}Existing Values: {lvl_vals}"
+                               for j, val, lvl_vals in missing]
+                missing_msg = '\n\t'.join(missing_msg)
 
                 msg = f'The combination {relative_slice} does not exist.\nThe following values are missing:' \
-                      f'\n\t{missing}\n\n\t Do you need to make your result relative to some value in these column(s) ' \
+                      f'\n\t{missing_msg}\n\n\t Do you need to make your result relative to some value in these column(s) ' \
                       f'as well?'
                 raise ValueError(msg)
 
