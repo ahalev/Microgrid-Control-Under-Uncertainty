@@ -93,15 +93,27 @@ class BC(_GarageBC):
         batch = self._obtain_samples(trainer, epoch)
         indices = np.random.permutation(len(batch.actions)-1)
         minibatches = np.array_split(indices, self._minibatches_per_epoch)
+
         losses = []
+        qf_losses, qvals, y_targets = [], [], []
+        vf_losses = []
         for minibatch in minibatches:
-            observations = np_to_torch(batch.observations[minibatch])
-            actions = np_to_torch(batch.actions[minibatch])
-            self._optimizer.zero_grad()
-            loss = self._compute_loss(observations, actions)
-            loss.backward()
-            losses.append(loss.item())
-            self._optimizer.step()
+            loss = self._train_policy_once(batch, minibatch)
+            qf_loss, qval, y_target = self._train_qf_once(batch, minibatch)
+            vf_loss = self._train_vf_once(batch, minibatch)
+
+            losses.append(loss)
+
+            qf_losses.append(qf_loss)
+            qvals.append(qval)
+            y_targets.append(y_target)
+
+            vf_losses.append(vf_loss)
+
+        self.update_target_qf()
+
+        self._log_epoch(epoch, qf_losses, qvals, y_targets, vf_losses)
+
         return losses
 
     def _obtain_samples(self, trainer, epoch):
