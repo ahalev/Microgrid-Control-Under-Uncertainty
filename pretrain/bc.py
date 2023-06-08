@@ -91,7 +91,7 @@ class BC(_GarageBC):
             return super()._train_once(trainer, epoch)
 
         batch = self._obtain_samples(trainer, epoch)
-        indices = np.random.permutation(len(batch.actions))
+        indices = np.random.permutation(len(batch.actions)-1)
         minibatches = np.array_split(indices, self._minibatches_per_epoch)
         losses = []
         for minibatch in minibatches:
