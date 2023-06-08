@@ -345,8 +345,9 @@ class RLTrainer(Trainer):
                 self.config.default_config.algo[other_algo])
 
             if custom_in_other:
-                warnings.warn(f"Custom parameters for algorithm '{other_algo}' will be ignored with "
-                              f"algo='{self.algo_name}': \n{custom_in_other.pprint(indent=4)}")
+                log_func = lambda d: warnings.warn(f"Custom parameters for algorithm '{other_algo}' will be ignored "
+                                                   f"with algo='{self.algo_name}': \n{d}")
+                custom_in_other.pprint(indent=4, log_func=log_func)
 
     def _train(self, log_dir):
         if self.config.algo.package == 'garage':
