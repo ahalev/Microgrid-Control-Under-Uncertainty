@@ -97,6 +97,7 @@ class ExpertAgent:
         self.algo.microgrid = env
 
     def get_action(self, obs):
+        assert self.algo.microgrid is self.env
         algo_action = self.algo.get_action()
         converted = self.env.convert_action(algo_action, to_microgrid=False, normalize=True)
         return converted, {}
