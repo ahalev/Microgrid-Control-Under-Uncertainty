@@ -571,7 +571,8 @@ class PPOTrainer(RLTrainer):
                                    self.config.algo.policy.hidden_sizes,
                                    pretrained_policy=self.config.algo.policy.pretrained_policy,
                                    self_config=self.config)
-        value_function = self._setup_value_func()
+
+        value_function = self.setup_vf(self.env.spec, self.config.algo.policy.hidden_sizes)
         sampler = self._setup_sampler(policy)
 
         return self._setup_rl_algo(policy, value_function, sampler), sampler
@@ -589,8 +590,9 @@ class PPOTrainer(RLTrainer):
 
         return GaussianMLPPolicy(env_spec, hidden_sizes=hidden_sizes)
 
-    def _setup_value_func(self):
-        return GaussianMLPValueFunction(env_spec=self.env.spec, hidden_sizes=self.config.algo.policy.hidden_sizes)
+    @staticmethod
+    def setup_vf(env_spec, hidden_sizes):
+        return GaussianMLPValueFunction(env_spec, hidden_sizes)
 
     def _setup_rl_algo(self, policy, value_function, sampler):
         return PPO(
