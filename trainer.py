@@ -650,7 +650,8 @@ class PreTrainer(RLTrainer):
             source=expert,
             sampler=sampler,
             loss=self.config.algo.pretrain.params.loss,
-            policy_lr=self.config.algo.pretrain.params.policy_lr
+            policy_lr=self.config.algo.pretrain.params.policy_lr,
+            **qf_or_vf
         )
 
     def update_trainer(self, trainer):
