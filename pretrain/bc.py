@@ -31,7 +31,13 @@ class BC(_GarageBC):
             name='BC',
             qf=None,
             qf_optimizer=torch.optim.Adam,
-            qf_lr=_Default(1e-3)
+            qf_lr=_Default(1e-3),
+            qf_target='expert',
+            target_update_tau=0.01,
+            value_function=None,
+            vf_optimizer=torch.optim.Adam,
+            vf_lr=_Default(1e-3),
+            discount=0.99,
     ):
         super().__init__(
             env_spec,
