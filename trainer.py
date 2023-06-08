@@ -71,11 +71,11 @@ class Trainer:
         return super().__new__(cls)
 
     def __init__(self, *args, setup_algo=True, serialize_config=True, **kwargs):
+        self.logger = expfig.logging.get_logger()
         self.microgrid = self._setup_microgrid()
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
         self.log_dirs = self._get_log_dir()
-        self.logger = expfig.logging.get_logger()
         if serialize_config:
             self.serialize_config()
 
