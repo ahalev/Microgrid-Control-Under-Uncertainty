@@ -15,7 +15,7 @@ from garage.experiment.deterministic import set_seed
 from garage.sampler import LocalSampler, RaySampler
 from garage.trainer import Trainer as GarageTrainer
 from garage.np.exploration_policies import EpsilonGreedyPolicy, AddOrnsteinUhlenbeckNoise
-from garage.torch.algos import DQN, DDPG, PPO, BC
+from garage.torch.algos import DQN, DDPG, PPO
 from garage.torch.policies import DiscreteQFArgmaxPolicy, DeterministicMLPPolicy, GaussianMLPPolicy, TanhGaussianMLPPolicy
 from garage.torch.q_functions import DiscreteMLPQFunction, ContinuousMLPQFunction
 from garage.torch.value_functions import GaussianMLPValueFunction
@@ -640,7 +640,9 @@ class PreTrainer(RLTrainer):
                       episodes_per_batch=self.config.algo.pretrain.params.episodes_per_batch,
                       additional_config=self.config.algo.pretrain.additional_config)
 
-    def _setup_rl_algo(self, learner, expert, sampler):
+    def _setup_rl_algo(self, learner, expert, sampler, qf_or_vf):
+        from pretrain import BC
+
         return BC(
             env_spec=self.env.spec,
             learner=learner,
