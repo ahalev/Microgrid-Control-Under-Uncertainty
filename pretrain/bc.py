@@ -53,9 +53,26 @@ class BC(_GarageBC):
         )
 
         self._qf = qf
-        self._qf_optimizer = make_optimizer(qf_optimizer,
-                                            module=self._qf,
-                                            lr=qf_lr)
+        if self._qf:
+            self._qf_optimizer = make_optimizer(qf_optimizer, module=self._qf, lr=qf_lr) if self._qf else None
+        else:
+            self._qf_optimizer = None
+
+        assert qf_target in ('learner', 'expert'), "qf_target must be 'learner' or 'expert'"
+
+        self._qf_target = qf_target
+        self._tau = target_update_tau
+        self._discount = discount
+
+        self._target_learner = deepcopy(self.learner)
+        self._target_qf = deepcopy(self._qf)
+
+        self._value_function = value_function
+
+        if self._value_function:
+            self._vf_optimizer = make_optimizer(vf_optimizer, module=self._value_function, lr=vf_lr)
+        else:
+            self._vf_optimizer = None
 
     def _train_once(self, trainer, epoch):
         """Obtain samplers and train for one epoch.
