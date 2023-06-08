@@ -1,9 +1,17 @@
 import torch
 import numpy as np
 
-from garage import _Default, make_optimizer
-from garage.torch import np_to_torch
+from copy import deepcopy
+from dowel import tabular
+
+from garage import _Default, make_optimizer, EpisodeBatch
+from garage.np.policies import Policy
+from garage.np import discount_cumsum
+from garage.torch import np_to_torch, filter_valids
+from garage.torch._functions import zero_optim_grads
 from garage.torch.algos import BC as _GarageBC
+
+
 
 # TODO need to use this, figure out how to initialize qf (and value function for ppo)
 
