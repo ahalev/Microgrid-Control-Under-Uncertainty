@@ -651,7 +651,9 @@ class PreTrainer(RLTrainer):
             sampler=sampler,
             loss=self.config.algo.pretrain.params.loss,
             policy_lr=self.config.algo.pretrain.params.policy_lr,
-            **qf_or_vf
+            **qf_or_vf,  # qf OR value_function
+            **self.config.algo.general_params,  # discount
+            **self.config.algo.ddpg.params,  # target_update_tau
         )
 
     def update_trainer(self, trainer):
