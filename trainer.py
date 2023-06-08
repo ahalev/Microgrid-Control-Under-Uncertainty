@@ -611,21 +611,28 @@ class PreTrainer(RLTrainer):
     expert = None
 
     def setup_rl_algo(self):
-        learner = self._setup_learner()
+        learner, qf_or_vf = self._setup_learner()
         self.expert = self._get_expert()
         sampler = self._setup_sampler(self.expert)
 
-        return self._setup_rl_algo(learner, self.expert, sampler), sampler
+        return self._setup_rl_algo(learner, self.expert, sampler, qf_or_vf), sampler
 
     def _setup_learner(self):
         algo_to_pretrain = self.config.algo.pretrain.algo_to_pretrain
 
-        if algo_to_pretrain == 'ddpg':
-            return DDPGTrainer.setup_policy(self.env.spec, self.config.algo.policy.hidden_sizes)
-        elif algo_to_pretrain == 'ppo':
-            return PPOTrainer.setup_policy(self.env.spec, self.config.algo.policy.hidden_sizes)
+        env_spec = self.env.spec
+        hidden_sizes = self.config.algo.policy.hidden_sizes
 
-        raise ValueError(f"config.pretrain.algo_to_pretrain must be 'ddpg' or 'ppo', not '{algo_to_pretrain}'.")
+        if algo_to_pretrain == 'ddpg':
+            policy = DDPGTrainer.setup_policy(env_spec, hidden_sizes)
+            qf_or_vf = {'qf': DDPGTrainer.setup_qf(env_spec, hidden_sizes)}
+        elif algo_to_pretrain == 'ppo':
+            policy = PPOTrainer.setup_policy(env_spec, hidden_sizes)
+            qf_or_vf = {'value_function': PPOTrainer.setup_vf(env_spec, hidden_sizes)}
+        else:
+            raise ValueError(f"config.pretrain.algo_to_pretrain must be 'ddpg' or 'ppo', not '{algo_to_pretrain}'.")
+
+        return policy, qf_or_vf
 
     def _get_expert(self):
         from pretrain import Expert
