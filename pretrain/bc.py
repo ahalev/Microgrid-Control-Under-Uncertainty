@@ -86,6 +86,7 @@ class BC(_GarageBC):
             List[float]: Losses.
 
         """
+
         if self._qf is None:
             return super()._train_once(trainer, epoch)
 
