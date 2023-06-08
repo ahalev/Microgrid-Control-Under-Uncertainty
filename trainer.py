@@ -519,8 +519,7 @@ class DDPGTrainer(RLTrainer):
         return self._setup_rl_algo(qf, policy, exploration_policy, sampler), sampler
 
     def _setup_policies(self):
-        qf = ContinuousMLPQFunction(env_spec=self.env.spec,
-                                    hidden_sizes=self.config.algo.policy.hidden_sizes)
+        qf = self.setup_qf(self.env.spec, self.config.algo.policy.hidden_sizes)
 
         policy = self.setup_policy(self.env.spec,
                                    self.config.algo.policy.hidden_sizes,
@@ -532,6 +531,11 @@ class DDPGTrainer(RLTrainer):
                                                        theta=self.config.algo.ddpg.policy.exploration.theta)
 
         return qf, policy, exploration_policy
+
+    @staticmethod
+    def setup_qf(env_spec, hidden_sizes):
+        return ContinuousMLPQFunction(env_spec=env_spec,
+                                    hidden_sizes=hidden_sizes)
 
     @staticmethod
     def setup_policy(env_spec, hidden_sizes, pretrained_policy=None, self_config=None):
