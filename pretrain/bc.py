@@ -12,9 +12,6 @@ from garage.torch._functions import zero_optim_grads
 from garage.torch.algos import BC as _GarageBC
 
 
-
-# TODO need to use this, figure out how to initialize qf (and value function for ppo)
-
 class BC(_GarageBC):
     def __init__(
             self,
