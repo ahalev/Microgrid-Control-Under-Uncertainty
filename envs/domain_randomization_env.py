@@ -83,10 +83,6 @@ class DomainRandomizationWrapper(GymEnv):
         raise RuntimeError
 
     @property
-    def unwrapped(self):
-        return self._env
-
-    @property
     def noise_std(self):
         return self._noise_std
 
