@@ -23,6 +23,7 @@ from garage.replay_buffer import PathBuffer
 
 from callback import GarageCallback
 from envs import GymEnv, DomainRandomizationWrapper
+from rnd import RNDTrainer
 from microgrid_loader import microgrid_from_config
 
 import pymgrid
@@ -366,8 +367,7 @@ class RLTrainer(Trainer):
                          log_dir=log_dir,
                          use_existing_dir=True)
         def train(ctxt=None):
-            garage_trainer = GarageTrainer(ctxt)
-
+            garage_trainer = self._get_trainer(ctxt)
             self.update_trainer(garage_trainer)
 
             garage_trainer.setup(self.algo, self.env)
@@ -378,6 +378,17 @@ class RLTrainer(Trainer):
             print(f'Logged results in dir: {log_dir}')
 
         train()
+
+    def _get_trainer(self, ctxt):
+        rnd_config = self.config.algo.rnd
+        if not rnd_config.intrinsic_reward_weight:
+            return GarageTrainer(ctxt)
+
+        # tb logger in RndRewardModel is not json-serializable, block it.
+        from garage.experiment.experiment import LogEncoder
+        LogEncoder.BLOCKED_MODULES.add('tensorboardX')
+
+        return RNDTrainer(ctxt, rnd_config, self.env.observation_space)
 
     def _evaluate(self):
         env = self.eval_env.unwrapped
