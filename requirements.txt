@@ -1,6 +1,6 @@
 experiment-config
 garage
-gym
+gym>=0.26.2
 matplotlib
 numpy
 pandas
