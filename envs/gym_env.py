@@ -12,6 +12,16 @@ class GymEnv(_GarageGymEnv):
         self._observation_space.dtype = self._env.observation_space.dtype
         self._action_space.dtype = self._env.action_space.dtype
 
+    def unwrap(self):
+        return self._env
+
+    @property
+    def unwrapped(self):
+        try:
+            return self._env.unwrap()
+        except AttributeError:
+            return self._env
+
     def __setattr__(self, key, value):
         try:
             self.__getattribute__(key)
