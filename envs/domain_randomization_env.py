@@ -1,4 +1,4 @@
-from envs import GymEnv
+from envs import GymEnv, parse_potential_gym_env
 
 from pymgrid import dry_run
 from pymgrid.forecast import GaussianNoiseForecaster
@@ -13,21 +13,13 @@ class DomainRandomizationWrapper(GymEnv):
                  max_episode_length=None):
 
         self._post_init = False
-        super().__init__(**self.parse_env(env, is_image, max_episode_length))
+        super().__init__(**parse_potential_gym_env(env, is_image, max_episode_length))
 
         self._noise_std = noise_std
         self._relative_noise = relative_noise
 
         self._noisemakers, self._og_time_series = self._get_noisemakers(False)
         self._post_init = True
-
-    def parse_env(self, env, is_image, max_episode_length):
-        if isinstance(env, GymEnv):
-            is_image = env.observation_space.__class__.__name__ == 'Image'
-            max_episode_length = env.spec.max_episode_length
-            env = env.unwrapped
-
-        return {'env': env, 'is_image': is_image, 'max_episode_length': max_episode_length}
 
     def _get_noisemakers(self, increase_uncertainty):
         noisemakers = []
