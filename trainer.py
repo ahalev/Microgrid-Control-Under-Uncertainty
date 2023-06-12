@@ -310,7 +310,7 @@ class RLTrainer(Trainer):
             return None
 
         self.warn_custom_params()
-        algo, self.sampler = self.setup_rl_algo()
+        algo, self.sampler, self.rnd_model = self.setup_rl_algo()
         return algo
 
     def _set_trajectories(self, train=False, evaluate=False):
@@ -338,6 +338,12 @@ class RLTrainer(Trainer):
             return LocalSampler(**sampler_kwargs)
         else:
             raise ValueError(f"Invalid sampler config type {sampler_config.type}, must be 'local' or 'ray'.")
+
+    def _setup_rnd_model(self):
+        rnd_config = self.config.algo.rnd
+        if not rnd_config.intrinsic_reward_weight:
+            return None
+        return RNDModel(self.env.spec.observation_space.shape[0], **rnd_config)
 
     def warn_custom_params(self):
         algos = ['dqn', 'ddpg', 'ppo', 'pretrain']
@@ -490,7 +496,8 @@ class DQNTrainer(RLTrainer):
     def setup_rl_algo(self):
         qf, policy, exploration_policy = self._setup_policies()
         sampler = self._setup_sampler(exploration_policy)
-        return self._setup_rl_algo(qf, policy, exploration_policy, sampler), sampler
+        rnd_model = self._setup_rnd_model()
+        return self._setup_rl_algo(qf, policy, exploration_policy, sampler), sampler, rnd_model
 
     def _setup_rl_algo(self, qf, policy, exploration_policy, sampler):
 
@@ -518,7 +525,8 @@ class DDPGTrainer(RLTrainer):
     def setup_rl_algo(self):
         qf, policy, exploration_policy = self._setup_policies()
         sampler = self._setup_sampler(exploration_policy)
-        return self._setup_rl_algo(qf, policy, exploration_policy, sampler), sampler
+        rnd_model = self._setup_rnd_model()
+        return self._setup_rl_algo(qf, policy, exploration_policy, sampler, rnd_model), sampler, rnd_model
 
     def _setup_policies(self):
         qf = self.setup_qf(self.env.spec, self.config.algo.policy.hidden_sizes)
@@ -577,8 +585,9 @@ class PPOTrainer(RLTrainer):
 
         value_function = self.setup_vf(self.env.spec, self.config.algo.policy.hidden_sizes)
         sampler = self._setup_sampler(policy)
+        rnd_model = self._setup_rnd_model()
 
-        return self._setup_rl_algo(policy, value_function, sampler), sampler
+        return self._setup_rl_algo(policy, value_function, sampler), sampler, rnd_model
 
     @staticmethod
     def setup_policy(env_spec, hidden_sizes, tanhnormal=False, pretrained_policy=None, self_config=None):
@@ -618,7 +627,7 @@ class PreTrainer(RLTrainer):
         self.expert = self._get_expert()
         sampler = self._setup_sampler(self.expert)
 
-        return self._setup_rl_algo(learner, self.expert, sampler, qf_or_vf), sampler
+        return self._setup_rl_algo(learner, self.expert, sampler, qf_or_vf), sampler, None
 
     def _setup_learner(self):
         algo_to_pretrain = self.config.algo.pretrain.algo_to_pretrain
