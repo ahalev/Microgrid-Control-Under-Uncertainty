@@ -381,7 +381,7 @@ class RLTrainer(Trainer):
 
     def _get_trainer(self, ctxt):
         rnd_config = self.config.algo.rnd
-        if not rnd_config.intrinsic_reward_weight:
+        if not rnd_config.model.intrinsic_reward_weight:
             return GarageTrainer(ctxt)
 
         # tb logger in RndRewardModel is not json-serializable, block it.
