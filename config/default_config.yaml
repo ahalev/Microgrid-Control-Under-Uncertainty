@@ -68,6 +68,7 @@ algo:
           sigma: 0.3
           theta: 0.15
   ppo:
+    tanhnormal: false
     params:
       center_adv: false
   pretrain:
