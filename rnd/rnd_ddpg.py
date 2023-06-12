@@ -67,8 +67,8 @@ class RNDDDPG(DDPG):
         # Add intrinsic rewards to episodes
         # Log intrinsic reward info
         episodes = self.transform_rewards(episodes)
-        super().train_once(itr, episodes)
         self._rnd_model.train_once(episodes.observations)
+        super().train_once(itr, episodes)
         # Train rnd model
         # Log intrinsic reward training
 
