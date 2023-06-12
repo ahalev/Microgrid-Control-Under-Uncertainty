@@ -1,4 +1,7 @@
+import numpy as np
 import torch
+
+from dowel import tabular
 
 from garage import make_optimizer
 from garage.torch._functions import zero_optim_grads
@@ -17,7 +20,7 @@ class RNDModel:
                  n_train_steps=32,
                  intrinsic_reward_weight=0.01,
                  extrinsic_reward_norm=True,
-                 extrinsic_reward_norm_max=1,
+                 extrinsic_reward_norm_bounds=(0, 1),
                  predictor_optimizer=torch.optim.Adam,
                  predictor_lr=1e-3):
 
@@ -25,7 +28,10 @@ class RNDModel:
         self.n_train_steps = n_train_steps
         self.intrinsic_reward_weight = intrinsic_reward_weight
         self.extrinsic_reward_norm = extrinsic_reward_norm
-        self.extrinsic_reward_norm_max = extrinsic_reward_norm_max
+        self.extrinsic_reward_norm_bounds = extrinsic_reward_norm_bounds
+
+        self._extrinsic_reward_norm_bound_range = extrinsic_reward_norm_bounds[1] - extrinsic_reward_norm_bounds[0]
+        assert self._extrinsic_reward_norm_bound_range > 0, f'Invalid bounds: {extrinsic_reward_norm_bounds}'
 
         self._reward_model = RNDNetwork(obs_dim, output_dim, hidden_sizes)
         self._reward_model_optimizer = make_optimizer(predictor_optimizer,
@@ -56,7 +62,20 @@ class RNDModel:
         self._reward_model_optimizer.step()
         return loss.detach()
 
+    def transform_rewards(self, obs, extrinsic_rewards):
+        intrinsic_rewards = self.compute_intrinsic_rewards(obs)
+        transformed_ext_rewards = self._transform_ext_rewards(extrinsic_rewards)
+        transformed = transformed_ext_rewards + self.intrinsic_reward_weight * intrinsic_rewards
+        assert transformed.shape == extrinsic_rewards.shape
+
+        self.log_rewards(transformed_ext_rewards, intrinsic_rewards, transformed)
+
+        return transformed
+
     def compute_intrinsic_rewards(self, obs):
+        if not isinstance(obs, torch.FloatTensor):
+            obs = torch.FloatTensor(obs)
+
         with torch.no_grad():
             predicted_feature, target_feature = self._reward_model(obs)
             mse_f = nn.MSELoss(reduction='none')
