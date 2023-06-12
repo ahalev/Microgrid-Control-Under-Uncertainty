@@ -83,6 +83,34 @@ class RNDModel:
             # TODO do we want to normalize?
             return mse.detach().numpy()
 
+    def _transform_ext_rewards(self, extrinsic_rewards):
+        if self.extrinsic_reward_norm:
+            # Transform from self.extrinsic_reward_norm_bounds to (0, 1)
+            return (extrinsic_rewards - self.extrinsic_reward_norm_bounds[0]) / self._extrinsic_reward_norm_bound_range
+
+        return extrinsic_rewards
+
+    @staticmethod
+    def log_rewards(extrinsic_rewards, intrinsic_rewards, total_rewards):
+        with tabular.prefix('RNDRewards/'):
+
+            tabular.record('AverageReward', np.mean(total_rewards))
+            tabular.record('AverageAbsReward', np.mean(np.abs(total_rewards)))
+            tabular.record('StdReward', np.std(total_rewards))
+            tabular.record('MaxReward', np.max(total_rewards))
+            tabular.record('MinReward', np.min(total_rewards))
+
+            tabular.record('AverageExtrinsicReward', np.mean(extrinsic_rewards))
+            tabular.record('AverageAbsExtrinsicReward', np.mean(np.abs(extrinsic_rewards)))
+            tabular.record('StdExtrinsicReward', np.std(extrinsic_rewards))
+            tabular.record('MaxExtrinsicReward', np.max(extrinsic_rewards))
+            tabular.record('MinExtrinsicReward', np.min(extrinsic_rewards))
+
+            tabular.record('AverageIntrinsicReward', np.mean(intrinsic_rewards))
+            tabular.record('StdIntrinsicReward', np.std(intrinsic_rewards))
+            tabular.record('MaxIntrinsicReward', np.max(intrinsic_rewards))
+            tabular.record('MinIntrinsicReward', np.min(intrinsic_rewards))
+
 
 class RNDNetwork(nn.Module):
     def __init__(self, obs_dim, output_dim, hidden_sizes):
