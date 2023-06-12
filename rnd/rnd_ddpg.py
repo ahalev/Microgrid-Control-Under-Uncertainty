@@ -67,15 +67,14 @@ class RNDDDPG(DDPG):
     def train_once(self, itr, episodes):
         # Add intrinsic rewards to episodes
         # Log intrinsic reward info
-        episodes = self.append_intrinsic_rewards(episodes)
+        episodes = self.transform_rewards(episodes)
         super().train_once(itr, episodes)
         self._rnd_model.train_once(episodes.observations)
         # Train rnd model
         # Log intrinsic reward training
 
-    def append_intrinsic_rewards(self, episodes):
+    def transform_rewards(self, episodes):
         episodes = deepcopy(episodes)
-        intrinsic_rewards = self._rnd_model.compute_intrinsic_rewards(episodes.observations)
-        episodes.rewards += intrinsic_rewards
-        # TODO log the intrinsic/extrinsic rewards
+        transformed_rewards = self._rnd_model.transform_rewards(episodes.observations, episodes.rewards)
+        episodes.rewards[:] = transformed_rewards
         return episodes
