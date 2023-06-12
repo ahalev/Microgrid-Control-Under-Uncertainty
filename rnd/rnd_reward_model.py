@@ -47,10 +47,9 @@ class RNDModel:
 
         for _ in range(self.n_train_steps):
             loss = self._train_step(obs_minibatch=next(dataloader_iter))
-            loss.append(losses)
+            losses.append(loss)
 
-        # TODO log this
-
+        self.log_training(losses)
         return losses
 
     def _train_step(self, obs_minibatch):
@@ -60,7 +59,13 @@ class RNDModel:
         zero_optim_grads(self._reward_model_optimizer)
         loss.backward()
         self._reward_model_optimizer.step()
-        return loss.detach()
+        return loss.detach().item()
+
+    @staticmethod
+    def log_training(losses):
+        with tabular.prefix('RNDModel/'):
+            tabular.record('AveragePredictorLoss', np.mean(losses))
+            tabular.record('MaxPredictorLoss', np.max(losses))
 
     def transform_rewards(self, obs, extrinsic_rewards):
         intrinsic_rewards = self.compute_intrinsic_rewards(obs)
