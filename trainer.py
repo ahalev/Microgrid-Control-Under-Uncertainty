@@ -569,6 +569,7 @@ class PPOTrainer(RLTrainer):
     def setup_rl_algo(self):
         policy = self.setup_policy(self.env.spec,
                                    self.config.algo.policy.hidden_sizes,
+                                   tanhnormal=self.config.algo.ppo.tanhnormal,
                                    pretrained_policy=self.config.algo.policy.pretrained_policy,
                                    self_config=self.config)
 
@@ -578,15 +579,15 @@ class PPOTrainer(RLTrainer):
         return self._setup_rl_algo(policy, value_function, sampler), sampler
 
     @staticmethod
-    def setup_policy(env_spec, hidden_sizes, pretrained_policy=None, self_config=None):
+    def setup_policy(env_spec, hidden_sizes, tanhnormal=False, pretrained_policy=None, self_config=None):
         if pretrained_policy is not None:
             return RLTrainer.load_pretrained_policy(pretrained_policy, self_config=self_config)
 
-        from utils.kl_register import register_tanhnormal
+        if tanhnormal:
+            from utils.kl_register import register_tanhnormal
+            register_tanhnormal()
 
-        register_tanhnormal()
-
-        return TanhGaussianMLPPolicy(env_spec, hidden_sizes=hidden_sizes)
+            return TanhGaussianMLPPolicy(env_spec, hidden_sizes=hidden_sizes)
 
         return GaussianMLPPolicy(env_spec, hidden_sizes=hidden_sizes)
 
