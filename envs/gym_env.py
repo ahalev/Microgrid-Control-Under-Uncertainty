@@ -39,5 +39,6 @@ def parse_potential_gym_env(env, is_image, max_episode_length):
     if isinstance(env, GymEnv):
         is_image = env.observation_space.__class__.__name__ == 'Image'
         max_episode_length = env.spec.max_episode_length
+        env = env.unwrapped
 
     return {'env': env, 'is_image': is_image, 'max_episode_length': max_episode_length}
