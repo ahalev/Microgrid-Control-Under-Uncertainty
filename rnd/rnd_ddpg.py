@@ -61,7 +61,6 @@ class RNDDDPG(DDPG):
             max_action=max_action,
             reward_scale=reward_scale
         )
-        # TODO define this
         self._rnd_model = rnd_model
 
     def train_once(self, itr, episodes):
