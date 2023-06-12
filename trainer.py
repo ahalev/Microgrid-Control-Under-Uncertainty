@@ -24,6 +24,7 @@ from garage.replay_buffer import PathBuffer
 from callback import GarageCallback
 from envs import GymEnv, DomainRandomizationWrapper
 from microgrid_loader import microgrid_from_config
+from rnd import RNDModel, RNDDDPG
 
 import pymgrid
 
