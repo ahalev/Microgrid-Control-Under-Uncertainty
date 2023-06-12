@@ -92,6 +92,7 @@ algo:
     extrinsic_reward_norm_bounds:
       - 0.0
       - 1.0
+    standardize_intrinsic_reward: true
   train:
     batch_size: 50000
     steps_per_epoch: 32
