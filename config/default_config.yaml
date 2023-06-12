@@ -83,7 +83,7 @@ algo:
     intrinsic_reward_weight: 0.01
     predictor_lr: 1e-3
     batch_size: 64
-    hidden_size_list:
+    hidden_sizes:
       - 64
       - 64
     output_dim: 128
