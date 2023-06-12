@@ -285,6 +285,7 @@ class Trainer:
 class RLTrainer(Trainer):
     algo_name = 'rl'
     env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv, NetLoadContinuousMicrogridEnv]
+    rnd_model: Union[RNDModel, None]
 
     def _setup_env(self):
         env, eval_env = super()._setup_env()
