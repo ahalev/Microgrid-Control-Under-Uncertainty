@@ -83,21 +83,25 @@ algo:
     steps_per_epoch: 32
     n_epochs: 100
   rnd:
-    type: rnd
-    intrinsic_reward_weight: 0.01
-    batch_size: 64
-    extrinsic_reward_norm: true
-    extrinsic_reward_norm_max: 1
-    hidden_size_list:
-      - 64
-      - 64
-      - 128
-    intrinsic_reward_type: add
-    learning_rate: 0.001
-    obs_norm: true
-    obs_norm_clamp_max: 1
-    obs_norm_clamp_min: -1
-    update_per_collect: 100
+    buffer:
+      size:
+        20000
+    model:
+      type: rnd
+      intrinsic_reward_weight: 0.01
+      batch_size: 64
+      extrinsic_reward_norm: true
+      extrinsic_reward_norm_max: 1
+      hidden_size_list:
+        - 64
+        - 64
+        - 128
+      intrinsic_reward_type: add
+      learning_rate: 0.001
+      obs_norm: true
+      obs_norm_clamp_max: 1
+      obs_norm_clamp_min: -1
+      update_per_collect: 100
 context:
   verbose: 0
   experiment_name: null
