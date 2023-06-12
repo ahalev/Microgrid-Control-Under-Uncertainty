@@ -592,7 +592,7 @@ class PPOTrainer(RLTrainer):
         sampler = self._setup_sampler(policy)
         rnd_model = self._setup_rnd_model()
 
-        return self._setup_rl_algo(policy, value_function, sampler), sampler, rnd_model
+        return self._setup_rl_algo(policy, value_function, sampler, rnd_model), sampler, rnd_model
 
     @staticmethod
     def setup_policy(env_spec, hidden_sizes, tanhnormal=False, pretrained_policy=None, self_config=None):
@@ -611,7 +611,11 @@ class PPOTrainer(RLTrainer):
     def setup_vf(env_spec, hidden_sizes):
         return GaussianMLPValueFunction(env_spec, hidden_sizes)
 
-    def _setup_rl_algo(self, policy, value_function, sampler):
+    def _setup_rl_algo(self, policy, value_function, sampler, rnd_model):
+        # TODO write
+        if rnd_model is not None:
+            raise RuntimeError('Code not setup!')
+
         return PPO(
             env_spec=self.env.spec,
             policy=policy,
