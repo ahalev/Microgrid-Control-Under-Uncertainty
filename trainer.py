@@ -554,11 +554,11 @@ class DDPGTrainer(RLTrainer):
 
         return DeterministicMLPPolicy(env_spec, hidden_sizes=hidden_sizes, output_nonlinearity=torch.sigmoid)
 
-    def _setup_rl_algo(self, qf, policy, exploration_policy, sampler):
+    def _setup_rl_algo(self, qf, policy, exploration_policy, sampler, rnd_model):
 
         replay_buffer = PathBuffer(capacity_in_transitions=self.config.algo.replay_buffer.buffer_size)
 
-        return DDPG(
+        ddpg_params = dict(
             env_spec=self.env.spec,
             policy=policy,
             qf=qf,
@@ -570,6 +570,11 @@ class DDPGTrainer(RLTrainer):
             **self.config.algo.deterministic_params,
             **self.config.algo.ddpg.params
         )
+
+        if rnd_model is None:
+            return DDPG(**ddpg_params)
+
+        return RNDDDPG(rnd_model=rnd_model, **ddpg_params)
 
 
 class PPOTrainer(RLTrainer):
