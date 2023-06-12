@@ -136,7 +136,7 @@ class RNDNetwork(nn.Module):
 class RNDDataset(torch.utils.data.Dataset):
     def __init__(self, obs):
         super().__init__()
-        self.obs = obs
+        self.obs = torch.FloatTensor(obs)
 
     def __len__(self):
         return self.obs.shape[0]
