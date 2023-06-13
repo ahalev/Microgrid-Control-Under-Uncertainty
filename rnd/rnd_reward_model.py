@@ -110,6 +110,16 @@ class RNDModel:
                 tabular.record('MaxReward', np.max(rewards))
                 tabular.record('MinReward', np.min(rewards))
 
+        if self.standardize_extrinsic_reward:
+            with tabular.prefix(f'RNDRewardsExtrinsic/'):
+                tabular.record('RewardRunningMean', self._extrinsic_reward_running_mean_std.mean)
+                tabular.record('RewardRunningVar', self._extrinsic_reward_running_mean_std.var)
+
+        if self.standardize_intrinsic_reward:
+            with tabular.prefix(f'RNDRewardsIntrinsic/'):
+                tabular.record('RewardRunningMean', self._intrinsic_reward_running_mean_std.mean)
+                tabular.record('RewardRunningVar', self._intrinsic_reward_running_mean_std.var)
+
 
 class RNDNetwork(nn.Module):
     def __init__(self, obs_dim, output_dim, hidden_sizes):
