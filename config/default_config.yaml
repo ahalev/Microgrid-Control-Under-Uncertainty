@@ -80,7 +80,7 @@ algo:
       episodes_per_batch: 10
     additional_config: null
   rnd:
-    intrinsic_reward_weight: 0.01
+    intrinsic_reward_weight: 0.0
     predictor_lr: 1.0e-3
     batch_size: 64
     hidden_sizes:
