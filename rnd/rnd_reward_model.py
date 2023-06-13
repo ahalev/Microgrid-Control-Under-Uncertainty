@@ -18,10 +18,9 @@ class RNDModel:
                  hidden_sizes=(64, 64),
                  batch_size=64,
                  n_train_steps=32,
-                 intrinsic_reward_weight=0.01,
+                 intrinsic_reward_weight=0.5,
                  standardize_intrinsic_reward=True,
-                 extrinsic_reward_norm=True,
-                 extrinsic_reward_norm_bounds=(0, 1),
+                 standardize_extrinsic_reward=True,
                  predictor_optimizer=torch.optim.Adam,
                  predictor_lr=1e-3):
 
@@ -29,17 +28,15 @@ class RNDModel:
         self.n_train_steps = n_train_steps
         self.intrinsic_reward_weight = intrinsic_reward_weight
         self.standardize_intrinsic_reward = standardize_intrinsic_reward
-        self.extrinsic_reward_norm = extrinsic_reward_norm
-        self.extrinsic_reward_norm_bounds = extrinsic_reward_norm_bounds
-
-        self._extrinsic_reward_norm_bound_range = extrinsic_reward_norm_bounds[1] - extrinsic_reward_norm_bounds[0]
-        assert self._extrinsic_reward_norm_bound_range > 0, f'Invalid bounds: {extrinsic_reward_norm_bounds}'
+        self.standardize_extrinsic_reward = standardize_extrinsic_reward
 
         self._reward_model = RNDNetwork(obs_dim, output_dim, hidden_sizes)
         self._reward_model_optimizer = make_optimizer(predictor_optimizer,
                                                       module=self._reward_model.predictor,
                                                       lr=predictor_lr)
-        self._reward_running_mean_std = RunningMeanStd()
+
+        self._extrinsic_reward_running_mean_std = RunningMeanStd()
+        self._intrinsic_reward_running_mean_std = RunningMeanStd()
 
     def train_once(self, observations):
         dataset = RNDDataset(observations)
