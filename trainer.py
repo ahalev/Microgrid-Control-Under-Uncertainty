@@ -24,7 +24,7 @@ from garage.replay_buffer import PathBuffer
 from callback import GarageCallback
 from envs import GymEnv, DomainRandomizationWrapper
 from microgrid_loader import microgrid_from_config
-from rnd import RNDModel, RNDDDPG
+from rnd import RNDModel, RNDDDPG, RNDPPO
 
 import pymgrid
 
@@ -612,11 +612,7 @@ class PPOTrainer(RLTrainer):
         return GaussianMLPValueFunction(env_spec, hidden_sizes)
 
     def _setup_rl_algo(self, policy, value_function, sampler, rnd_model):
-        # TODO write
-        if rnd_model is not None:
-            raise RuntimeError('Code not setup!')
-
-        return PPO(
+        ppo_params = dict(
             env_spec=self.env.spec,
             policy=policy,
             value_function=value_function,
@@ -624,6 +620,11 @@ class PPOTrainer(RLTrainer):
             **self.config.algo.general_params,
             **self.config.algo.ppo.params
         )
+
+        if rnd_model is None:
+            return PPO(**ppo_params)
+
+        return RNDPPO(rnd_model=rnd_model, **ppo_params)
 
 
 class PreTrainer(RLTrainer):
