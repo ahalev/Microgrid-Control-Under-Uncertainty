@@ -4,7 +4,7 @@ import numpy as np
 from copy import deepcopy
 
 from garage import _Default
-from garage.torch.algos import DDPG
+from garage.torch.algos import DDPG, PPO
 
 
 class RNDMixin:
@@ -26,3 +26,11 @@ class RNDMixin:
         transformed_rewards = self._rnd_model.transform_rewards(episodes.observations, episodes.rewards)
         episodes.rewards[:] = transformed_rewards
         return episodes
+
+
+class RNDDDPG(RNDMixin, DDPG):
+    pass
+
+
+class RNDPPO(RNDMixin, PPO):
+    pass
