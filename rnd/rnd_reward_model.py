@@ -88,15 +88,16 @@ class RNDModel:
             mse = mse.detach().numpy()
 
             if self.standardize_intrinsic_reward:
-                self._reward_running_mean_std.update(mse)
-                mse /= self._reward_running_mean_std.var
+                self._intrinsic_reward_running_mean_std.update(mse)
+                mse /= self._intrinsic_reward_running_mean_std.var
 
             return mse
 
     def _transform_ext_rewards(self, extrinsic_rewards):
-        if self.extrinsic_reward_norm:
+        if self.standardize_extrinsic_reward:
             # Transform from self.extrinsic_reward_norm_bounds to (0, 1)
-            return (extrinsic_rewards - self.extrinsic_reward_norm_bounds[0]) / self._extrinsic_reward_norm_bound_range
+            self._extrinsic_reward_running_mean_std.update(extrinsic_rewards)
+            return (extrinsic_rewards - self._extrinsic_reward_running_mean_std.mean) / self._extrinsic_reward_running_mean_std.var
 
         return extrinsic_rewards
 
