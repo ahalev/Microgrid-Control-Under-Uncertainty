@@ -21,6 +21,12 @@ class RNDMixin:
         # Train rnd model
         # Log intrinsic reward training
 
+    def _train_once(self, itr, episodes):
+        # For PPO
+        episodes = self.transform_rewards(episodes)
+        self._rnd_model.train_once(episodes.observations)
+        super()._train_once(itr, episodes)
+
     def transform_rewards(self, episodes):
         episodes = deepcopy(episodes)
         transformed_rewards = self._rnd_model.transform_rewards(episodes.observations, episodes.rewards)
