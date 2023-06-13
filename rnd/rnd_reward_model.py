@@ -103,26 +103,14 @@ class RNDModel:
 
         return extrinsic_rewards
 
-    @staticmethod
-    def log_rewards(extrinsic_rewards, intrinsic_rewards, total_rewards):
-        with tabular.prefix('RNDRewards/'):
-
-            tabular.record('AverageReward', np.mean(total_rewards))
-            tabular.record('AverageAbsReward', np.mean(np.abs(total_rewards)))
-            tabular.record('StdReward', np.std(total_rewards))
-            tabular.record('MaxReward', np.max(total_rewards))
-            tabular.record('MinReward', np.min(total_rewards))
-
-            tabular.record('AverageExtrinsicReward', np.mean(extrinsic_rewards))
-            tabular.record('AverageAbsExtrinsicReward', np.mean(np.abs(extrinsic_rewards)))
-            tabular.record('StdExtrinsicReward', np.std(extrinsic_rewards))
-            tabular.record('MaxExtrinsicReward', np.max(extrinsic_rewards))
-            tabular.record('MinExtrinsicReward', np.min(extrinsic_rewards))
-
-            tabular.record('AverageIntrinsicReward', np.mean(intrinsic_rewards))
-            tabular.record('StdIntrinsicReward', np.std(intrinsic_rewards))
-            tabular.record('MaxIntrinsicReward', np.max(intrinsic_rewards))
-            tabular.record('MinIntrinsicReward', np.min(intrinsic_rewards))
+    def log_rewards(self, extrinsic_rewards, intrinsic_rewards, total_rewards):
+        for k, rewards in dict(Overall=total_rewards, Extrinsic=extrinsic_rewards, Intrinsic=intrinsic_rewards).items():
+            with tabular.prefix(f'RNDRewards{k}/'):
+                tabular.record('AverageReward', np.mean(rewards))
+                tabular.record('AverageAbsReward', np.mean(np.abs(rewards)))
+                tabular.record('StdReward', np.std(rewards))
+                tabular.record('MaxReward', np.max(rewards))
+                tabular.record('MinReward', np.min(rewards))
 
 
 class RNDNetwork(nn.Module):
