@@ -88,10 +88,7 @@ algo:
       - 64
     output_dim: 128
     n_train_steps: 32
-    extrinsic_reward_norm: true
-    extrinsic_reward_norm_bounds:
-      - 0.0
-      - 1.0
+    standardize_extrinsic_reward: true
     standardize_intrinsic_reward: true
   train:
     batch_size: 50000
