@@ -9,13 +9,10 @@ class RNDMixin:
         self._rnd_model = rnd_model
 
     def train_once(self, itr, episodes):
-        # Add intrinsic rewards to episodes
-        # Log intrinsic reward info
+        # For DDPG
         episodes = self.transform_rewards(episodes)
         self._rnd_model.train_once(episodes.observations)
         super().train_once(itr, episodes)
-        # Train rnd model
-        # Log intrinsic reward training
 
     def _train_once(self, itr, episodes):
         # For PPO
