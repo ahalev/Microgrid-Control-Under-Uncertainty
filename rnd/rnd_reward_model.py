@@ -151,7 +151,7 @@ class RNDDataset(torch.utils.data.Dataset):
         return self.obs[index]
 
 
-class RunningMeanStd(object):
+class RunningMeanStd:
     # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
     def __init__(self, epsilon=1e-4, shape=()):
         self.mean = np.zeros(shape, 'float64')
