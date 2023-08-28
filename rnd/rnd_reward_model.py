@@ -22,7 +22,8 @@ class RNDModel:
                  standardize_intrinsic_reward=True,
                  standardize_extrinsic_reward=True,
                  predictor_optimizer=torch.optim.Adam,
-                 predictor_lr=1e-3):
+                 predictor_lr=1e-3,
+                 **mlp_kwargs):
 
         self.batch_size = batch_size
         self.n_train_steps = n_train_steps
@@ -30,7 +31,7 @@ class RNDModel:
         self.standardize_intrinsic_reward = standardize_intrinsic_reward
         self.standardize_extrinsic_reward = standardize_extrinsic_reward
 
-        self._reward_model = RNDNetwork(obs_dim, output_dim, hidden_sizes)
+        self._reward_model = RNDNetwork(obs_dim, output_dim, hidden_sizes, **mlp_kwargs)
         self._reward_model_optimizer = make_optimizer(predictor_optimizer,
                                                       module=self._reward_model.predictor,
                                                       lr=predictor_lr)
@@ -122,10 +123,11 @@ class RNDModel:
 
 
 class RNDNetwork(nn.Module):
-    def __init__(self, obs_dim, output_dim, hidden_sizes):
+    def __init__(self, obs_dim, output_dim, hidden_sizes, **mlp_kwargs):
         super().__init__()
-        self.target = MLPModule(obs_dim, output_dim, hidden_sizes)
-        self.predictor = MLPModule(obs_dim, output_dim, hidden_sizes)
+
+        self.target = MLPModule(obs_dim, output_dim, hidden_sizes, **mlp_kwargs)
+        self.predictor = MLPModule(obs_dim, output_dim, hidden_sizes, **mlp_kwargs)
 
         for param in self.target.parameters():
             param.requires_grad = False
