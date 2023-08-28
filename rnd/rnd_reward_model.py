@@ -90,7 +90,7 @@ class RNDModel:
 
             if self.standardize_intrinsic_reward:
                 self._intrinsic_reward_running_mean_std.update(mse)
-                mse /= self._intrinsic_reward_running_mean_std.var
+                mse /= self._intrinsic_reward_running_mean_std.var ** (1/2)
 
             return mse
 
