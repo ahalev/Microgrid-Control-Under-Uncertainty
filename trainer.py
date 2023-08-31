@@ -94,22 +94,28 @@ class Trainer:
 
         return env, eval_env
 
+    def experiment_name_tags(self):
+        tags = [self.algo_name]
+
+        if self.config.context.experiment_name:
+            tags.append(self.config.context.experiment_name)
+
+        tags.extend(self._get_log_dir_params(self.config.context.log_dir.from_keys))
+
+        experiment_name = self.config.context.experiment_name or Path(self.config.context.log_dir.parent).parts[-1]
+
+        return experiment_name, tags
+
     def _get_log_dir(self):
         log_config = self.config.context
-        experiment_name = log_config.experiment_name if log_config.experiment_name is not None else ''
 
         subdirs = ['config', 'train_log', 'evaluate_log']
 
         if log_config.log_dir.parent is None or log_config.log_dir.parent == 'null':
             log_dir = None
         else:
-            log_dir_params = self._get_log_dir_params(log_config.log_dir.from_keys)
-            log_dir = os.path.join(
-                log_config.log_dir.parent,
-                self.algo_name,
-                experiment_name,
-                *log_dir_params
-            )
+            _, tags = self.experiment_name_tags()
+            log_dir = os.path.join(log_config.log_dir.parent, *tags)
 
         try:
             log_dir = expfig.make_sequential_log_dir(
