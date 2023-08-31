@@ -103,4 +103,8 @@ context:
     use_existing_dir: false
   snapshot_gap: 10
   seed: 1
+  wandb:
+    api_key: local/wandb_api_key.txt
+    username: ahalev
+    group: null
 verbose: 1
