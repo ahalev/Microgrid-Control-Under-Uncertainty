@@ -107,7 +107,7 @@ class ResultLoader(Namespacify):
                                   f'File: {contents}\n\tException: {e.__class__.__name__}({e})')
             elif contents.suffix == '.tag':
                 continue
-            else:
+            elif self.verbose >= 2:
                 warnings.warn(f'Ignoring file of unrecognized type {contents.name}')
 
         return results
@@ -502,14 +502,14 @@ class ResultLoader(Namespacify):
         try:
             relative_col = original_col.div(values_relative_to[relative_slice], axis=0)
         except KeyError:
-            relative_slice = list(relative_slice)
+            _relative_slice = list(relative_slice)
             missing = []
 
             for lvl, value in enumerate(relative_slice):
                 unique_in_lvl = values_relative_to.columns.get_level_values(lvl).unique()
 
                 if len(unique_in_lvl) == 1:
-                    relative_slice[lvl] = unique_in_lvl.item()
+                    _relative_slice[lvl] = unique_in_lvl.item()
                 else:
                     missing.append((lvl, value, unique_in_lvl))
 
@@ -519,12 +519,12 @@ class ResultLoader(Namespacify):
                                for j, val, lvl_vals in missing]
                 missing_msg = '\n\t'.join(missing_msg)
 
-                msg = f'The combination {relative_slice} does not exist.\nThe following values are missing:' \
+                msg = f'The combination {_relative_slice} does not exist.\nThe following values are missing:' \
                       f'\n\t{missing_msg}\n\n\t Do you need to make your result relative to some value in these column(s) ' \
                       f'as well?'
                 raise ValueError(msg)
 
-            relative_col = original_col.div(values_relative_to[tuple(relative_slice)], axis=0)
+            relative_col = original_col.div(values_relative_to[tuple(_relative_slice)], axis=0)
 
         return relative_col
 
