@@ -1,13 +1,16 @@
 import expfig
+import functools
 import pandas as pd
 import os
 import torch
 import json
 import warnings
+import wandb
 
 from pathlib import Path
 from abc import abstractmethod
 from copy import deepcopy
+from dowel import set_wandb_env_keys
 from typing import Union
 
 from garage import wrap_experiment
@@ -77,11 +80,32 @@ class Trainer:
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
         self.log_dirs = self._get_log_dir()
+        self.has_wandb = set_wandb_env_keys(self.config.context.wandb.api_key, self.config.context.wandb.username)
         if serialize_config:
             self.serialize_config()
 
     def _setup_microgrid(self):
         return microgrid_from_config(self.config.microgrid)
+
+    def _setup_wandb(self, log_dir=None):
+        if not self.has_wandb:
+            return
+
+        experiment_name, tags = self.experiment_name_tags()
+
+        wandb_creator = functools.partial(
+            wandb.init,
+            project='gridrl',
+            name=experiment_name,
+            group=self.config.context.wandb.group,
+            config=self.config.to_dict(),
+            tags=tags,
+        )
+
+        if log_dir is not None:
+            return wandb_creator(dir=log_dir)
+
+        return wandb_creator
 
     def _setup_env(self):
         env_kwargs = self._pre_env_setup()
@@ -378,7 +402,8 @@ class RLTrainer(Trainer):
                          snapshot_gap=log_config.snapshot_gap,
                          archive_launch_repo=False,
                          log_dir=log_dir,
-                         use_existing_dir=True)
+                         use_existing_dir=True,
+                         wandb_run=self._setup_wandb())
         def train(ctxt=None):
             garage_trainer = GarageTrainer(ctxt)
 
