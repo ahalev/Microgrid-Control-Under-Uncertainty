@@ -81,6 +81,11 @@ class Trainer:
         self.algo = self._setup_algo(setup_algo=setup_algo)
         self.log_dirs = self._get_log_dir()
 
+        self.has_wandb = set_wandb_env_keys(
+            username=self.config.context.wandb.username,
+            api_key_file=self.config.context.wandb.api_key
+        )
+
         self.serialize_config(serialize_config)
 
     def _setup_microgrid(self):
