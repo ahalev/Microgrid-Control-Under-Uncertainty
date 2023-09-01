@@ -108,4 +108,4 @@ context:
     api_key: local/wandb_api_key.txt
     username: ahalev
     group: null
-verbose: 1
+verbose: 0
