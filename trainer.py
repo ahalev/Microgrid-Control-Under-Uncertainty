@@ -10,7 +10,7 @@ import wandb
 from pathlib import Path
 from abc import abstractmethod
 from copy import deepcopy
-from dowel import set_wandb_env_keys
+from dowel import tabular, set_wandb_env_keys
 from typing import Union
 
 from garage import wrap_experiment
@@ -80,9 +80,8 @@ class Trainer:
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
         self.log_dirs = self._get_log_dir()
-        self.has_wandb = set_wandb_env_keys(self.config.context.wandb.api_key, self.config.context.wandb.username)
-        if serialize_config:
-            self.serialize_config()
+
+        self.serialize_config(serialize_config)
 
     def _setup_microgrid(self):
         return microgrid_from_config(self.config.microgrid)
@@ -182,8 +181,11 @@ class Trainer:
 
         return dirs
 
-    def serialize_config(self):
-        self.config.serialize_to_dir(self.log_dirs["config"], use_existing_dir=True, with_default=True)
+    def serialize_config(self, serialize=True):
+        config_dir = self.log_dirs.get('config')
+
+        if config_dir and serialize:
+            self.config.serialize_to_dir(config_dir, use_existing_dir=True, with_default=True)
 
     @abstractmethod
     def _setup_algo(self, setup_algo):
