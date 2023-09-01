@@ -79,6 +79,7 @@ class Trainer:
         self.microgrid = self._setup_microgrid()
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
+        self.baseline_reward = self._compute_baseline(self.config.wandb.plot_baseline)
         self.log_dirs = self._get_log_dir()
 
         self.has_wandb = set_wandb_env_keys(
@@ -197,6 +198,10 @@ class Trainer:
 
     @abstractmethod
     def _setup_algo(self, setup_algo):
+        pass
+
+    @abstractmethod
+    def _compute_baseline(self, baseline='rbc'):
         pass
 
     def train_and_evaluate(self):
@@ -357,6 +362,28 @@ class RLTrainer(Trainer):
         self.warn_custom_params()
         algo, self.sampler, self.rnd_model = self.setup_rl_algo()
         return algo
+
+    def _compute_baseline(self, baseline='rbc'):
+        if baseline is None:
+            return
+
+        baseline_specific_config = expfig.functions.unflatten({
+            'context.disable_logging': True,
+        })
+
+        baseline_config = self.config.copy().update(baseline_specific_config)
+
+        if baseline.lower() == 'rbc':
+            baseline_trainer = RBCTrainer(config=baseline_config)
+        elif baseline.lower() == 'mpc':
+            baseline_trainer = MPCTrainer(config=baseline_config)
+        else:
+            raise NameError(baseline)
+
+        eval = baseline_trainer.evaluate()
+        reward_cumsum = eval['balance', 0, 'reward'].cumsum()
+
+        return reward_cumsum
 
     def _set_trajectories(self, train=False, evaluate=False):
         super()._set_trajectories(train=train, evaluate=evaluate)
