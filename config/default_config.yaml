@@ -97,6 +97,7 @@ algo:
 context:
   verbose: 0
   experiment_name: null
+  disable_logging: false
   log_dir:
     parent: experiment_logs
     from_keys: []
