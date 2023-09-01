@@ -137,6 +137,9 @@ class Trainer:
     def _get_log_dir(self):
         log_config = self.config.context
 
+        if log_config.disable_logging:
+            return dict()
+
         subdirs = ['config', 'train_log', 'evaluate_log']
 
         if log_config.log_dir.parent is None or log_config.log_dir.parent == 'null':
@@ -203,27 +206,32 @@ class Trainer:
     def train(self):
         set_seed(self.config.context.seed)
         self._set_trajectories(train=True)
-        train_output = self._train(self.log_dirs['train_log'])
 
-        print(f'Logged results in dir: {os.path.abspath(self.log_dirs["train_log"])}')
+        log_dir = self.log_dirs.get('train_log')
+        train_output = self._train(log_dir)
+
+        if log_dir:
+            print(f'Logged results in dir: {os.path.abspath(log_dir)}')
+
         return train_output
 
     def _train(self, log_dir):
         pass
 
     def evaluate(self, log_dir=None, set_eval_trajectory=True):
-        if log_dir is None:
-            log_dir = self.log_dirs['evaluate_log']
-
         if set_eval_trajectory:
             self._set_trajectories(evaluate=True)
 
         output = self._evaluate()
 
-        self.save_with_metadata(output, log_dir, 'log.csv')
-        self.save_with_metadata(output.sum(), log_dir, 'log_total.csv')
+        log_dir = log_dir or self.log_dirs.get('evaluate_log')
 
-        print(f'Logged results in dir:\n\t{os.path.abspath(log_dir)}')
+        if log_dir is not None:
+            self.save_with_metadata(output, log_dir, 'log.csv')
+            self.save_with_metadata(output.sum(), log_dir, 'log_total.csv')
+
+            print(f'Logged results in dir:\n\t{os.path.abspath(log_dir)}')
+
         return output
 
     def _evaluate(self):
