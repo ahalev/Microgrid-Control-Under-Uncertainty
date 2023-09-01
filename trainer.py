@@ -451,7 +451,7 @@ class RLTrainer(Trainer):
 
             self.update_trainer(garage_trainer)
 
-            garage_trainer.setup(self.algo, self.env)
+            garage_trainer.setup(self.algo, self.env, self.callback)
             garage_trainer.train(n_epochs=train_config.n_epochs, batch_size=train_config.batch_size)
 
             self.env.close()
@@ -460,15 +460,64 @@ class RLTrainer(Trainer):
 
         train()
 
-    def _evaluate(self):
-        env = self.eval_env.unwrapped
+    def callback(self, env, policy, epoch):
+        log = self._evaluate(policy=policy)
+        self._record_log(log)
+
+    def _evaluate(self, env=None, policy=None):
+        env = env or self.eval_env.unwrapped
+        policy = policy or self.algo.policy
+
         obs = env.reset()
         done = False
 
         while not done:
-            obs, reward, done, _ = env.step(self.algo.policy.get_action(obs)[0])
+            obs, reward, done, _ = env.step(policy.get_action(obs)[0])
 
-        return env.log
+        return self.eval_env.get_log(drop_singleton_key=True)
+
+    def _record_log(self, log):
+        numbered_modules = log.columns.nlevels == 3
+
+        with tabular.prefix('Test/'):
+            tabular.record_many(log[('balance', 0) if numbered_modules else 'balance'].sum().to_dict())
+
+            if self.has_wandb:
+                log.columns = log.columns.map(lambda x: '_'.join(str(v) for v in x if str(v)))
+                table = wandb.Table(dataframe=log.reset_index(names='Step'))
+                tabular.record('EvalLog', table)
+
+                baseline_name = (self.config.wandb.plot_baseline or '').upper()
+
+                titles = [
+                    'Cumulative Reward',
+                    'Cumulative Shaped Reward',
+                    f'{baseline_name} Relative Cumulative Reward'
+                ]
+
+                reward_cumsum_y = [
+                    f'balance{"_0"*numbered_modules}_reward',
+                    f'balance{"_0" * numbered_modules}_shaped_reward'
+                ]
+
+                table_subset = log[reward_cumsum_y].cumsum()
+
+                if self.baseline_reward is not None:
+                    table_subset['baseline'] = table_subset[reward_cumsum_y[0]] / self.baseline_reward
+                    table_subset['baseline'].iloc[:10] = float('nan')  # transient
+                    tabular.record(f'{baseline_name}RelativeRewardSum', table_subset['baseline'].iloc[-1])
+
+                table_subset = table_subset.reset_index(names='Step')
+
+                for column, title in zip(table_subset.columns[1:], titles):
+                    plot = wandb.plot.line(
+                        table=wandb.Table(dataframe=table_subset[['Step', column]]),
+                        x='Step',
+                        y=column,
+                        title=title
+                    )
+
+                    tabular.record(title.replace(' ', ''), plot)
 
     def update_trainer(self, trainer):
         pass
