@@ -727,14 +727,8 @@ class PreTrainer(RLTrainer):
     def update_trainer(self, trainer):
         self.expert.set_stats(trainer._stats)
 
-    def _evaluate(self):
-        old_policy = self.algo.policy
-        self.algo.policy = self.algo.learner
-
-        eval = super()._evaluate()
-        self.algo.policy = old_policy
-
-        return eval
+    def _evaluate(self, env=None, **_):
+        return super()._evaluate(env=env, policy=self.algo.learner)
 
 
 class MPCTrainer(Trainer):
