@@ -333,7 +333,9 @@ class ResultLoader(Namespacify):
                            palette=None,
                            markers=None,
                            relplot_col=None,
-                           save=True):
+                           save=True,
+                           facet_kws=None,
+                           **kwargs):
         module = module if module else 'balance'
         y = (module, '0', 'reward')
 
@@ -352,7 +354,10 @@ class ResultLoader(Namespacify):
             markers=markers,
             relplot_col=relplot_col,
             ylabel=f'{"Relative "*(relative_to is not None)}Cumulative Cost',
-            save=save
+            save=save,
+            facet_kws=facet_kws
+            **kwargs,
+
         )
 
     def plot(self,
@@ -372,7 +377,9 @@ class ResultLoader(Namespacify):
              relplot_col=None,
              xlabel=None,
              ylabel=None,
-             save=True):
+             save=True,
+             facet_kws=None,
+             **kwargs):
 
         if x is None:
             x = 'Step'
