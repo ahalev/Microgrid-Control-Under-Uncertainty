@@ -101,30 +101,9 @@ class ResultLoader(Namespacify):
                         print(f'Ignoring non-relevant contents:\n\t{contents}')
                     continue
 
-            if contents.suffix == '.yaml':
-                results[replacement_func(contents.stem)] = yaml.safe_load(contents.open('r'))
-            elif contents.suffix in ('.csv', '.xlsx'):
-                load_func = pd.read_csv if contents.suffix == '.csv' else pd.read_excel
-                try:
-                    results[replacement_func(contents.stem)] = self._read_pandas(contents, load_func)
-                except ValueError as e:
-                    warnings.warn('Exception encountered when loading file into pandas DataFrame.\n\t'
-                                  f'File: {contents}\n\tException: {e.__class__.__name__}({e})')
-            elif contents.suffix == '.tag':
-                continue
-            elif self.verbose >= 2:
-                warnings.warn(f'Ignoring file of unrecognized type {contents.name}')
+            results.update(read_file(replacement_func(contents.stem), contents, self.verbose))
 
         return results
-
-    def _read_pandas(self, contents, load_func):
-        metadata_file = contents.with_name(f'{contents.name}.tag')
-        if metadata_file.exists():
-            metadata = json.load(metadata_file.open('r'))
-        else:
-            metadata = {}
-
-        return load_func(contents, **metadata)
 
     def _rename(self, renamer, lvl=None):
         if renamer is None:
@@ -637,3 +616,65 @@ class ResultLoader(Namespacify):
     def iterdict(self):
         for loc in self.result_list:
             yield loc, self[loc]
+
+    def pop(self, __key):
+        super().pop(__key)
+        self.result_list = self._get_result_list()
+        self.microgrids = self._load_microgrids()
+
+        try:
+            self.result_dir.pop(__key)
+        except AttributeError:
+            pass
+
+    @staticmethod
+    def load_shallow_results(
+            directory,
+            relevant_results=None,
+            renamer=None,
+            replacements=()
+    ):
+
+        results = set()
+        for contents in Path(directory).iterdir():
+            # TODO you need to figure our what to do with relevant_vals and replacement func
+            if contents.name in ('evaluate_log', 'train_log', 'config'):
+                results.add(contents.parent)
+                break
+            elif contents.is_dir():
+                results |= set(ResultLoader.load_shallow_results(contents, relevant_results, renamer, replacements))
+
+        return sorted(results)
+
+
+def read_file(contents_name, contents, verbose):
+    loaded_contents = None
+
+    if contents.suffix == '.yaml':
+        loaded_contents = yaml.safe_load(contents.open('r'))
+    elif contents.suffix in ('.csv', '.xlsx'):
+        load_func = pd.read_csv if contents.suffix == '.csv' else pd.read_excel
+        try:
+            loaded_contents = read_pandas(contents, load_func)
+        except ValueError as e:
+            warnings.warn('Exception encountered when loading file into pandas DataFrame.\n\t'
+                          f'File: {contents}\n\tException: {e.__class__.__name__}({e})')
+    elif contents.suffix == '.tag':
+        pass
+    elif verbose >= 2:
+        warnings.warn(f'Ignoring file of unrecognized type {contents.name}')
+
+    if loaded_contents is not None:
+        return {contents_name: loaded_contents}
+
+    return dict()
+
+
+def read_pandas(contents, load_func):
+    metadata_file = contents.with_name(f'{contents.name}.tag')
+    if metadata_file.exists():
+        metadata = json.load(metadata_file.open('r'))
+    else:
+        metadata = {}
+
+    return load_func(contents, **metadata)
