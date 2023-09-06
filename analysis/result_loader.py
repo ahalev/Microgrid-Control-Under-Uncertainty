@@ -51,7 +51,13 @@ class ResultLoader(Namespacify):
         Location to save figures and other results. If None, do not save other results.
     """
 
-    def __init__(self, results_or_dir, relevant_results=None, save_dir=None, renamer=None, replacements=(), verbose=1):
+    def __init__(self,
+                 results_or_dir,
+                 relevant_results=None,
+                 save_dir=None,
+                 renamer=None,
+                 replacements=(),
+                 verbose=1):
         self.verbose = verbose
 
         results, result_dir = self._get_dict_results(results_or_dir, relevant_results, replacements)
