@@ -355,9 +355,8 @@ class ResultLoader(Namespacify):
             relplot_col=relplot_col,
             ylabel=f'{"Relative "*(relative_to is not None)}Cumulative Cost',
             save=save,
-            facet_kws=facet_kws
+            facet_kws=facet_kws,
             **kwargs,
-
         )
 
     def plot(self,
@@ -454,7 +453,9 @@ class ResultLoader(Namespacify):
             col=relplot_col,
             col_wrap=col_wrap,
             palette=sns.color_palette(palette, n_colors=yval[hue].nunique()) if hue is not None else None,
-            estimator='mean' if units is None else None
+            estimator='mean' if units is None else None,
+            facet_kws=facet_kws,
+            **kwargs
         )
 
         for ax in g.axes_dict.values():
