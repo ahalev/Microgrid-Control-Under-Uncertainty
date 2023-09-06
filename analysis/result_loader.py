@@ -86,13 +86,12 @@ class ResultLoader(Namespacify):
         return self._load_results(result_dir, relevant_results, replacement_func), result_dir
 
     def _load_results(self, directory, relevant_vals, replacement_func):
-
         results = {}
         for contents in directory.iterdir():
             if contents.is_dir():
                 inner_res = self._load_results(contents, relevant_vals, replacement_func)
                 if len(inner_res):
-                    if any(k in inner_res.keys() for k in ('train_log', 'evaluate_log')):
+                    if self.verbose and any(k in inner_res.keys() for k in ('train_log', 'evaluate_log')):
                         print(f'Loaded results from: {contents}')
                     results[replacement_func(contents.name)] = inner_res
                 continue
