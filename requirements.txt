@@ -9,3 +9,5 @@ pyyaml
 ray
 seaborn
 scikit-learn
+torch
+wandb
