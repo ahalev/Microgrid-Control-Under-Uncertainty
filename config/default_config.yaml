@@ -2,7 +2,7 @@ env:
   cls: DiscreteMicrogridEnv
   observation_keys: []
   domain_randomization:
-    noise_std: null
+    noise_std: 0.0
     relative_noise: true
   net_load:
     use: true
