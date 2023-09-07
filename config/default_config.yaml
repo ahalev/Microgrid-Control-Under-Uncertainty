@@ -3,9 +3,9 @@ env:
   observation_keys: []
   domain_randomization:
     noise_std: null
-    relative_noise: false
+    relative_noise: true
   net_load:
-    use: false
+    use: true
     slack_module: grid
 microgrid:
   config:
