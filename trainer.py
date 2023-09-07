@@ -345,7 +345,7 @@ class RLTrainer(Trainer):
     def _setup_domain_randomization(self, env):
         dr_config = self.config.env.domain_randomization
 
-        if dr_config.noise_std is None:
+        if not dr_config.noise_std:
             return env
 
         return DomainRandomizationWrapper(env,
