@@ -1,0 +1,42 @@
+algo:
+  train:
+    n_epochs: 5
+  sampler:
+    type:
+      local
+microgrid:
+  trajectory:
+    train:
+      initial_step: 0
+      final_step: 5840
+      trajectory_func:
+        !FixedLengthStochasticTrajectory
+        trajectory_length: 720
+    evaluate:
+      initial_step: 5840
+      final_step: -1
+  methods:
+    set_forecaster:
+      forecast_horizon: 6
+      forecaster: 0.0
+      forecaster_increase_uncertainty: true
+      forecaster_relative_noise: true
+    set_module_attrs:
+      battery_transition_model: null
+      normalized_action_bounds: [0.0, 1.0]
+context:
+  log_dir:
+    parent: /home/ahalev/data/GridRL/paper_experiments
+    from_keys:
+      - microgrid.config.scenario
+      - microgrid.methods.set_forecaster.forecaster
+      - microgrid.methods.set_module_attrs.battery_transition_model
+      - context.seed
+      - env.domain_randomization.noise_std
+      - algo.ppo.tanhnormal
+      - algo.rnd.intrinsic_reward_weight
+    use_existing_dir: false
+  wandb:
+    api_key_file: ../local/wandb_api_key.txt
+    username: ahalev
+verbose: 1
