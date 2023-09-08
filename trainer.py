@@ -79,12 +79,12 @@ class Trainer:
         self.microgrid = self._setup_microgrid()
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
-        self.baseline_reward = self._compute_baseline(self.config.wandb.plot_baseline)
+        self.baseline_reward = self._compute_baseline(self.config.context.wandb.plot_baseline)
         self.log_dirs = self._get_log_dir()
 
         self.has_wandb = set_wandb_env_keys(
             username=self.config.context.wandb.username,
-            api_key_file=self.config.context.wandb.api_key
+            api_key_file=self.config.context.wandb.api_key_file
         )
 
         self.serialize_config(serialize_config)
