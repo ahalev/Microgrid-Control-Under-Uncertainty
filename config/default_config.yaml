@@ -105,7 +105,7 @@ context:
   snapshot_gap: 10
   seed: 1
   wandb:
-    api_key: local/wandb_api_key.txt
+    api_key_file: local/wandb_api_key.txt
     username: ahalev
     group: null
     plot_baseline: mpc
