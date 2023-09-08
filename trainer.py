@@ -131,7 +131,7 @@ class Trainer:
 
         tags.extend(self._get_log_dir_params(self.config.context.log_dir.from_keys))
 
-        experiment_name = self.config.context.experiment_name or Path(self.config.context.log_dir.parent).parts[-1]
+        experiment_name = self.config.context.experiment_name or '-'.join(tags)
 
         return experiment_name, tags
 
