@@ -487,7 +487,7 @@ class RLTrainer(Trainer):
                 table = wandb.Table(dataframe=log.reset_index(names='Step'))
                 tabular.record('EvalLog', table)
 
-                baseline_name = (self.config.wandb.plot_baseline or '').upper()
+                baseline_name = (self.config.context.wandb.plot_baseline or '').upper()
 
                 titles = [
                     'Cumulative Reward',
