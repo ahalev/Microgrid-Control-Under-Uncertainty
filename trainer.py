@@ -79,7 +79,7 @@ class Trainer:
         self.microgrid = self._setup_microgrid()
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
-        self.baseline_reward = self._compute_baseline(self.config.context.wandb.plot_baseline)
+        self.baseline_rewards = self._compute_baselines(self.config.context.wandb.plot_baseline)
         self.log_dirs = self._get_log_dir()
 
         self.has_wandb = set_wandb_env_keys(
@@ -201,8 +201,8 @@ class Trainer:
         pass
 
     @abstractmethod
-    def _compute_baseline(self, baseline='rbc'):
-        pass
+    def _compute_baselines(self, baseline='rbc'):
+        return {}
 
     def train_and_evaluate(self):
         self.train()
@@ -363,9 +363,12 @@ class RLTrainer(Trainer):
         algo, self.sampler, self.rnd_model = self.setup_rl_algo()
         return algo
 
-    def _compute_baseline(self, baseline='rbc'):
-        if baseline is None:
-            return
+    def _compute_baselines(self, baseline='rbc'):
+        if not baseline:
+            return {}
+
+        elif pd.api.types.is_list_like(baseline):
+            return {bl: self._compute_baselines(bl) for bl in baseline}
 
         baseline_specific_config = expfig.functions.unflatten({
             'context.disable_logging': True,
@@ -487,12 +490,9 @@ class RLTrainer(Trainer):
                 table = wandb.Table(dataframe=log.reset_index(names='Step'))
                 tabular.record('EvalLog', table)
 
-                baseline_name = (self.config.context.wandb.plot_baseline or '').upper()
-
                 titles = [
                     'Cumulative Reward',
                     'Cumulative Shaped Reward',
-                    f'{baseline_name} Relative Cumulative Reward'
                 ]
 
                 reward_cumsum_y = [
@@ -502,10 +502,12 @@ class RLTrainer(Trainer):
 
                 table_subset = log[reward_cumsum_y].cumsum()
 
-                if self.baseline_reward is not None:
-                    table_subset['baseline'] = table_subset[reward_cumsum_y[0]] / self.baseline_reward
-                    table_subset['baseline'].iloc[:10] = float('nan')  # transient
-                    tabular.record(f'{baseline_name}RelativeRewardSum', table_subset['baseline'].iloc[-1])
+                for baseline_name, baseline in self.baseline_rewards.items():
+                    titles.append(f'{baseline_name.upper()} Relative Cumulative Reward')
+
+                    table_subset[f'{baseline_name}_baseline'] = table_subset[reward_cumsum_y[0]] / baseline
+                    table_subset[f'{baseline_name}_baseline'].iloc[:10] = float('nan')  # transient
+                    tabular.record(f'{baseline_name.upper()}RelativeRewardSum', table_subset[f'{baseline_name}_baseline'].iloc[-1])
 
                 table_subset = table_subset.reset_index(names='Step')
 
