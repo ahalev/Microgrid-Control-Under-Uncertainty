@@ -1,6 +1,6 @@
 program: ../trainer.py
 project: gridrl
-method: random
+method: bayes
 parameters:
   algo:
     type:
