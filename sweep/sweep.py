@@ -53,5 +53,4 @@ class Sweep:
 
 
 if __name__ == '__main__':
-    sweep = Sweep({"meta.launch_agent": True})
-    sweep.setup()
+    Sweep().setup()
