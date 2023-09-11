@@ -49,7 +49,7 @@ class Sweep:
         if sweep_id is None:
             raise ValueError('sweep_id not found')
 
-        wandb.agent(sweep_id, count=None)
+        wandb.agent(sweep_id, count=count)
 
 
 if __name__ == '__main__':
