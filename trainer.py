@@ -28,6 +28,7 @@ from callback import GarageCallback
 from envs import GymEnv, DomainRandomizationWrapper
 from microgrid_loader import microgrid_from_config
 from rnd import RNDModel, RNDDDPG, RNDPPO
+from utils.profile import profile_wrapper, garage_profile_path
 
 import pymgrid
 
@@ -434,9 +435,17 @@ class RLTrainer(Trainer):
 
     def _train(self, log_dir):
         if self.config.algo.package == 'garage':
+            self._setup_profile(log_dir)
             return self._train_garage(log_dir)
         else:
             raise ValueError(self.config.algo.package)
+
+    def _setup_profile(self, log_dir):
+        profile_dir = functools.partial(garage_profile_path, os.path.join(log_dir, 'profile'))
+        try:
+            self.algo._train_once = profile_wrapper(self.algo._train_once, profile_dir)
+        except AttributeError:
+            self.algo.train_once = profile_wrapper(self.algo.train_once, profile_dir)
 
     def _train_garage(self, log_dir):
         log_config = self.config.context
