@@ -435,12 +435,15 @@ class RLTrainer(Trainer):
 
     def _train(self, log_dir):
         if self.config.algo.package == 'garage':
-            self._setup_profile(log_dir)
+            self._setup_garage_profile(log_dir)
             return self._train_garage(log_dir)
         else:
             raise ValueError(self.config.algo.package)
 
-    def _setup_profile(self, log_dir):
+    def _setup_garage_profile(self, log_dir):
+        if not self.config.context.get('profile'):
+            return
+
         profile_dir = functools.partial(garage_profile_path, os.path.join(log_dir, 'profile'))
         try:
             self.algo._train_once = profile_wrapper(self.algo._train_once, profile_dir)

@@ -102,6 +102,7 @@ context:
     parent: experiment_logs
     from_keys: []
     use_existing_dir: false
+  profile: false
   snapshot_gap: 10
   seed: 1
   wandb:
