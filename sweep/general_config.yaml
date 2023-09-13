@@ -17,7 +17,7 @@ microgrid:
       forecaster_relative_noise: true
     set_module_attrs:
       battery_transition_model: null
-      normalized_action_bounds: [0.0, 1.0]
+      normalized_action_bounds: [-1.0, 1.0]
 context:
   log_dir:
     parent: /home/ahalev/data/GridRL/paper_experiments
