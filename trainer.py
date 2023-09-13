@@ -721,6 +721,7 @@ class PPOTrainer(RLTrainer):
     def setup_rl_algo(self):
         policy = self.setup_policy(self.env.spec,
                                    self.config.algo.policy.hidden_sizes,
+                                   self.config.microgrid.methods.set_module_attrs.normalized_action_bounds,
                                    tanhnormal=self.config.algo.ppo.tanhnormal,
                                    pretrained_policy=self.config.algo.policy.pretrained_policy,
                                    self_config=self.config)
@@ -732,13 +733,17 @@ class PPOTrainer(RLTrainer):
         return self._setup_rl_algo(policy, value_function, sampler, rnd_model), sampler, rnd_model
 
     @staticmethod
-    def setup_policy(env_spec, hidden_sizes, tanhnormal=False, pretrained_policy=None, self_config=None):
+    def setup_policy(env_spec, hidden_sizes, action_bounds, tanhnormal=False, pretrained_policy=None, self_config=None):
         if pretrained_policy is not None:
             return RLTrainer.load_pretrained_policy(pretrained_policy, self_config=self_config)
 
         if tanhnormal:
             from utils.kl_register import register_tanhnormal
             register_tanhnormal()
+
+            if action_bounds != [-1, 1]:
+                warnings.warn(f"Recommended action bounds for tanhnormal policy are [-1, 1] to correspond with "
+                              f"range(tanh(x), have '{action_bounds}'")
 
             return TanhGaussianMLPPolicy(env_spec, hidden_sizes=hidden_sizes)
 
