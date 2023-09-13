@@ -786,12 +786,13 @@ class PreTrainer(RLTrainer):
 
         env_spec = self.env.spec
         hidden_sizes = self.config.algo.policy.hidden_sizes
+        action_bounds = self.config.microgrid.methods.set_module_attrs.normalized_action_bounds
 
         if algo_to_pretrain == 'ddpg':
-            policy = DDPGTrainer.setup_policy(env_spec, hidden_sizes)
+            policy = DDPGTrainer.setup_policy(env_spec, hidden_sizes, action_bounds)
             qf_or_vf = {'qf': DDPGTrainer.setup_qf(env_spec, hidden_sizes)}
         elif algo_to_pretrain == 'ppo':
-            policy = PPOTrainer.setup_policy(env_spec, hidden_sizes)
+            policy = PPOTrainer.setup_policy(env_spec, hidden_sizes, action_bounds)
             qf_or_vf = {'value_function': PPOTrainer.setup_vf(env_spec, hidden_sizes)}
         else:
             raise ValueError(f"config.pretrain.algo_to_pretrain must be 'ddpg' or 'ppo', not '{algo_to_pretrain}'.")
