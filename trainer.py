@@ -659,6 +659,7 @@ class DDPGTrainer(RLTrainer):
 
         policy = self.setup_policy(self.env.spec,
                                    self.config.algo.policy.hidden_sizes,
+                                   self.config.microgrid.methods.set_module_attrs.normalized_action_bounds,
                                    pretrained_policy=self.config.algo.policy.pretrained_policy,
                                    self_config=self.config)
 
@@ -671,14 +672,24 @@ class DDPGTrainer(RLTrainer):
     @staticmethod
     def setup_qf(env_spec, hidden_sizes):
         return ContinuousMLPQFunction(env_spec=env_spec,
-                                    hidden_sizes=hidden_sizes)
+                                      hidden_sizes=hidden_sizes)
 
     @staticmethod
-    def setup_policy(env_spec, hidden_sizes, pretrained_policy=None, self_config=None):
+    def setup_policy(env_spec, hidden_sizes, action_bounds, pretrained_policy=None, self_config=None):
         if pretrained_policy is not None:
             return RLTrainer.load_pretrained_policy(pretrained_policy, self_config=self_config)
 
-        return DeterministicMLPPolicy(env_spec, hidden_sizes=hidden_sizes, output_nonlinearity=torch.sigmoid)
+        if action_bounds == [-1, 1]:
+            output_nonlinearity = torch.tanh
+        elif action_bounds == [0, 1]:
+            output_nonlinearity = torch.sigmoid
+        else:
+            warnings.warn(f"Unable to map microgrid action bounds '{action_bounds}' to output nonlinearity. "
+                          f"Using linear activation.")
+
+            output_nonlinearity = None
+
+        return DeterministicMLPPolicy(env_spec, hidden_sizes=hidden_sizes, output_nonlinearity=output_nonlinearity)
 
     def _setup_rl_algo(self, qf, policy, exploration_policy, sampler, rnd_model):
 
