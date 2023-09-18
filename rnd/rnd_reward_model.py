@@ -74,7 +74,7 @@ class RNDModel:
         transformed = transformed_ext_rewards + self.intrinsic_reward_weight * intrinsic_rewards
         assert transformed.shape == extrinsic_rewards.shape
 
-        self.log_rewards(transformed_ext_rewards, intrinsic_rewards, transformed)
+        self.log_rewards(extrinsic_rewards, intrinsic_rewards, transformed_ext_rewards, transformed)
 
         return transformed
 
@@ -102,8 +102,14 @@ class RNDModel:
 
         return extrinsic_rewards
 
-    def log_rewards(self, extrinsic_rewards, intrinsic_rewards, total_rewards):
-        for k, rewards in dict(Overall=total_rewards, Extrinsic=extrinsic_rewards, Intrinsic=intrinsic_rewards).items():
+    def log_rewards(self, extrinsic_rewards, intrinsic_rewards, transformed_extrinsic_rewards, total_rewards):
+        for k, rewards in dict(
+                Overall=total_rewards,
+                ExtrinsicTransformed=transformed_extrinsic_rewards,
+                Extrinsic=extrinsic_rewards,
+                Intrinsic=intrinsic_rewards
+        ).items():
+
             with tabular.prefix(f'RNDRewards{k}/'):
                 tabular.record('AverageReward', np.mean(rewards))
                 tabular.record('AverageAbsReward', np.mean(np.abs(rewards)))
