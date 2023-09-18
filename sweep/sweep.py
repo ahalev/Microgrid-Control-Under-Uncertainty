@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import wandb
 
-from expfig import Config
+from expfig import Config, get_logger
 from expfig.functions import flatten
 from pathlib import Path
 from dowel import set_wandb_env_keys
@@ -40,6 +40,14 @@ class Sweep:
         config = self.config.to_dict()
         config['parameters'] = flatten(config['parameters'], levels=-1)
         self.sweep_id = wandb.sweep(config)
+
+        api_settings = wandb.Api().settings
+        sweep_id = os.path.join(api_settings.entity, api_settings.project, self.sweep_id)
+
+        launch_cmd = 'Launch agents with:\n' \
+                     f'cd {Path(__file__).parent.resolve()} && python agent.py --meta.sweep_id {sweep_id}'
+
+        get_logger().info(launch_cmd)
 
         if self.meta_config.launch_agent:
             self.launch_agent()
