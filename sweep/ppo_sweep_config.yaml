@@ -8,33 +8,34 @@ parameters:
     policy:
       hidden_sizes:
         values:
-          - - 32
-            - 32
           - - 64
             - 64
+          - - 128
+            - 128
     ppo:
       tanhnormal:
         values: [true, false]
       params:
         center_adv:
-          values: [true, false]
+          value: false
     rnd:
       intrinsic_reward_weight:
-        values: [0.0, 0.01, 0.1, 0.5]
-        probabilities: [0.4, 0.2, 0.2, 0.2]
+        distribution: log_uniform_values
+        min: 1.0e-6
+        max: 1.0
       predictor_lr:
         distribution: log_uniform_values
         min: 1.0e-6
         max: 1.0e-1
       hidden_sizes:
-        values:
-          - [32, 32]
-          - [64, 64]
+        value: [64, 64]
   env:
     domain_randomization:
       noise_std:
-        values: [0.0, 0.05, 0.25, 0.5]
-        probabilities: [0.4, 0.2, 0.2, 0.2]
+        distribution: uniform
+        min: 0.0
+        max: 1.0
+#        probabilities: [0.4, 0.2, 0.2, 0.2]
     observation_keys:
       values:
         - ['soc', 'net_load']
@@ -45,14 +46,12 @@ parameters:
   microgrid:
     config:
       scenario:
-        value: 10
+        value: 0
     attributes:
       reward_shaping_func:
         values:
           - '!BaselineShaper {module: [grid,0]}'
-          - '!BaselineShaper {module: [grid,0], relative_to: true}'
           - '!SequentialShaper {shapers: [!BaselineShaper {module:[grid,0]}, !LearnedScaleRescaleShaper {} ]}'
-        probabilities: [0.5, 0.25, 0.25]
 metric:
   name: Test/MPCRelativeRewardSum
   goal: minimize
