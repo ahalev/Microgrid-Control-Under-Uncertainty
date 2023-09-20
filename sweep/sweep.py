@@ -24,6 +24,8 @@ class Sweep:
 
         self.sweep_id = self.meta_config.sweep_id
 
+        self.add_parameter('microgrid.config.scenario', self.meta_config.scenario)
+
     def add_parameter(self, parameter_name, value):
         parameter_name = tuple(parameter_name.split('.'))
 
