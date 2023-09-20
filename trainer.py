@@ -119,7 +119,11 @@ class Trainer:
         env = self.env_class.from_microgrid(self.microgrid,
                                             observation_keys=self.config.env.observation_keys,
                                             **env_kwargs)
-        env = GymEnv(env, max_episode_length=len(env))
+
+        # TODO (ahalev) do this better
+        max_episode_length = self.config.microgrid.trajectory.train.trajectory_func.get('trajectory_length') or len(env)
+
+        env = GymEnv(env, max_episode_length=max_episode_length)
         env = self.set_trajectory(env, train=True)
         eval_env = self.set_trajectory(deepcopy(env), evaluate=True)
 
