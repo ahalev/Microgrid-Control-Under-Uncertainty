@@ -75,6 +75,8 @@ class Trainer:
         return super().__new__(cls)
 
     def __init__(self, *args, setup_algo=True, serialize_config=True, **kwargs):
+        set_seed(self.config.context.seed)
+
         self.logger = expfig.logging.get_logger()
         self.microgrid = self._setup_microgrid()
         self.env, self.eval_env = self._setup_env()
@@ -209,7 +211,6 @@ class Trainer:
         return self.evaluate()
 
     def train(self):
-        set_seed(self.config.context.seed)
         self._set_trajectories(train=True)
 
         log_dir = self.log_dirs.get('train_log')
