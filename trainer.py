@@ -14,7 +14,7 @@ from dowel import tabular, set_wandb_env_keys
 from typing import Union
 
 from garage import wrap_experiment
-from garage.experiment.deterministic import set_seed
+from garage.experiment.deterministic import set_seed, get_seed
 from garage.sampler import LocalSampler, RaySampler
 from garage.trainer import Trainer as GarageTrainer
 from garage.np.exploration_policies import EpsilonGreedyPolicy, AddOrnsteinUhlenbeckNoise
@@ -405,7 +405,8 @@ class RLTrainer(Trainer):
             'envs': self.env,
             'max_episode_length': self.env.spec.max_episode_length,
             'n_workers': sampler_config.n_workers,
-            'is_tf_worker': False
+            'is_tf_worker': False,
+            'seed': get_seed()
         }
 
         if sampler_config.type == 'ray':
