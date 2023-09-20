@@ -68,3 +68,4 @@ meta:
     username: ahalev
   sweep_id: null
   launch_agent: false
+  scenario: 0
