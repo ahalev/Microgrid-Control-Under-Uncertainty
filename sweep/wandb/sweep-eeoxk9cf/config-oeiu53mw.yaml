@@ -1,0 +1,31 @@
+wandb_version: 1
+
+algo.policy.hidden_sizes:
+  value:
+  - 32
+  - 32
+algo.ppo.params.center_adv:
+  value: true
+algo.ppo.tanhnormal:
+  value: true
+algo.rnd.hidden_sizes:
+  value:
+  - 64
+  - 64
+algo.rnd.intrinsic_reward_weight:
+  value: 0.1
+algo.rnd.predictor_lr:
+  value: 0.00016647471179474335
+algo.type:
+  value: ppo
+env.domain_randomization.noise_std:
+  value: 0.5
+env.observation_keys:
+  value:
+  - soc
+  - net_load
+  - import_price_current
+microgrid.attributes.reward_shaping_func:
+  value: '!BaselineShaper {module: [grid,0]}'
+microgrid.config.scenario:
+  value: 10

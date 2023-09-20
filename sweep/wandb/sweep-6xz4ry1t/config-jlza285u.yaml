@@ -1,0 +1,37 @@
+wandb_version: 1
+
+algo.policy.hidden_sizes:
+  value:
+  - 32
+  - 32
+algo.ppo.params.center_adv:
+  value: false
+algo.ppo.tanhnormal:
+  value: false
+algo.rnd.hidden_sizes:
+  value:
+  - 32
+  - 32
+algo.rnd.intrinsic_reward_weight:
+  value: 0
+algo.rnd.predictor_lr:
+  value: 2.9087265071823534e-06
+algo.type:
+  value: ppo
+env.domain_randomization.noise_std:
+  value: 0
+env.observation_keys:
+  value:
+  - soc
+  - net_load
+  - import_price_current
+  - import_price_forecast_0
+  - import_price_forecast_1
+  - import_price_forecast_2
+  - import_price_forecast_3
+  - import_price_forecast_4
+  - import_price_forecast_5
+microgrid.attributes.reward_shaping_func:
+  value: '!BaselineShaper {module: [grid,0], relative_to: true}'
+microgrid.config.scenario:
+  value: 10

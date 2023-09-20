@@ -456,7 +456,7 @@ class RLTrainer(Trainer):
 
             self.update_trainer(garage_trainer)
 
-            garage_trainer.setup(self.algo, self.env, self.callback)
+            garage_trainer.setup(self.algo, self.env, self.callback)  # todo (ahalev) fix env_spec.max_episode_length (is 8760 regardless of trajectory func)
             garage_trainer.train(n_epochs=train_config.n_epochs, batch_size=train_config.batch_size)
 
             self.env.close()
