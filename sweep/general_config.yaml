@@ -1,3 +1,6 @@
+algo:
+  train:
+    n_epochs: 200
 microgrid:
   trajectory:
     train:

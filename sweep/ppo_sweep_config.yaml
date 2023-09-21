@@ -29,8 +29,6 @@ parameters:
         max: 1.0e-1
       hidden_sizes:
         value: [64, 64]
-    train:
-      n_epochs: 200
   env:
     domain_randomization:
       noise_std:
