@@ -44,7 +44,7 @@ class Sweep:
         self.sweep_id = wandb.sweep(config)
 
         api_settings = wandb.Api().settings
-        sweep_id = os.path.join(api_settings.entity, api_settings.project, self.sweep_id)
+        sweep_id = os.path.join(api_settings['entity'], api_settings['project'], self.sweep_id)
 
         launch_cmd = 'Launch agents with:\n' \
                      f'cd {Path(__file__).parent.resolve()} && python agent.py --meta.sweep_id {sweep_id}'
