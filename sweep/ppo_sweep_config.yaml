@@ -39,9 +39,11 @@ parameters:
         - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1']
         - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3']
         - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
+  microgrid:
     attributes:
       reward_shaping_func:
         values:
+          - null
           - '!BaselineShaper {module: [grid,0]}'
           - '!SequentialShaper {shapers: [!BaselineShaper {module:[grid,0]}, !LearnedScaleRescaleShaper {} ]}'
 metric:
