@@ -2,6 +2,7 @@ import expfig
 import functools
 import pandas as pd
 import os
+import subprocess
 import torch
 import json
 import warnings
@@ -458,13 +459,18 @@ class RLTrainer(Trainer):
         log_config = self.config.context
         train_config = self.config.algo.train
 
+        pymgrid_commit = subprocess.check_output(
+            ["git", "describe", "--always"], cwd=Path(pymgrid.__file__).resolve().parent).strip().decode()
+
+        wandb_run = self._setup_wandb(self.log_dirs.get('train_log'), pymgrid_commit=pymgrid_commit)
+
         @wrap_experiment(name=log_dir,
                          snapshot_mode='gap_overwrite',
                          snapshot_gap=log_config.snapshot_gap,
                          archive_launch_repo=False,
                          log_dir=log_dir,
                          use_existing_dir=True,
-                         wandb_run=self._setup_wandb())
+                         wandb_run=wandb_run)
         def train(ctxt=None):
             garage_trainer = GarageTrainer(ctxt)
 
