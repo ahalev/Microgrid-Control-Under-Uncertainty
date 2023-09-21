@@ -121,7 +121,9 @@ class Trainer:
                                             **env_kwargs)
 
         # TODO (ahalev) do this better
-        max_episode_length = self.config.microgrid.trajectory.train.trajectory_func.get('trajectory_length') or len(env)
+        max_episode_length = getattr(
+            self.config.microgrid.trajectory.train.trajectory_func, 'trajectory_length', len(env)
+        )
 
         env = GymEnv(env, max_episode_length=max_episode_length)
         env = self.set_trajectory(env, train=True)
