@@ -94,7 +94,7 @@ class Trainer:
     def _setup_microgrid(self):
         return microgrid_from_config(self.config.microgrid)
 
-    def _setup_wandb(self, log_dir=None):
+    def _setup_wandb(self, log_dir=None, **summary_info):
         if not self.has_wandb:
             return
 
@@ -109,10 +109,18 @@ class Trainer:
             tags=tags,
         )
 
-        if log_dir is not None:
-            return wandb_creator(dir=log_dir)
+        def _wandb_creator(*args, **kwargs):
+            s_info = {**summary_info, 'log_dir': kwargs.get('dir')}
+            wandb = wandb_creator(*args, **kwargs)
+            wandb.summary.update(s_info)
 
-        return wandb_creator
+            return wandb
+
+        if log_dir is not None:
+            return _wandb_creator(dir=log_dir)
+
+        return _wandb_creator
+
 
     def _setup_env(self):
         env_kwargs = self._pre_env_setup()
