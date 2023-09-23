@@ -75,7 +75,7 @@ class Sweep:
 
         for j in range(count):
             with run_and_terminate_process(command, stdout=subprocess.PIPE, text=True) as proc:
-                self.logger.info(f'Running process {j} of {count}:\t{proc}')
+                self.logger.info(f'Running process {j} of {count}:\t{" ".join(proc.args)}')
                 kill_hanging(proc, timeout=self.meta_config.agent_timeout)
 
 

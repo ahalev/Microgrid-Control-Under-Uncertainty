@@ -33,7 +33,8 @@ def run_and_terminate_process(*args, **kwargs):
         logger.info('Killing run and continuing. Press ctrl-c again to kill.')
     finally:
         if p.poll() is None:
-            msg = "".join(['Killing process due to uncaught exception:\t', p.args])
+            cmd = ' '.join(p.args)
+            msg = f'Killing process due to uncaught exception.\n\tProcess: "{cmd}"\n\tPID: {p.pid}'
             logger.info(msg)
 
             p.terminate()  # send sigterm, or ...
