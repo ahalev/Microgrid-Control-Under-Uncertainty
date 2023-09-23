@@ -57,6 +57,7 @@ command:
   - "general_config.yaml"
   - ${args}
 meta:
+  agent_timeout: 3600
   wandb_setup:
     api_key_file: ../local/wandb_api_key.txt
     username: ahalev
