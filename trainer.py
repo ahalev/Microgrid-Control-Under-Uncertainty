@@ -462,7 +462,7 @@ class RLTrainer(Trainer):
         pymgrid_commit = subprocess.check_output(
             ["git", "describe", "--always"], cwd=Path(pymgrid.__file__).resolve().parent).strip().decode()
 
-        wandb_run = self._setup_wandb(self.log_dirs.get('train_log'), pymgrid_commit=pymgrid_commit)
+        wandb_run = self._setup_wandb(self.log_dirs.get('train_log'), pymgrid_commit=pymgrid_commit, pid=os.getpid())
 
         @wrap_experiment(name=log_dir,
                          snapshot_mode='gap_overwrite',
