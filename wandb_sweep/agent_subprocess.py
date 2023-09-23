@@ -29,10 +29,12 @@ def run_and_terminate_process(*args, **kwargs):
 
     try:
         yield p
+    except KeyboardInterrupt:
+        logger.info('Killing run and continuing. Press ctrl-c again to kill.')
     finally:
         if p.poll() is None:
-            print(f'Killing process due to uncaught exception:')
-            print('\t', ' '.join(p.args))
+            msg = "".join(['Killing process due to uncaught exception:\t', p.args])
+            logger.info(msg)
 
             p.terminate()  # send sigterm, or ...
             p.kill()  # send sigkill
