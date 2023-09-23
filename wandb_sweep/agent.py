@@ -1,4 +1,4 @@
 from sweep import Sweep
 
 if __name__ == '__main__':
-    Sweep().launch_agent()
+    Sweep().launch_agent_v2()
