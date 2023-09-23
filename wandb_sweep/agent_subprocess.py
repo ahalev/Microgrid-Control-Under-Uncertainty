@@ -16,12 +16,15 @@ def run_and_terminate_process(*args, **kwargs):
 
     Note that child process will survive if parent receives a SIGKILL.
 
-    :param args:
-    :param kwargs:
-    :return:
+    :param args: args to pass to subprocess.Popen
+    :param kwargs: : kwargs to pass to subprocess.Popen
+
+    :return: proc
+        process
+
     """
     p = subprocess.Popen(*args, **kwargs)
-    logger.info(f'Launched child with pid: {p}')
+    logger.info(f'Launched child with pid: {p.pid}')
     logger.info(f'Child command: {" ".join(p.args)}')
 
     try:
@@ -52,7 +55,7 @@ def kill_hanging(p, timeout=3600, sleep_interval=None):
         except queue.Empty:
             if p.poll() is not None:
                 # process finished
-                finish(p)
+                _finish(p)
                 break
 
             time.sleep(sleep_interval)
@@ -60,7 +63,7 @@ def kill_hanging(p, timeout=3600, sleep_interval=None):
         else:
             if not line and p.poll() is not None:
                 # process finished
-                finish(p)
+                _finish(p)
                 break
 
             print(line, sep='')
@@ -80,6 +83,6 @@ def _enqueue_output(out, queue_obj):
     out.close()
 
 
-def finish(p):
+def _finish(p):
     proc_str = " ".join(p.args)
     logger.info(f'process "{proc_str}" completed')

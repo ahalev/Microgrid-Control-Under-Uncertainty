@@ -9,7 +9,7 @@ from expfig.functions import flatten
 from pathlib import Path
 from dowel import set_wandb_env_keys
 
-from sweep import run_and_terminate_process, kill_hanging
+from wandb_sweep.agent_subprocess import run_and_terminate_process, kill_hanging
 
 os.system("ulimit -n 4096")
 
