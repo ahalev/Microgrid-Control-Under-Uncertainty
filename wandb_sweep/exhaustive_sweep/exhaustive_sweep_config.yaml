@@ -1,0 +1,31 @@
+program: ../../trainer.py
+project: gridrl
+method: grid
+parameters:
+  env:
+    observation_keys:
+      values:
+        - ['soc', 'net_load']
+        - ['soc', 'net_load', 'import_price_current']
+        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1']
+        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3']
+        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
+metric:
+  name: Test/MPCRelativeRewardSum
+  goal: minimize
+  target: 0.8
+command:
+  - ${envvar:CONDA_PREFIX}/bin/python
+  - ${program}
+  - "--config"
+  - ${envvar:BASED_ON_CONFIG}
+  - ${args}
+meta:
+  agent_timeout: 3600
+  config_from_run: null
+  wandb_setup:
+    api_key_file: ../../local/wandb_api_key.txt
+    username: ahalev
+  sweep_id: null
+  launch_agent: false
+  scenario: null  # read from config_from_run
