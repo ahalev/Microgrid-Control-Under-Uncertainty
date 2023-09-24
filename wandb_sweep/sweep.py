@@ -17,8 +17,10 @@ DEFAULT_CONFIG = Path(__file__).parent / 'ppo_sweep_config.yaml'
 
 
 class Sweep:
-    def __init__(self, config=None):
-        self.config = Config(config, default=DEFAULT_CONFIG)
+    cls_dir = Path(__file__).parent
+
+    def __init__(self, config=None, default=DEFAULT_CONFIG):
+        self.config = Config(config, default=default)
 
         self.meta_config = self.config.pop('meta')
 
@@ -52,12 +54,12 @@ class Sweep:
         sweep_id = os.path.join(api_settings['entity'], api_settings['project'], self.sweep_id)
 
         launch_cmd = 'Launch agents with:\n' \
-                     f'cd {Path(__file__).parent.resolve()} && python agent.py --meta.sweep_id {sweep_id}'
+                     f'cd {self.cls_dir.resolve()} && python agent.py --meta.sweep_id {sweep_id}'
 
         self.logger.info(launch_cmd)
 
         if self.meta_config.launch_agent:
-            self.launch_agent()
+            self.launch_agent_v2()
 
     def launch_agent(self, sweep_id=None, count=5):
         sweep_id = sweep_id or self.sweep_id
