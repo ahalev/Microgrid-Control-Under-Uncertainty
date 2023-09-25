@@ -175,7 +175,20 @@ class ResultLoader(Namespacify):
             if cols is None:
                 cols = result.evaluate_log.log.columns
             else:
-                cols = cols.intersection(result.evaluate_log.log.columns)
+                to_add = result.evaluate_log.log.columns
+                try:
+                    cols = cols.intersection(to_add)
+                except ValueError:
+                    if cols.nlevels == 3:
+                        assert len(cols.get_level_values(1).unique()) == 1  # column level of '0', can be dropped
+                        cols = cols.droplevel(level=1)
+                    elif to_add.nlevels == 3:
+                        assert len(to_add.get_level_values(1).unique()) == 1  # column level of '0', can be dropped
+                        to_add = to_add.droplevel(level=1)
+                    else:
+                        raise
+
+                    cols = cols.intersection(to_add)
 
         if cols is None:
             raise RuntimeError(f'No results found in self.result_list in result dir:\n\t{self.result_dir}.')
@@ -195,13 +208,16 @@ class ResultLoader(Namespacify):
             try:
                 rewards_dict[loc] = log.loc[:, log_column]
             except KeyError:
-                if errors == 'ignore':
-                    pass
-                elif errors == 'raise':
-                    msg = f'Evaluate log at position below does not contain key.\n\tPosition: {loc}\n\tkey: {log_column}'
-                    raise KeyError(msg)
-                else:
-                    raise ValueError(f"Unrecognized error handling '{errors}'")
+                try:
+                    rewards_dict[loc] = log.loc[:, (log_column[0], log_column[-1])]
+                except KeyError:
+                    if errors == 'ignore':
+                        pass
+                    elif errors == 'raise':
+                        msg = f'Evaluate log at position below does not contain key.\n\tPosition: {loc}\n\tkey: {log_column}'
+                        raise KeyError(msg)
+                    else:
+                        raise ValueError(f"Unrecognized error handling '{errors}'")
 
         if fill_missing_levels:
             rewards_dict = self._fill_missing_levels(rewards_dict, missing_level_fill_val)
