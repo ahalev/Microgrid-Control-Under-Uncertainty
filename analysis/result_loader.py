@@ -451,11 +451,19 @@ class ResultLoader(Namespacify):
             except ValueError:
                 col_wrap = None
         else:
-            col_wrap = int((min_col_wrap+max_col_wrap) // 2)
+            col_wrap = None
 
-        if kind == 'scatter' and units:
-            warnings.warn("Ignoring 'units' kwarg with kind='scatter'.")
-            units = None
+        kwargs = {'estimator': 'mean', **kwargs}
+
+        if kind == 'scatter':
+            if units:
+                warnings.warn("Ignoring 'units' kwarg with kind='scatter'.")
+                units = None
+
+            kwargs.pop('estimator')
+
+        elif units:
+            kwargs['estimator'] = None
 
         g = sns.relplot(
             data=yval,
@@ -469,7 +477,6 @@ class ResultLoader(Namespacify):
             col=relplot_col,
             col_wrap=col_wrap,
             palette=sns.color_palette(palette, n_colors=yval[hue].nunique()) if hue is not None else None,
-            estimator='mean' if units is None else None,
             facet_kws=facet_kws,
             **kwargs
         )
