@@ -30,7 +30,7 @@ def run_and_terminate_process(*args, **kwargs):
     try:
         yield p
     except KeyboardInterrupt:
-        logger.info('Killing run and continuing. Press ctrl-c again to kill.')
+        logger.info('Killing run.')
     finally:
         if p.poll() is None:
             cmd = ' '.join(p.args)
@@ -39,6 +39,9 @@ def run_and_terminate_process(*args, **kwargs):
 
             p.terminate()  # send sigterm, or ...
             p.kill()  # send sigkill
+
+        logger.info('Continuing in five seconds. Press ctrl-c again to kill')
+        time.sleep(5)
 
 
 def kill_hanging(p, timeout=3600, sleep_interval=None):
