@@ -78,12 +78,13 @@ class Trainer:
     def __init__(self, *args, setup_algo=True, serialize_config=True, **kwargs):
         set_seed(self.config.context.seed)
 
+        self.log_dirs = self._get_log_dir()
         self.logger = expfig.logging.get_logger()
+
         self.microgrid = self._setup_microgrid()
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
         self.baseline_rewards = self._compute_baselines(self.config.context.wandb.plot_baseline)
-        self.log_dirs = self._get_log_dir()
 
         self.has_wandb = self._set_wandb_env_keys()
 
@@ -170,14 +171,16 @@ class Trainer:
             log_dir = expfig.make_sequential_log_dir(
                 log_dir,
                 subdirs=subdirs,
-                use_existing_dir=log_config.log_dir.use_existing_dir
+                use_existing_dir=log_config.log_dir.use_existing_dir,
+                logger_file='output.log'
             )
         except OSError as e:
             old_log_dir = log_dir
             log_dir = expfig.make_sequential_log_dir(
                 None,
                 subdirs=subdirs,
-                use_existing_dir=log_config.log_dir.use_existing_dir
+                use_existing_dir=log_config.log_dir.use_existing_dir,
+                logger_file='output.log'
             )
 
             warnings.warn(f"Exception encountered when creating log_dir '{old_log_dir}':\n\t{e.__class__.__name__}: {e}"
