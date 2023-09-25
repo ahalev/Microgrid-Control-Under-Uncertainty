@@ -4,12 +4,25 @@ method: grid
 parameters:
   env:
     observation_keys:
+      value: ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
+#      values:
+#        - ['soc', 'net_load']
+#        - ['soc', 'net_load', 'import_price_current']
+#        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1']
+#        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3']
+#        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
+  context:
+    seed:
       values:
-        - ['soc', 'net_load']
-        - ['soc', 'net_load', 'import_price_current']
-        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1']
-        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3']
-        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+  algo:
+    train:
+      n_epochs:
+        value: 25
 metric:
   name: Test/MPCRelativeRewardSum
   goal: minimize
