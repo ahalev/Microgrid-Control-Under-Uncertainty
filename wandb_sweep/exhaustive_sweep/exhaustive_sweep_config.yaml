@@ -39,7 +39,7 @@ parameters:
       predictor_lr:
         value: 1.0e-3
       intrinsic_reward_weight:
-        value:
+        values:
           - 0.0
           - 0.01
           - 0.1
