@@ -3,8 +3,16 @@ project: gridrl
 method: grid
 parameters:
   env:
+    domain_randomization:
+      noise_std:
+        values:
+          - 0.0
+          - 0.01
+          - 0.1
     observation_keys:
-      value: ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
+      values:
+        - ['soc', 'net_load']
+        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
 #      values:
 #        - ['soc', 'net_load']
 #        - ['soc', 'net_load', 'import_price_current']
@@ -13,16 +21,29 @@ parameters:
 #        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
   context:
     seed:
-      values:
-        - 0
-        - 1
-        - 2
-        - 3
-        - 4
+      value: 42
   algo:
     train:
       n_epochs:
         value: 25
+    sampler:
+      n_workers:
+        value: 16
+    policy:
+      hidden_sizes:
+        value: [128, 128]
+    ppo:
+      tanhnormal:
+        value: false
+    rnd:
+      predictor_lr:
+        value: 1.0e-3
+      intrinsic_reward_weight:
+        value:
+          - 0.0
+          - 0.01
+          - 0.1
+          - 0.5
 metric:
   name: Test/MPCRelativeRewardSum
   goal: minimize
