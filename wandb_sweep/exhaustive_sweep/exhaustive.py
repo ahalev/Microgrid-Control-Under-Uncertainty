@@ -89,13 +89,12 @@ class ExhaustiveSweep(Sweep):
 
         os.environ.setdefault('BASED_ON_CONFIG', str(base_config_file))
 
-    def launch_agent_v2(self, sweep_id=None, count=5):
+    def launch_agent_v2(self, sweep_id=None):
         if sweep_id is not None:
             self.sweep_id = sweep_id
 
         self.set_config_env_var()
-        # TODO if this doesn't work, you need to pass `env` to subprocess.Popen
-        super().launch_agent_v2(count=count)
+        super().launch_agent_v2()
 
 
 def cleanup_config(config, additional_flattened=None):
