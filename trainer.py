@@ -85,15 +85,15 @@ class Trainer:
         self.baseline_rewards = self._compute_baselines(self.config.context.wandb.plot_baseline)
         self.log_dirs = self._get_log_dir()
 
-        self.has_wandb = set_wandb_env_keys(
-            username=self.config.context.wandb.username,
-            api_key_file=self.config.context.wandb.api_key_file
-        )
+        self.has_wandb = self._set_wandb_env_keys()
 
         self.serialize_config(serialize_config)
 
     def _setup_microgrid(self):
         return microgrid_from_config(self.config.microgrid)
+
+    def _set_wandb_env_keys(self):
+        return False
 
     def _setup_wandb(self, log_dir=None, **summary_info):
         if not self.has_wandb:
@@ -352,6 +352,12 @@ class RLTrainer(Trainer):
     algo_name = 'rl'
     env_class: Union[ContinuousMicrogridEnv, DiscreteMicrogridEnv, NetLoadContinuousMicrogridEnv]
     rnd_model: Union[RNDModel, None]
+
+    def _set_wandb_env_keys(self):
+        return set_wandb_env_keys(
+            username=self.config.context.wandb.username,
+            api_key_file=self.config.context.wandb.api_key_file
+        )
 
     def _setup_env(self):
         env, eval_env = super()._setup_env()
