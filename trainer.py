@@ -116,6 +116,9 @@ class Trainer:
             wandb = wandb_creator(*args, **kwargs)
             wandb.summary.update(s_info)
 
+            for artifact in self._wandb_artifacts():
+                wandb.log_artifact(artifact)
+
             return wandb
 
         if log_dir is not None:
@@ -123,6 +126,16 @@ class Trainer:
 
         return _wandb_creator
 
+    def _wandb_artifacts(self):
+        config_artifact = wandb.Artifact(
+            name='config',
+            type='configs',
+            description='Config, default config and difference between the two.'
+        )
+
+        config_artifact.add_dir(self.log_dirs['config'])
+
+        return [config_artifact]
 
     def _setup_env(self):
         env_kwargs = self._pre_env_setup()
