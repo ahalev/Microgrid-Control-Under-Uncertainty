@@ -68,16 +68,16 @@ class Sweep:
 
         wandb.agent(sweep_id, count=count)
 
-    def launch_agent_v2(self, sweep_id=None, count=5):
+    def launch_agent_v2(self, sweep_id=None):
         sweep_id = sweep_id or self.sweep_id
         if sweep_id is None:
             raise ValueError('sweep_id not found')
 
         command = f'wandb agent {sweep_id} --count 1'.split()
 
-        for j in range(count):
+        for j in range(self.meta_config.agent_count):
             with run_and_terminate_process(command, stdout=subprocess.PIPE, text=True) as proc:
-                self.logger.info(f'Running process {j} of {count}:\t{" ".join(proc.args)}')
+                self.logger.info(f'Running process {j} of {self.meta_config.agent_count}:\t{" ".join(proc.args)}')
                 kill_hanging(proc, timeout=self.meta_config.agent_timeout)
 
 
