@@ -465,6 +465,13 @@ class ResultLoader(Namespacify):
         elif units:
             kwargs['estimator'] = None
 
+        if hue is None:
+            palette = None
+        elif isinstance(palette, str):
+            palette = sns.color_palette(palette, n_colors=yval[hue].nunique())
+        else:
+            palette = palette
+
         g = sns.relplot(
             data=yval,
             x=xlabel,
@@ -476,7 +483,7 @@ class ResultLoader(Namespacify):
             markers=markers,
             col=relplot_col,
             col_wrap=col_wrap,
-            palette=sns.color_palette(palette, n_colors=yval[hue].nunique()) if hue is not None else None,
+            palette=palette,
             facet_kws=facet_kws,
             **kwargs
         )
