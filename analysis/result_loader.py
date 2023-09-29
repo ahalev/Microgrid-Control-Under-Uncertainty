@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 import pymgrid
-import re
 import seaborn as sns
 import json
+import os
 import yaml
 import warnings
 
@@ -272,22 +272,31 @@ class ResultLoader(Namespacify):
             module_kind,
             max_forecast_steps=None,
             step_range=slice(None),
-            relative=False
+            relative=False,
+            forecaster_values=None,
+            save_fname=None,
+            **plot_kwargs
     ):
         # Looks for forecast of the type f'{module_kind}_forecast_0, f'{module_kind}_forecast_1, etc
         forecast_horizon = [c.config.config.microgrid.methods.set_forecaster.forecast_horizon for c in self.iterlist()]
         max_forecast_horizon = max(forecast_horizon)
 
         applicable_cols = [f'{module_kind}_forecast_{j}' for j in range(max_forecast_horizon)]
-        forecasts = self.get_value_from_logs([(module_kind, '0', col) for col in applicable_cols])
-        true = self.get_value_from_logs((module_kind, '0', f'{module_kind}_current'))
+        forecasts = -1 * self.get_value_from_logs([(module_kind, '0', col) for col in applicable_cols])
+        true = -1 * self.get_value_from_logs((module_kind, '0', f'{module_kind}_current'))
 
         forecasts = forecasts.loc[step_range]
         forecasts = forecasts.unstack(level=-1).reset_index()
         forecasts = self._extract_param_columns(forecasts)
         forecasts = forecasts.rename(columns={0: module_kind.title()})
 
-        forecasts['Forecasted Step'] = forecasts['Step'] + forecasts['Load Forecast'] + 1
+        if forecaster_values:
+            forecasts = forecasts[forecasts['Forecaster'].isin(forecaster_values)]
+
+        # This denotes the step being forecasted at forecasts['Step']
+        # e.g. if forecasts['Step'] == 1000 and forecasts['Forecasted Step'], the value if the forecast of 1003 at 1000
+        forecasts['Forecasted Step'] = forecasts['Step'] + forecasts[f'{module_name.title()} Forecast'] + 1
+        forecasts['Steps Ahead'] = forecasts[f'{module_name.title()} Forecast'] + 1
 
         true = true.unstack(level=-1).reset_index()
         true = self._extract_param_columns(true)
@@ -299,30 +308,62 @@ class ResultLoader(Namespacify):
             forecasts = self._relative_forecasts(forecasts, true, module_kind)
 
         if max_forecast_steps is not None:
-            forecasts = forecasts[forecasts['Load Forecast'] <= max_forecast_steps]
+            forecasts = forecasts[forecasts['Step'] <= max_forecast_steps]
 
-        true = true[true['Step'].isin(forecasts['Forecasted Step'])]
+        true = true[['Scenario', 'Step', 'Load', 'Forecaster']].drop_duplicates()
+
+        mask = true['Forecaster'].isin(forecasts['Forecaster']) & true['Step'].isin(forecasts['Step'])
+        true = true[mask]
+        true['Steps Ahead'] = 0
+
+        forecasts_and_true = pd.concat([forecasts, true])
 
         grid = sns.relplot(
-            data=forecasts,
-            x='Forecasted Step',
+            data=forecasts_and_true,
+            x='Steps Ahead',
             y=module_kind.title(),
-            col='Scenario',
-            row='Forecaster',
-            hue='Step',
-            kind='line'
+            col='Step',
+            col_wrap=2,
+            hue='Forecaster',
+            kind='line',
+            alpha=0.6,
+            palette=sns.color_palette('OrRd_r', n_colors=5)[:4],
+            estimator='mean',
+            errorbar='se',
+            err_kws={'alpha': 0.2},
+            **plot_kwargs
         )
+        grid.set_titles(col_template="Forecast from Step {col_name}")
+
+        true_raw = -1 * self.get_value_from_logs((module_kind, '0', f'{module_kind}_current')).iloc[:, 0]
 
         if not relative:
-            for ax in grid.axes_dict.values():
-                sns.lineplot(
-                    data=true,
-                    x='Step',
-                    y=module_kind.title(),
-                    hue='Forecasted Step',
-                    ax=ax,
-                    linewidth=2
+            for j, ax in enumerate(grid.axes_dict.values()):
+
+                ax.plot(
+                    np.arange(0, max_forecast_horizon+1),
+                    true_raw.iloc[j:j + max_forecast_horizon+1],
+                    label='True Load',
+                    color='c',
+                    linewidth=2,
+                    linestyle='--')
+                ax.set(
+                    xlim=[0, max_forecast_horizon + 1],
+                    xticks=np.arange(0, max_forecast_horizon + 2, 4)
                 )
+
+                if j == len(grid.axes_dict)-1:
+                    ax.legend(
+                        handles=[*grid.legend.legendHandles, *ax.legend().legendHandles],
+                        title='Forecast Uncertainty',
+                        framealpha=0.5
+                    )
+
+        grid.legend.remove()
+
+        if save_fname:
+            plt.savefig(save_fname, bbox_inches='tight')
+            print(f'Figure saved to {os.path.abspath(save_fname)}')
 
         plt.show()
 
