@@ -57,10 +57,11 @@ class ResultLoader(Namespacify):
                  save_dir=None,
                  renamer=None,
                  replacements=(),
+                 levels_to_add=(),
                  verbose=1):
         self.verbose = verbose
 
-        results, result_dir = self._get_dict_results(results_or_dir, relevant_results, replacements)
+        results, result_dir = self._get_dict_results(results_or_dir, relevant_results, replacements, levels_to_add)
         super().__init__(results)
         self._rename(renamer)
         self._check_renamed(renamer)
@@ -72,18 +73,24 @@ class ResultLoader(Namespacify):
         self.microgrids = self._load_microgrids()
         self.log_columns = self.get_all_log_columns()
 
-    def _get_dict_results(self, results_or_dir, relevant_results, replacements):
+    def _get_dict_results(self, results_or_dir, relevant_results, replacements, levels_to_add):
         if isinstance(results_or_dir, (dict, UserDict)):
             if relevant_results:
                 warnings.warn('Non-empty relevant_results will be ignored when combining results.')
             if replacements:
                 warnings.warn('Non-empty replacements will be ignored when combining results.')
+            if levels_to_add:
+                warnings.warn('Non-empty levels_to_add will be ignored when combining results.')
+
             return results_or_dir, {name: results.result_dir for name, results in results_or_dir.items()}
 
         result_dir = Path(results_or_dir)
         replacement_func = lambda x: reduce(lambda string, f: f(string), replacements, x)
 
-        return self._load_results(result_dir, relevant_results, replacement_func), result_dir
+        dict_results = self._load_results(result_dir, relevant_results, replacement_func)
+        self._add_levels(dict_results, levels_to_add)
+
+        return dict_results, result_dir
 
     def _load_results(self, directory, relevant_vals, replacement_func):
         results = {}
@@ -120,10 +127,6 @@ class ResultLoader(Namespacify):
             if isinstance(v, Namespacify):
                 self._rename(renamer, lvl=v)
 
-        # for old_key, new_key in renamer.items():
-        #     if old_key in
-
-        # self.update()
 
     def _check_renamed(self, renamer):
         if renamer is None:
@@ -136,6 +139,50 @@ class ResultLoader(Namespacify):
             else:
                 if existing_key_locs:
                     raise RuntimeError
+
+    def _add_levels(self, d, levels_to_add):
+        config_keys = self._locate_deep_key('config', d)
+        for config_key in config_keys:
+            self._insert_levels(d, config_key[:-1], levels_to_add)
+
+
+    def _insert_levels(self, d, location, levels_to_add):
+        _d = d
+        for existing_level in location[:-1]:
+            _d = _d[existing_level]
+
+        config = _d[location[-1]]['config']['config']
+
+        new_levels = self._get_level_values(config, levels_to_add)
+
+        to_insert = _d[location[-1]]
+
+        for new_level in reversed(new_levels):
+            to_insert = {new_level: to_insert}
+
+        _d[location[-1]] = to_insert
+
+    def _get_level_values(self, config, levels_to_add):
+        new_levels = []
+
+        for k, v in levels_to_add.items():
+            config_key = k.split('.')
+            value_to_add = config
+
+            for key_level in config_key:
+               value_to_add = value_to_add[key_level]
+
+            if v:
+                if not callable(v):
+                    raise ValueError(f"Invalid 'levels_to_add' value corresponding to {k}, must be callable or None")
+
+                found_value = str(v(value_to_add))
+            else:
+                found_value = f'{config_key[-1]}_{value_to_add}'
+
+            new_levels.append(found_value)
+
+        return new_levels
 
     def _load_microgrids(self):
         microgrid_locations = self.locate_deep_key('microgrid')
@@ -220,9 +267,11 @@ class ResultLoader(Namespacify):
                         raise ValueError(f"Unrecognized error handling '{errors}'")
 
         if fill_missing_levels:
-            rewards_dict = self._fill_missing_levels(rewards_dict, missing_level_fill_val)
+            rewards_dict, level_names = self._fill_missing_levels(rewards_dict, missing_level_fill_val)
+        else:
+            level_names = None
 
-        df = pd.concat(rewards_dict, axis=1)
+        df = pd.concat(rewards_dict, axis=1, names=level_names)  # todo set the names of columns here
         df.index.name = 'Step'
 
         return df
@@ -252,7 +301,7 @@ class ResultLoader(Namespacify):
 
         rewards_dict = dict(zip(filled_keys, rewards_dict.values()))
 
-        return rewards_dict
+        return rewards_dict, list(filled_key_groups[0].keys())
 
     def _save_file(self, suffix):
         if self.save_dir is not None:
@@ -666,6 +715,8 @@ class ResultLoader(Namespacify):
                 list_match = all(ResultLoader.is_relevant(contents, inner_val) for inner_val in val)
                 if list_match:
                     return True
+            elif 'train_log' in parts:
+                return False
             elif val in parts:
                 return True
 
