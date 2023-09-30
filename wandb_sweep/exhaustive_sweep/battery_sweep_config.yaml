@@ -8,6 +8,7 @@ parameters:
         value: 0.01
     observation_keys:
       values:
+        - ['soc', 'net_load', 'import_price_current']
         - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
 #        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5',  'import_price_forecast_6', 'import_price_forecast_7', 'import_price_forecast_8', 'import_price_forecast_9', 'import_price_forecast_10', 'import_price_forecast_11', 'import_price_forecast_12', 'import_price_forecast_13', 'import_price_forecast_14', 'import_price_forecast_15', 'import_price_forecast_16', 'import_price_forecast_17',  'import_price_forecast_18', 'import_price_forecast_19', 'import_price_forecast_20', 'import_price_forecast_21', 'import_price_forecast_22']
   context:
@@ -34,15 +35,20 @@ parameters:
   microgrid:
     methods:
       set_forecaster:
-        forecast_horizon: 23
+        forecast_horizon:
+          value: 23
         forecaster:
+          value: 0
+        forecaster_increase_uncertainty:
+          value: false
+        forecaster_relative_noise:
+          value: false
+      set_module_attrs:
+        battery_transition_model:
           values:
-            - 0.04
-            - 0.1
-            - 0.2
-            - 0.3
-        forecaster_increase_uncertainty: true
-        forecaster_relative_noise: true
+            - '!DecayCycleTransitionModel {decay_rate_per_cycle: 0.99975}'
+            - '!DecayCycleTransitionModel {decay_rate_per_cycle: 0.99952}'
+            - '!DecayTransitionModel {decay_rate: 0.999958}'
 metric:
   name: Test/MPCRelativeRewardSum
   goal: minimize
