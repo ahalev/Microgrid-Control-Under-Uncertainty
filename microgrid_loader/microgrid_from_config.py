@@ -33,7 +33,8 @@ def _call_microgrid_methods(microgrid, config):
         return
 
     for method, method_params in methods.items():
-        getattr(microgrid, method)(**method_params)
+        _params = {k: _check_if_yaml(v) for k, v in method_params.items()}
+        getattr(microgrid, method)(**_params)
 
 
 def _set_microgrid_attributes(microgrid, config):
