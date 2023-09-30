@@ -100,7 +100,7 @@ class Trainer:
         if not self.has_wandb:
             return
 
-        experiment_name, tags = self.experiment_name_tags()
+        experiment_name, tags = self.experiment_name_tags(clip_tags=True)
 
         wandb_creator = functools.partial(
             wandb.init,
@@ -154,7 +154,7 @@ class Trainer:
 
         return env, eval_env
 
-    def experiment_name_tags(self):
+    def experiment_name_tags(self, clip_tags=False):
         tags = [self.algo_name]
 
         if self.config.context.experiment_name:
@@ -163,6 +163,18 @@ class Trainer:
         tags.extend(self._get_log_dir_params(self.config.context.log_dir.from_keys))
 
         experiment_name = self.config.context.experiment_name or '-'.join(tags)
+
+        if clip_tags:
+            clipped = []
+            for tag in tags:
+                if len(tag) > 64:
+                    clipped_tag = tag[-64:]
+                    self.logger.warning(f"tag '{tag}' too long, clipped to '{clipped_tag}'")
+                    clipped.append(clipped_tag)
+                else:
+                    clipped.append(tag)
+
+            return experiment_name, clipped
 
         return experiment_name, tags
 
