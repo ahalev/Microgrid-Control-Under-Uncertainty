@@ -421,7 +421,7 @@ class RLTrainer(Trainer):
             return {bl: self._compute_baselines(bl) for bl in baseline}
 
         baseline_specific_config = expfig.functions.unflatten({
-            'context.log_dir.parent': os.path.join(self.log_dirs['train_log'], 'baselines'),
+            'context.log_dir.parent': os.path.join(self.log_dirs.get('train_log', 'experiment_logs'), 'baselines'),
             'context.wandb.api_key_file': None,
             'microgrid.methods.set_forecaster.forecast_horizon': 23,
             'microgrid.methods.set_forecaster.forecaster': 'oracle'
