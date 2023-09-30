@@ -27,6 +27,7 @@ microgrid:
       forecaster_relative_noise: false
     set_module_attrs:
       normalized_action_bounds: [-1.0, 1.0]
+      battery_transition_model: null
   attributes:
     reward_shaping_func: null
 algo:
