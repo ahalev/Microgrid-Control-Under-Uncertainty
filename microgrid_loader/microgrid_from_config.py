@@ -43,14 +43,25 @@ def _set_microgrid_attributes(microgrid, config):
         return
 
     for attr, value in attributes.items():
-        if isinstance(value, str) and value.startswith('!'):
-            try:
-                value = yaml.safe_load(value)
-            except yaml.YAMLError:
-                try:
-                    value = yaml.safe_load(f'{value} {{}}')
-                except yaml.YAMLError:
-                    value = reduce(lambda _str, kv: _str.replace(*kv), CMD_LINE_YAML_REPLACEMENTS, value)
-                    value = yaml.safe_load(value)
+        value = _check_if_yaml(value)
 
         setattr(microgrid, attr, value)
+
+
+def _check_if_yaml(value):
+    if isinstance(value, str) and value.startswith('!'):
+        return _load_yaml_value(value)
+
+    return value
+
+def _load_yaml_value(value):
+    try:
+        value = yaml.safe_load(value)
+    except yaml.YAMLError:
+        try:
+            value = yaml.safe_load(f'{value} {{}}')
+        except yaml.YAMLError:
+            value = reduce(lambda _str, kv: _str.replace(*kv), CMD_LINE_YAML_REPLACEMENTS, value)
+            value = yaml.safe_load(value)
+
+    return value
