@@ -17,7 +17,7 @@ parameters:
   algo:
     train:
       n_epochs:
-        value: 100
+        value: 50
     sampler:
       n_workers:
         value: 16
