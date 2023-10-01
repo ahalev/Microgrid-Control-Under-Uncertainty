@@ -22,7 +22,7 @@ microgrid:
   methods:
     set_forecaster:
       forecast_horizon: 23
-      forecaster: oracle
+      forecaster: 0.0
       forecaster_increase_uncertainty: false
       forecaster_relative_noise: false
     set_module_attrs:
