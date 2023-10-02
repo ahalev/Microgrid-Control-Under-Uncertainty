@@ -152,7 +152,7 @@ class ResultLoader(Namespacify):
 
         config = _d[location[-1]]['config']['config']
 
-        new_levels = self._get_level_values(config, levels_to_add)
+        new_levels = self._get_level_values(config, levels_to_add, location)
 
         to_insert = _d[location[-1]]
 
@@ -161,10 +161,15 @@ class ResultLoader(Namespacify):
 
         _d[location[-1]] = to_insert
 
-    def _get_level_values(self, config, levels_to_add):
+    def _get_level_values(self, config, levels_to_add, existing_levels):
         new_levels = []
 
-        for k, v in levels_to_add.items():
+        try:
+            level_iter = levels_to_add.items()
+        except AttributeError:
+            level_iter = dict.fromkeys(levels_to_add).items()
+
+        for k, v in level_iter:
             config_key = k.split('.')
             value_to_add = config
 
@@ -174,8 +179,15 @@ class ResultLoader(Namespacify):
             if v:
                 if not callable(v):
                     raise ValueError(f"Invalid 'levels_to_add' value corresponding to {k}, must be callable or None")
-
-                found_value = str(v(value_to_add))
+                try:
+                    found_value = str(v(value_to_add, tuple([*existing_levels, *new_levels])))
+                except TypeError:
+                    try:
+                        found_value = str(v(value_to_add))
+                    except AddLevelError:
+                        continue
+                except AddLevelError:
+                    continue
             else:
                 found_value = f'{config_key[-1]}_{value_to_add}'
 
