@@ -94,7 +94,9 @@ class Sweep:
         """
         sweep = wandb.Api().sweep(f'ucd-cnml/gridrl/{self.sweep_id}')
         command = sweep.config['command']
-        flat_params = {k: v.get('values', [v['value']]) for k, v in sweep.config['parameters'].items()}
+
+        # one of these will exist, otherwise sweep construction would have failed
+        flat_params = {k: v.get('values', [v.get('value')]) for k, v in sweep.config['parameters'].items()}
         parameter_grid = ParameterGrid(flat_params)
 
         commands = []
