@@ -14,12 +14,6 @@ parameters:
         - ['soc', 'net_load']
         - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
         - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5',  'import_price_forecast_6', 'import_price_forecast_7', 'import_price_forecast_8', 'import_price_forecast_9', 'import_price_forecast_10', 'import_price_forecast_11', 'import_price_forecast_12', 'import_price_forecast_13', 'import_price_forecast_14', 'import_price_forecast_15', 'import_price_forecast_16', 'import_price_forecast_17',  'import_price_forecast_18', 'import_price_forecast_19', 'import_price_forecast_20', 'import_price_forecast_21', 'import_price_forecast_22']
-#      values:
-#        - ['soc', 'net_load']
-#        - ['soc', 'net_load', 'import_price_current']
-#        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1']
-#        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3']
-#        - ['soc', 'net_load', 'import_price_current', 'import_price_forecast_0', 'import_price_forecast_1', 'import_price_forecast_2', 'import_price_forecast_3', 'import_price_forecast_4', 'import_price_forecast_5']
   context:
     seed:
       value: 42
@@ -48,10 +42,14 @@ parameters:
   microgrid:
     methods:
       set_forecaster:
-        forecast_horizon: 23
-        forecaster: oracle
-        forecaster_increase_uncertainty: false
-        forecaster_relative_noise: false
+        forecast_horizon:
+          value: 23
+        forecaster:
+          value: 0.0
+        forecaster_increase_uncertainty:
+          value: true
+        forecaster_relative_noise:
+          value: true
 metric:
   name: Test/MPCRelativeRewardSum
   goal: minimize
