@@ -21,6 +21,7 @@ DEFAULT_CONFIG = Path(__file__).parent / 'ppo_sweep_config.yaml'
 
 class Sweep:
     cls_dir = Path(__file__).parent
+    agent = 'agent.py'
 
     def __init__(self, config=None, default=DEFAULT_CONFIG):
         self.config = Config(config, default=default)
@@ -79,7 +80,7 @@ class Sweep:
         sweep_id = os.path.join(api_settings['entity'], api_settings['project'], self.sweep_id)
 
         launch_cmd = 'Launch agents with:\n' \
-                     f'cd {self.cls_dir.resolve()} && python agent.py --meta.sweep_id {sweep_id}'
+                     f'cd {self.cls_dir.resolve()} && python {self.agent} --meta.sweep_id {sweep_id}'
 
         self.logger.info(launch_cmd)
 
