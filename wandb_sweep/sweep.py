@@ -103,5 +103,59 @@ class Sweep:
                 kill_hanging(proc, timeout=self.meta_config.agent_timeout)
 
 
+def fill_command(command, params, program, ignore_missing_env_vars=True):
+    new_command = []
+    args_str = construct_args(params)
+
+    for component in command:
+        if '$' not in component:
+            new_command.append(component)
+        elif '${program}' in component:
+            new_command.append(component.replace('${program}', program))
+        elif '${envvar:' in component:
+            new_command.append(replace_env_vars(component, ignore_missing_env_vars))
+        elif '${args}' in component:
+            new_command.append(args_str)
+        else:
+            raise ValueError(f"Unrecognized wildcard in {component}.")
+
+    return ' '.join(new_command)
+
+
+def construct_args(args_dict):
+    args_list = [f'"--{k}={v}"' for k, v in args_dict.items()]
+    return ' '.join(args_list)
+
+
+def replace_env_vars(env_var_string, ignore_missing=True):
+    bracket_splits = [x.split('}') for x in env_var_string.split('${')][1:]
+
+    new_splits = []
+
+    for j, split in enumerate(bracket_splits):
+        inner_split = []
+        for val in split:
+            try:
+                inner_split.append(get_env_var(val))
+            except KeyError:
+                if not ignore_missing:
+                    raise
+                else:
+                    inner_split.append(f'${{{val}}}')
+
+        new_splits.append(''.join(inner_split))
+
+    return ''.join(new_splits)
+
+
+
+def get_env_var(single_env_var_str):
+    envvar_name = single_env_var_str.partition('envvar:')[-1]
+    if not envvar_name:
+        return single_env_var_str
+
+    return os.environ[envvar_name]
+
+
 if __name__ == '__main__':
     Sweep().setup()
