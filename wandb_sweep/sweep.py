@@ -6,8 +6,11 @@ import wandb
 
 from expfig import Config, get_logger
 from expfig.functions import flatten
-from pathlib import Path
 from dowel import set_wandb_env_keys
+
+from pathlib import Path
+from sklearn.model_selection import ParameterGrid
+
 
 from wandb_sweep.agent_subprocess import run_and_terminate_process, kill_hanging
 
@@ -82,6 +85,23 @@ class Sweep:
 
         if self.meta_config.launch_agent:
             self.launch_agent_v2()
+
+    def commands_list(self, ignore_missing_env_vars=True):
+        """
+        Returns a list of commands that will be run in this sweep. Order will likely different from order
+        runs are dispatched via `wandb agent`.
+        """
+        sweep = wandb.Api().sweep(f'ucd-cnml/gridrl/{self.sweep_id}')
+        command = sweep.config['command']
+        flat_params = {k: v.get('values', [v['value']]) for k, v in sweep.config['parameters'].items()}
+        parameter_grid = ParameterGrid(flat_params)
+
+        commands = []
+        for params in parameter_grid:
+            commands.append(fill_command(command, params, sweep.config['program'],
+                                         ignore_missing_env_vars=ignore_missing_env_vars))
+
+        return commands
 
     def launch_agent(self, sweep_id=None, count=5):
         sweep_id = sweep_id or self.sweep_id
