@@ -45,9 +45,31 @@ class Sweep:
 
         self.config.parameters[parameter_name] = _value
 
+    def check_params(self, params):
+        too_long = {k: v for k, v in params.items() if len(v) > 1}
+        if not too_long:
+            return params
+
+        # One was in default:
+        for k, v in too_long.items():
+            split_key = tuple(k.split('.'))
+            default = self.config.default_config.parameters[split_key]
+
+            if 'value' in default:
+                v.pop('value')
+            elif 'values' in default:
+                v.pop('values')
+            else:
+                raise RuntimeError
+
+            assert len(v) == 1
+            params[k] = v
+
+        return params
+
     def setup(self):
         config = self.config.to_dict()
-        config['parameters'] = flatten(config['parameters'], levels=-1)
+        config['parameters'] = self.check_params(flatten(config['parameters'], levels=-1))
         self.sweep_id = wandb.sweep(config)
 
         api_settings = wandb.Api().settings
