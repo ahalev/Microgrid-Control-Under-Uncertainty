@@ -145,7 +145,6 @@ class ResultLoader(Namespacify):
         for config_key in config_keys:
             self._insert_levels(d, config_key[:-1], levels_to_add)
 
-
     def _insert_levels(self, d, location, levels_to_add):
         _d = d
         for existing_level in location[:-1]:
