@@ -335,6 +335,7 @@ class ResultLoader(Namespacify):
             relative=False,
             forecaster_values=None,
             save_fname=None,
+            show=True,
             **plot_kwargs
     ):
         # Looks for forecast of the type f'{module_kind}_forecast_0, f'{module_kind}_forecast_1, etc
@@ -425,7 +426,8 @@ class ResultLoader(Namespacify):
             plt.savefig(save_fname, bbox_inches='tight')
             print(f'Figure saved to {os.path.abspath(save_fname)}')
 
-        plt.show()
+        if show:
+            plt.show()
 
     def _relative_forecasts(self, forecasts, true, module_kind):
         forecast_subset = forecasts[['Forecasted Step', module_kind.title()]]
@@ -819,3 +821,7 @@ def read_pandas(contents, load_func):
         metadata = {}
 
     return load_func(contents, **metadata)
+
+
+class AddLevelError(Exception):
+    pass
