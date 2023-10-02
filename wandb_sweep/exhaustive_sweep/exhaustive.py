@@ -30,13 +30,16 @@ class ExhaustiveSweep(Sweep):
             # # running an agent, pass
             return
 
+        return cleanup_config(self.get_run().config, {'context.wandb.api_key_file': self.meta_config.wandb_setup.api_key_file})
+
+    def get_run(self):
         api = wandb.Api()
         runs = api.runs(path='ucd-cnml/gridrl')
 
         for run in runs:
             if self.meta_config.config_from_run in (run.name, run.id):
                 self.logger.info(f'Found run for base config:\n\t{run.name=}\n\t{run.id=}')
-                return cleanup_config(run.config, {'context.wandb.api_key_file': self.meta_config.wandb_setup.api_key_file})
+                return run
 
         raise NameError(f'No run found to match {self.meta_config.config_from_run=}')
 
