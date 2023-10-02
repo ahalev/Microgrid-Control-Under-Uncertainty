@@ -695,7 +695,6 @@ class DQNTrainer(RLTrainer):
             sampler=sampler,
             exploration_policy=exploration_policy,
             eval_env=self.eval_env,
-            steps_per_epoch=self.config.algo.train.steps_per_epoch,
             **self.config.algo.general_params,
             **self.config.algo.deterministic_params,
             **self.config.algo.dqn.params
@@ -760,7 +759,6 @@ class DDPGTrainer(RLTrainer):
             replay_buffer=replay_buffer,
             sampler=sampler,
             exploration_policy=exploration_policy,
-            steps_per_epoch=self.config.algo.train.steps_per_epoch,
             **self.config.algo.general_params,
             **self.config.algo.deterministic_params,
             **self.config.algo.ddpg.params
