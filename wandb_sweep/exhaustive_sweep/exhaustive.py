@@ -45,7 +45,10 @@ class ExhaustiveSweep(Sweep):
 
     def add_scenario(self):
         if self.base_config is not None:
-            self.add_parameter('microgrid.config.scenario', self.base_config['microgrid']['config']['scenario'])
+            self.add_parameter(
+                'microgrid.config.scenario', self.base_config['microgrid']['config']['scenario'],
+                overwrite=None
+            )
 
     def setup(self):
         launch_agent = self.meta_config.launch_agent
