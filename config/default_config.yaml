@@ -4,6 +4,7 @@ env:
   domain_randomization:
     noise_std: 0.0
     relative_noise: true
+  forced_genset: null
   net_load:
     use: true
     slack_module: grid
