@@ -97,7 +97,7 @@ class Trainer:
         return False
 
     def _setup_wandb(self, log_dir=None, **summary_info):
-        if not self.has_wandb:
+        if not self.has_wandb or log_dir == -1:
             return
 
         experiment_name, tags = self.experiment_name_tags(clip_tags=True)
@@ -515,7 +515,7 @@ class RLTrainer(Trainer):
         pymgrid_commit = subprocess.check_output(
             ["git", "describe", "--always"], cwd=Path(pymgrid.__file__).resolve().parent).strip().decode()
 
-        wandb_run = self._setup_wandb(self.log_dirs.get('train_log'), pymgrid_commit=pymgrid_commit, pid=os.getpid())
+        wandb_run = self._setup_wandb(self.log_dirs.get('train_log', -1), pymgrid_commit=pymgrid_commit, pid=os.getpid())
         experiment_name = getattr(wandb_run, 'name', log_dir)
 
         @wrap_experiment(name=experiment_name,
