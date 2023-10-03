@@ -563,7 +563,7 @@ class RLTrainer(Trainer):
         while not done:
             obs, reward, done, _ = env.step(policy.get_action(obs)[0])
 
-        return self.eval_env.get_log(drop_singleton_key=True)
+        return env.get_log(drop_singleton_key=True)
 
     def _record_log(self, log):
         numbered_modules = log.columns.nlevels == 3
