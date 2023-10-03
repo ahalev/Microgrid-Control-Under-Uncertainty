@@ -26,7 +26,7 @@ from garage.torch.value_functions import GaussianMLPValueFunction
 from garage.replay_buffer import PathBuffer
 
 from callback import GarageCallback
-from envs import GymEnv, DomainRandomizationWrapper
+from envs import GymEnv, DomainRandomizationWrapper, ForcedGensetWrapper
 from microgrid_loader import microgrid_from_config
 from rnd import RNDModel, RNDDDPG, RNDPPO
 
@@ -390,6 +390,7 @@ class RLTrainer(Trainer):
     def _setup_env(self):
         env, eval_env = super()._setup_env()
         env = self._setup_domain_randomization(env)
+        env = self._setup_forced_genset(env)
         return env, eval_env
 
     def _setup_domain_randomization(self, env):
@@ -402,6 +403,21 @@ class RLTrainer(Trainer):
                                           noise_std=float(dr_config.noise_std),
                                           relative_noise=dr_config.relative_noise
                                           )
+
+    def _setup_forced_genset(self, env):
+        # This will fail if used in DQN algorithms
+
+        forced_genset = self.config.env.forced_genset
+        if not forced_genset:
+            return env
+
+        force_on = expfig.functions.str2bool(forced_genset)
+
+        if isinstance(env, DomainRandomizationWrapper):
+            self.logger.warning('ForcedGenset incompatible with DomainRandomization, DomainRandomization will be '
+                                'removed.')
+
+        return ForcedGensetWrapper(env, force_on)
 
     def _setup_algo(self, setup_algo=True):
         if not setup_algo:
