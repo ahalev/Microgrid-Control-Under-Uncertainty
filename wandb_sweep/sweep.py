@@ -33,11 +33,11 @@ class Sweep:
 
         self.sweep_id = self.meta_config.sweep_id
 
-        self.add_parameter('microgrid.config.scenario', self.meta_config.scenario)
+        self.add_parameter('microgrid.config.scenario', self.meta_config.scenario, overwrite=False)
 
         self.logger = get_logger()
 
-    def add_parameter(self, parameter_name, value):
+    def add_parameter(self, parameter_name, value, overwrite=False):
         parameter_name = tuple(parameter_name.split('.'))
 
         if pd.api.types.is_dict_like(value):
@@ -47,7 +47,14 @@ class Sweep:
         else:
             _value = {'value': value}
 
-        self.config.parameters[parameter_name] = _value
+        if overwrite:
+            self.config.parameters[parameter_name] = _value
+        elif overwrite is None:
+            existing_values = self.config.parameters.get(parameter_name, dict())
+            if all(v is None for v in existing_values.values()):
+                self.config.parameters[parameter_name] = _value
+        else:
+            self.config.parameters[parameter_name] = self.config.parameters.get(parameter_name, _value)
 
     def check_params(self, params):
         too_long = {k: v for k, v in params.items() if len(v) > 1}
