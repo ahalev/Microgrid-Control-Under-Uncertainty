@@ -139,8 +139,18 @@ class Trainer:
 
     def _setup_env(self):
         env_kwargs = self._pre_env_setup()
+
+        valid_obs_keys = self.microgrid.state_series().index.get_level_values(-1).unique().union(['net_load'])
+        overlap = valid_obs_keys.intersection(self.config.env.observation_keys).tolist()
+        invalid_obs_keys = pd.Index(self.config.env.observation_keys).difference(overlap)
+
+        if not invalid_obs_keys.empty:
+            self.logger.warning(f'The following observation keys are invalid for the current microgrid, will be '
+                                f'ignored:\n\t{invalid_obs_keys.tolist()}\n\t'
+                                f'Retaining these observation keys:{overlap}')
+
         env = self.env_class.from_microgrid(self.microgrid,
-                                            observation_keys=self.config.env.observation_keys,
+                                            observation_keys=overlap,
                                             **env_kwargs)
 
         # TODO (ahalev) do this better
