@@ -174,26 +174,48 @@ class ResultLoader(Namespacify):
             value_to_add = config
 
             for key_level in config_key:
-               value_to_add = value_to_add[key_level]
-
-            if v:
-                if not callable(v):
-                    raise ValueError(f"Invalid 'levels_to_add' value corresponding to {k}, must be callable or None")
                 try:
-                    found_value = str(v(value_to_add, tuple([*existing_levels, *new_levels])))
-                except TypeError:
-                    try:
-                        found_value = str(v(value_to_add))
-                    except AddLevelError:
-                        continue
-                except AddLevelError:
-                    continue
-            else:
-                found_value = f'{config_key[-1]}_{value_to_add}'
+                    value_to_add = value_to_add[key_level]
+                except KeyError as e:
+                    if not callable(v):
+                        raise
 
-            new_levels.append(found_value)
+                    try:
+                        found_value = self._get_value_from_callable(v, None, *existing_levels, *new_levels)
+                    except Exception:
+                        raise e
+
+                    if found_value is not None:
+                        new_levels.append(found_value)
+
+                    break
+            else:
+                if v:
+                    if not callable(v):
+                        raise ValueError(f"Invalid 'levels_to_add' value corresponding to {k}, must be callable or None")
+
+                    found_value = self._get_value_from_callable(v, value_to_add, *existing_levels, *new_levels)
+                    if found_value is None:
+                        continue
+                else:
+                    found_value = f'{config_key[-1]}_{value_to_add}'
+
+                new_levels.append(found_value)
 
         return new_levels
+
+    def _get_value_from_callable(self, func, value, *levels):
+        try:
+            return str(func(value, *levels))
+        except TypeError:
+            try:
+                return str(func(value))
+            except AddLevelError:
+                pass
+        except AddLevelError:
+            pass
+
+        return None
 
     def _load_microgrids(self):
         microgrid_locations = self.locate_deep_key('microgrid')
