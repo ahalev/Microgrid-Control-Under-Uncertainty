@@ -15,7 +15,6 @@ class ForcedGensetWrapper(GymEnv):
                  **kwargs
                  ):
 
-
         self._post_init = False
         super().__init__(**parse_potential_gym_env(env, is_image, max_episode_length))
 
