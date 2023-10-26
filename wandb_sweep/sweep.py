@@ -38,6 +38,19 @@ class Sweep:
         self.logger = get_logger()
 
     def add_parameter(self, parameter_name, value, overwrite=False):
+        """
+        :param parameter_name: str
+            name of parameter to add
+        :param value: literal, list-like or dict-like
+            value(s) to add to sweep. If list-like or dict like, will be swept over.
+        :param overwrite: bool or None, default False
+            If True, existing values will be ignored and new values will be written regardless.
+            If False, new values will only be written if self.config.parameters[parameter_name] does not exist.
+            If None, new values will be written if self.config.parameters[parameter_name] does not exist or all
+                existing values are None.
+        :return: None
+
+        """
         parameter_name = tuple(parameter_name.split('.'))
 
         if pd.api.types.is_dict_like(value):
