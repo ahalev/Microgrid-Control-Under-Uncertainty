@@ -192,7 +192,6 @@ def replace_env_vars(env_var_string, ignore_missing=True):
     return ''.join(new_splits)
 
 
-
 def get_env_var(single_env_var_str):
     envvar_name = single_env_var_str.partition('envvar:')[-1]
     if not envvar_name:
