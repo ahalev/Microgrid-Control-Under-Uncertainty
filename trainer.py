@@ -411,6 +411,9 @@ class RLTrainer(Trainer):
         env = self._setup_domain_randomization(env)
         env = self._setup_forced_genset(env)
 
+        # We setup forced genset on eval env but not dr
+        eval_env = self._setup_forced_genset(eval_env)
+
         wrapped_env = super().wrap_env(env, return_copy=False)
         wrapped_eval_env = super().wrap_env(eval_env, return_copy=False)
 
