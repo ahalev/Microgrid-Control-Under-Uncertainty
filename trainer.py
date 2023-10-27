@@ -434,7 +434,7 @@ class RLTrainer(Trainer):
         # This will fail if used in DQN algorithms
 
         forced_genset = self.config.env.forced_genset
-        if not forced_genset:
+        if not forced_genset or forced_genset.strip().lower() in ['none', 'null']:
             return env
 
         force_on = expfig.functions.str2bool(forced_genset)
