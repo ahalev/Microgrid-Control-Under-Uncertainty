@@ -40,14 +40,3 @@ def convert_action_decorator(on=True):
 
         return wrapper
     return decorator
-
-
-class StepCounter:
-    def __init__(self, step=0):
-        self.step = step
-
-    def update(self, n=1):
-        self.step += n
-
-    def __call__(self):
-        return self.step
