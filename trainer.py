@@ -26,7 +26,7 @@ from garage.torch.value_functions import GaussianMLPValueFunction
 from garage.replay_buffer import PathBuffer
 
 from callback import GarageCallback
-from envs import GymEnv, DomainRandomizationWrapper, ForcedGensetWrapper
+from envs import GymEnv, DomainRandomizationWrapper, ForcedGensetWrapper, DomainRandomizationWrapperV2
 from microgrid_loader import microgrid_from_config
 from rnd import RNDModel, RNDDDPG, RNDPPO
 
@@ -409,7 +409,7 @@ class RLTrainer(Trainer):
         if not dr_config.noise_std:
             return env
 
-        return DomainRandomizationWrapper(env,
+        return DomainRandomizationWrapperV2(env,
                                           noise_std=float(dr_config.noise_std),
                                           relative_noise=dr_config.relative_noise
                                           )
