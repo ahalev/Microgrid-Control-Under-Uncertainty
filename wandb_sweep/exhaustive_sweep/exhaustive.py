@@ -115,4 +115,5 @@ def cleanup_config(config, additional_flattened=None):
 
 
 if __name__ == '__main__':
+    # python exhaustive.py --meta.config_from_run ppo-scenario_0-forecaster_0.0-battery_transition_model_None-seed_1-noise_std_0.041-tanhnormal_0-intrinsic_reward_weight_0.01
     ExhaustiveSweep().setup()
