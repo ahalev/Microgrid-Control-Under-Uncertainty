@@ -563,8 +563,9 @@ class RLTrainer(Trainer):
         train()
 
     def callback(self, env, policy, epoch):
-        log = self._evaluate(policy=policy)
-        self._record_log(log)
+        if not self.config.context.disable_logging:
+            log = self._evaluate(policy=policy)
+            self._record_log(log)
 
     def _evaluate(self, env=None, policy=None):
         env = env or self.eval_env.unwrapped
