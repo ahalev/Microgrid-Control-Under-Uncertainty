@@ -1,7 +1,28 @@
+import gym
 from garage.envs import GymEnv as _GarageGymEnv
 
 
-class GymEnv(_GarageGymEnv):
+class AttrPassthroughMixin:
+    _post_init: bool
+    env: 'gym.Env'
+
+    def __setattr__(self, key, value):
+        try:
+            self.__getattribute__(key)
+            toplevel_attr = True
+        except AttributeError:
+            toplevel_attr = False
+
+        if key != '_post_init' and self._post_init and not toplevel_attr and hasattr(self.env, key):
+            setattr(self.env, key, value)
+        else:
+            super().__setattr__(key, value)
+
+    def __len__(self):
+        return len(self.env)
+
+
+class GymEnv(_GarageGymEnv, AttrPassthroughMixin):
     def __init__(self, env, is_image=False, max_episode_length=None):
         self._post_init = False
         super().__init__(env, is_image=is_image, max_episode_length=max_episode_length)
@@ -22,17 +43,9 @@ class GymEnv(_GarageGymEnv):
         except AttributeError:
             return self._env
 
-    def __setattr__(self, key, value):
-        try:
-            self.__getattribute__(key)
-            toplevel_attr = True
-        except AttributeError:
-            toplevel_attr = False
-
-        if key != '_post_init' and self._post_init and not toplevel_attr and hasattr(self._env, key):
-            setattr(self._env, key, value)
-        else:
-            super().__setattr__(key, value)
+    @property
+    def env(self):
+        return self._env
 
 
 def parse_potential_gym_env(env, is_image, max_episode_length):
