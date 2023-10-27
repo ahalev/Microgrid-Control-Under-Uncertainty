@@ -153,16 +153,25 @@ class Trainer:
                                             observation_keys=overlap,
                                             **env_kwargs)
 
+        env, eval_env = self.wrap_env(env)
+
+        env = self.set_trajectory(env, train=True)
+        eval_env = self.set_trajectory(eval_env, evaluate=True)
+
+        return env, eval_env
+
+    def wrap_env(self, env, return_copy=True):
         # TODO (ahalev) do this better
         max_episode_length = getattr(
             self.config.microgrid.trajectory.train.trajectory_func, 'trajectory_length', len(env)
         )
 
         env = GymEnv(env, max_episode_length=max_episode_length)
-        env = self.set_trajectory(env, train=True)
-        eval_env = self.set_trajectory(deepcopy(env), evaluate=True)
 
-        return env, eval_env
+        if return_copy:
+            return env, deepcopy(env)
+
+        return env
 
     def experiment_name_tags(self, clip_tags=False):
         tags = [self.algo_name]
@@ -397,11 +406,15 @@ class RLTrainer(Trainer):
             api_key_file=self.config.context.wandb.api_key_file
         )
 
-    def _setup_env(self):
-        env, eval_env = super()._setup_env()
+    def wrap_env(self, env, **_):
+        eval_env = deepcopy(env)
         env = self._setup_domain_randomization(env)
         env = self._setup_forced_genset(env)
-        return env, eval_env
+
+        wrapped_env = super().wrap_env(env, return_copy=False)
+        wrapped_eval_env = super().wrap_env(eval_env, return_copy=False)
+
+        return wrapped_env, wrapped_eval_env
 
     def _setup_domain_randomization(self, env):
         dr_config = self.config.env.domain_randomization
