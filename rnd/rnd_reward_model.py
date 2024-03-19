@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 
+from abc import abstractmethod
 from dowel import tabular
 
 from garage import make_optimizer
@@ -11,7 +12,34 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 
-class RNDModel:
+class RNDBase:
+    def __init__(self):
+        self.external_reward_running_mean_std = RunningMeanStd()
+
+    @abstractmethod
+    def train_once(self, observations):
+        pass
+
+    @abstractmethod
+    def transform_rewards(self, obs, extrinsic_rewards):
+        pass
+
+    def _transform_ext_rewards(self, extrinsic_rewards):
+        # Transform from self.extrinsic_reward_norm_bounds to (0, 1)
+        self.external_reward_running_mean_std.update(extrinsic_rewards)
+        return (extrinsic_rewards - self.external_reward_running_mean_std.mean) / self.external_reward_running_mean_std.var
+
+class StandardizeExternal(RNDBase):
+    # TODO use this class if say config.intrinsic_reward_weight is negative
+
+    def train_once(self, observations):
+        pass
+
+    def transform_rewards(self, obs, extrinsic_rewards):
+        return self._transform_ext_rewards(extrinsic_rewards)
+
+
+class RNDModel(RNDBase):
     def __init__(self,
                  obs_dim,
                  output_dim=128,
@@ -36,8 +64,9 @@ class RNDModel:
                                                       module=self._reward_model.predictor,
                                                       lr=predictor_lr)
 
-        self._extrinsic_reward_running_mean_std = RunningMeanStd()
         self._intrinsic_reward_running_mean_std = RunningMeanStd()
+
+        super().__init__()
 
     def train_once(self, observations):
         dataset = RNDDataset(observations)
@@ -69,8 +98,12 @@ class RNDModel:
             tabular.record('MaxPredictorLoss', np.max(losses))
 
     def transform_rewards(self, obs, extrinsic_rewards):
+        if self.standardize_extrinsic_reward:
+            transformed_ext_rewards = self._transform_ext_rewards(extrinsic_rewards)
+        else:
+            transformed_ext_rewards = extrinsic_rewards
+
         intrinsic_rewards = self.compute_intrinsic_rewards(obs)
-        transformed_ext_rewards = self._transform_ext_rewards(extrinsic_rewards)
         transformed = transformed_ext_rewards + self.intrinsic_reward_weight * intrinsic_rewards
         assert transformed.shape == extrinsic_rewards.shape
 
@@ -94,14 +127,6 @@ class RNDModel:
 
             return mse
 
-    def _transform_ext_rewards(self, extrinsic_rewards):
-        if self.standardize_extrinsic_reward:
-            # Transform from self.extrinsic_reward_norm_bounds to (0, 1)
-            self._extrinsic_reward_running_mean_std.update(extrinsic_rewards)
-            return (extrinsic_rewards - self._extrinsic_reward_running_mean_std.mean) / self._extrinsic_reward_running_mean_std.var
-
-        return extrinsic_rewards
-
     def log_rewards(self, extrinsic_rewards, intrinsic_rewards, transformed_extrinsic_rewards, total_rewards):
         for k, rewards in dict(
                 Overall=total_rewards,
@@ -119,8 +144,8 @@ class RNDModel:
 
         if self.standardize_extrinsic_reward:
             with tabular.prefix(f'RNDRewardsExtrinsic/'):
-                tabular.record('RewardRunningMean', self._extrinsic_reward_running_mean_std.mean)
-                tabular.record('RewardRunningVar', self._extrinsic_reward_running_mean_std.var)
+                tabular.record('RewardRunningMean', self.external_reward_running_mean_std.mean)
+                tabular.record('RewardRunningVar', self.external_reward_running_mean_std.var)
 
         if self.standardize_intrinsic_reward:
             with tabular.prefix(f'RNDRewardsIntrinsic/'):
