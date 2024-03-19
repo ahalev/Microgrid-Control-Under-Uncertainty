@@ -28,7 +28,7 @@ from garage.replay_buffer import PathBuffer
 from callback import GarageCallback
 from envs import GymEnv, DomainRandomizationWrapper, ForcedGensetWrapper, DomainRandomizationWrapperV2
 from microgrid_loader import microgrid_from_config
-from rnd import RNDModel, RNDDDPG, RNDPPO
+from rnd import RNDModel, RNDDDPG, RNDPPO, StandardizeExternal
 
 import pymgrid
 
@@ -515,7 +515,10 @@ class RLTrainer(Trainer):
         rnd_config = self.config.algo.rnd
         if not rnd_config.intrinsic_reward_weight:
             return None
-        return RNDModel(self.env.spec.observation_space.shape[0], **rnd_config)
+        elif rnd_config.intrinsic_reward_weight < 0:
+            return StandardizeExternal()
+        else:
+            return RNDModel(self.env.spec.observation_space.shape[0], **rnd_config)
 
     def warn_custom_params(self):
         algos = ['dqn', 'ddpg', 'ppo', 'pretrain']
