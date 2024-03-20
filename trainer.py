@@ -403,7 +403,8 @@ class RLTrainer(Trainer):
     def _set_wandb_env_keys(self):
         return set_wandb_env_keys(
             username=self.config.context.wandb.username,
-            api_key_file=self.config.context.wandb.api_key_file
+            api_key_file=self.config.context.wandb.api_key_file,
+            search_paths=[Path(__file__).parent]
         )
 
     def wrap_env(self, env, **_):
