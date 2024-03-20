@@ -543,7 +543,7 @@ class RLTrainer(Trainer):
             ["git", "describe", "--always"], cwd=Path(pymgrid.__file__).resolve().parent).strip().decode()
 
         wandb_run = self._setup_wandb(self.log_dirs.get('train_log', -1), pymgrid_commit=pymgrid_commit, pid=os.getpid())
-        experiment_name = getattr(wandb_run, 'name', log_dir)
+        experiment_name = getattr(wandb_run, 'url', log_dir)
 
         @wrap_experiment(name=experiment_name,
                          snapshot_mode='gap_overwrite',
