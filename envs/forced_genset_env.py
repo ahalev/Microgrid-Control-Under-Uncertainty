@@ -18,13 +18,19 @@ class ForcedGensetWrapper(Wrapper, AttrPassthroughMixin):
         self.on = on
 
         self.env.convert_action = convert_action_decorator(on)(self.env.convert_action)
-
+        self.step_counter = 0
         self._post_init = True
 
     def unwrapped(self):
         self.env.convert_action = self.env.convert_action.__wrapped__
         return super().wrapped
 
+    def step(self, action):
+        self.step_counter += 1
+        if self.step_counter % 500 == 0:
+            print(f'{self.step_counter=}')
+
+        return self.env.step(action)
 
 def convert_action_decorator(on=True):
     def decorator(func):
