@@ -79,6 +79,8 @@ class RNDModel(RNDBase):
 
         self._intrinsic_reward_running_mean_std = RunningMeanStd()
 
+        self._epoch = -1
+
         super().__init__()
 
     def train_once(self, observations):
