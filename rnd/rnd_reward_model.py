@@ -115,6 +115,8 @@ class RNDModel(RNDBase):
         return ratio_min + 0.5 * (ratio_max - ratio_min) * np.cos(np.pi * epoch / self.max_epochs)
 
     def train_once(self, observations):
+        self._epoch += 1
+
         dataset = RNDDataset(observations)
         dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
         dataloader_iter = iter(dataloader)
@@ -150,10 +152,13 @@ class RNDModel(RNDBase):
             transformed_ext_rewards = extrinsic_rewards
 
         intrinsic_rewards = self.compute_intrinsic_rewards(obs)
-        transformed = transformed_ext_rewards + self.intrinsic_reward_weight * intrinsic_rewards
+        intrinsic_reward_weight, reward_weight_info = self.intrinsic_reward_weight(transformed_ext_rewards, intrinsic_rewards)
+
+        transformed = transformed_ext_rewards + intrinsic_reward_weight * intrinsic_rewards
         assert transformed.shape == extrinsic_rewards.shape
 
-        self.log_rewards(extrinsic_rewards, intrinsic_rewards, transformed_ext_rewards, transformed)
+        self.log_rewards(extrinsic_rewards, intrinsic_rewards, transformed_ext_rewards,
+                         transformed, reward_weight_info)
 
         return transformed
 
