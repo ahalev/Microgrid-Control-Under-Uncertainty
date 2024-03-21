@@ -112,7 +112,7 @@ class RNDModel(RNDBase):
         ratio_max = self.bound_reward_weight_initial_ratio
         ratio_min = self.intrinsic_reward_weight_val
 
-        return ratio_min + 0.5 * (ratio_max - ratio_min) * np.cos(np.pi * epoch / self.max_epochs)
+        return ratio_min + 0.5 * (ratio_max - ratio_min) * (1 + np.cos(np.pi * epoch / self.max_epochs))
 
     def train_once(self, observations):
         self._epoch += 1
