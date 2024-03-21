@@ -83,6 +83,37 @@ class RNDModel(RNDBase):
 
         super().__init__()
 
+    def intrinsic_reward_weight(self, standardized_external_rewards, standardized_internal_rewards):
+        mean_reward_ratio = standardized_external_rewards.mean() / standardized_internal_rewards.mean()
+
+        def _get_info(int_reward_weight, computed_int_reward_weight, int_ratio_bound):
+            keys = 'IntrinsicRewardWeight', 'ComputedIntrinsicRewardWeight', 'IntrinsicRatioBound', 'MeanExtIntRewardRatio'
+            vals = [int_reward_weight, computed_int_reward_weight, int_ratio_bound, mean_reward_ratio]
+
+            return dict(zip(keys, vals))
+
+        if self.bound_reward_weight is None or self._epoch < self.bound_reward_weight_transient_epochs:
+            info = _get_info(self.intrinsic_reward_weight_val, self.intrinsic_reward_weight_val, np.nan)
+            return self.intrinsic_reward_weight_val, info
+
+        elif self.bound_reward_weight == 'cosine':
+            intrinsic_ratio_bound = self._cosine_int_ratio_bound(self._epoch-self.bound_reward_weight_transient_epochs)
+        else:
+            raise ValueError(self.bound_reward_weight)
+
+        intrinsic_ratio_bound = np.clip(intrinsic_ratio_bound, EPS, 1-EPS)
+        computed_int_reward_weight = intrinsic_ratio_bound * mean_reward_ratio / (1 - intrinsic_ratio_bound)
+        int_reward_weight = min(computed_int_reward_weight, self.intrinsic_reward_weight_val)
+
+        info = _get_info(int_reward_weight, computed_int_reward_weight, intrinsic_ratio_bound)
+        return int_reward_weight, info
+
+    def _cosine_int_ratio_bound(self, epoch):
+        ratio_max = self.bound_reward_weight_initial_ratio
+        ratio_min = self.intrinsic_reward_weight_val
+
+        return ratio_min + 0.5 * (ratio_max - ratio_min) * np.cos(np.pi * epoch / self.max_epochs)
+
     def train_once(self, observations):
         dataset = RNDDataset(observations)
         dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
