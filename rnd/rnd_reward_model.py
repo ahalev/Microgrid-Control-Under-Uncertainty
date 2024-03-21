@@ -181,9 +181,12 @@ class RNDModel(RNDBase):
     def log_rewards(self, extrinsic_rewards, intrinsic_rewards, transformed_extrinsic_rewards,
                     total_rewards, reward_weight_info):
 
+        trans_ext_abs = np.abs(transformed_extrinsic_rewards)
+        int_abs = np.abs(intrinsic_rewards*reward_weight_info['IntrinsicRewardWeight'])
+
         ratios_of_overall = {
-            'RNDRewardsExtrinsicTransformed/AveragePercentOfOverallAbs': np.mean(np.abs(transformed_extrinsic_rewards/total_rewards)),
-            'RNDRewardsIntrinsic/AveragePercentOfOverallAbs': np.mean(np.abs(intrinsic_rewards*reward_weight_info['IntrinsicRewardWeight']/total_rewards))
+            'RNDRewardsExtrinsicTransformed/AveragePercentOfOverallAbs': np.mean(trans_ext_abs/(trans_ext_abs+int_abs)),
+            'RNDRewardsIntrinsic/AveragePercentOfOverallAbs': np.mean(int_abs/(trans_ext_abs+int_abs))
         }
 
         tabular.record_many(ratios_of_overall)
