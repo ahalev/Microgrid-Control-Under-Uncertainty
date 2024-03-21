@@ -92,7 +92,7 @@ class RNDModel(RNDBase):
 
             return dict(zip(keys, vals))
 
-        if self.bound_reward_weight is None or self._epoch < self.bound_reward_weight_transient_epochs:
+        if self.bound_reward_weight is None or self._epoch < self.bound_reward_weight_transient_epochs-1:
             info = _get_info(self.intrinsic_reward_weight_val, self.intrinsic_reward_weight_val, np.nan)
             return self.intrinsic_reward_weight_val, info
 
