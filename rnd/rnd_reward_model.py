@@ -173,7 +173,12 @@ class RNDModel(RNDBase):
 
             return mse
 
-    def log_rewards(self, extrinsic_rewards, intrinsic_rewards, transformed_extrinsic_rewards, total_rewards):
+    def log_rewards(self, extrinsic_rewards, intrinsic_rewards, transformed_extrinsic_rewards,
+                    total_rewards, reward_weight_info):
+
+        with tabular.prefix('RNDRewardsOverall/'):
+            tabular.record_many(reward_weight_info)
+
         for k, rewards in dict(
                 Overall=total_rewards,
                 ExtrinsicTransformed=transformed_extrinsic_rewards,
