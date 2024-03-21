@@ -518,7 +518,8 @@ class RLTrainer(Trainer):
         elif rnd_config.intrinsic_reward_weight <= 0:
             return StandardizeExternal()
         else:
-            return RNDModel(self.env.spec.observation_space.shape[0], **rnd_config)
+            max_epochs = self.config.algo.train.n_epochs
+            return RNDModel(self.env.spec.observation_space.shape[0], **rnd_config, max_epochs=max_epochs)
 
     def warn_custom_params(self):
         algos = ['dqn', 'ddpg', 'ppo', 'pretrain']
