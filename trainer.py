@@ -515,7 +515,7 @@ class RLTrainer(Trainer):
         rnd_config = self.config.algo.rnd
         if not rnd_config.intrinsic_reward_weight:
             return None
-        elif rnd_config.intrinsic_reward_weight < 0:
+        elif rnd_config.intrinsic_reward_weight <= 0:
             return StandardizeExternal()
         else:
             return RNDModel(self.env.spec.observation_space.shape[0], **rnd_config)
