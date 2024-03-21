@@ -12,6 +12,9 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 
+EPS = 1e-6
+
+
 class RNDBase:
     def __init__(self):
         self.external_reward_running_mean_std = RunningMeanStd()
@@ -47,6 +50,10 @@ class RNDModel(RNDBase):
                  batch_size=64,
                  n_train_steps=32,
                  intrinsic_reward_weight=0.5,
+                 bound_reward_weight=None,
+                 bound_reward_weight_transient_epochs=10,
+                 bound_reward_weight_initial_ratio=1-EPS,
+                 max_epochs=100,
                  standardize_intrinsic_reward=True,
                  standardize_extrinsic_reward=True,
                  predictor_optimizer=torch.optim.Adam,
@@ -55,7 +62,13 @@ class RNDModel(RNDBase):
 
         self.batch_size = batch_size
         self.n_train_steps = n_train_steps
-        self.intrinsic_reward_weight = intrinsic_reward_weight
+
+        self.intrinsic_reward_weight_val = intrinsic_reward_weight
+        self.bound_reward_weight = bound_reward_weight
+        self.bound_reward_weight_transient_epochs = bound_reward_weight_transient_epochs
+        self.bound_reward_weight_initial_ratio = bound_reward_weight_initial_ratio
+        self.max_epochs = max_epochs
+
         self.standardize_intrinsic_reward = standardize_intrinsic_reward
         self.standardize_extrinsic_reward = standardize_extrinsic_reward
 
