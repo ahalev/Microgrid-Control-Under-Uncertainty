@@ -84,7 +84,7 @@ class Trainer:
         self.microgrid = self._setup_microgrid()
         self.env, self.eval_env = self._setup_env()
         self.algo = self._setup_algo(setup_algo=setup_algo)
-        self.baseline_rewards = self._compute_baselines(self.config.context.wandb.plot_baseline)
+        self.baseline_rewards = self._compute_baselines()
 
         self.has_wandb = self._set_wandb_env_keys()
 
