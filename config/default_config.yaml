@@ -113,5 +113,4 @@ context:
     api_key_file: local/wandb_api_key.txt
     username: ahalev
     group: null
-    plot_baseline: [mpc]
 verbose: 0
