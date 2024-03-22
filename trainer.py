@@ -551,7 +551,15 @@ class RLTrainer(Trainer):
         pymgrid_commit = subprocess.check_output(
             ["git", "describe", "--always"], cwd=Path(pymgrid.__file__).resolve().parent).strip().decode()
 
-        wandb_run = self._setup_wandb(self.log_dirs.get('train_log', -1), pymgrid_commit=pymgrid_commit, pid=os.getpid())
+        baselines = {f'{k.upper()}Baseline': v for k, v in self.baseline_rewards.items()}
+
+        wandb_run = self._setup_wandb(
+            log_dir=self.log_dirs.get('train_log', -1),
+            pymgrid_commit=pymgrid_commit,
+            pid=os.getpid(),
+            **baselines
+        )
+
         experiment_name = getattr(wandb_run, 'url', log_dir)
 
         @wrap_experiment(name=experiment_name,
