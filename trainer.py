@@ -456,12 +456,17 @@ class RLTrainer(Trainer):
         algo, self.sampler, self.rnd_model = self.setup_rl_algo()
         return algo
 
-    def _compute_baselines(self, baseline='rbc'):
+    def _compute_baselines(self, baseline=('mpc', 'rbc')):
         if not baseline:
-            return {}
+            return dict()
 
         elif pd.api.types.is_list_like(baseline):
-            return {bl: self._compute_baselines(bl) for bl in baseline}
+            out = dict()
+
+            for bl in baseline:
+                out.update(self._compute_baselines(bl))
+
+            return out
 
         baseline_specific_config = expfig.functions.unflatten({
             'context.log_dir.parent': os.path.join(self.log_dirs.get('train_log', 'experiment_logs'), 'baselines'),
@@ -482,7 +487,7 @@ class RLTrainer(Trainer):
         eval = baseline_trainer.evaluate()
         reward_cumsum = eval['balance', 0, 'reward'].cumsum()
 
-        return reward_cumsum
+        return {baseline: reward_cumsum}
 
     def _set_trajectories(self, train=False, evaluate=False):
         super()._set_trajectories(train=train, evaluate=evaluate)
