@@ -97,12 +97,12 @@ class RNDModel(RNDBase):
 
             return dict(zip(keys, vals))
 
-        if self.bound_reward_weight is None or self._epoch < self.bound_reward_weight_transient_epochs-1:
+        if self.bound_reward_weight is None or self._epoch < self.bound_reward_transient_epochs-1:
             info = _get_info(self.intrinsic_reward_weight_val, self.intrinsic_reward_weight_val, np.nan)
             return self.intrinsic_reward_weight_val, info
 
         elif self.bound_reward_weight == 'cosine':
-            intrinsic_ratio_bound = self._cosine_int_ratio_bound(self._epoch-self.bound_reward_weight_transient_epochs)
+            intrinsic_ratio_bound = self._cosine_int_ratio_bound(self._epoch - self.bound_reward_transient_epochs)
         else:
             raise ValueError(self.bound_reward_weight)
 
@@ -114,7 +114,7 @@ class RNDModel(RNDBase):
         return int_reward_weight, info
 
     def _cosine_int_ratio_bound(self, epoch):
-        ratio_max = self.bound_reward_weight_initial_ratio
+        ratio_max = self.bound_reward_initial_ratio
         ratio_min = self.intrinsic_reward_weight_val
 
         return ratio_min + 0.5 * (ratio_max - ratio_min) * (1 + np.cos(np.pi * epoch / self.max_epochs))
