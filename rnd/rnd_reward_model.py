@@ -51,8 +51,10 @@ class RNDModel(RNDBase):
                  n_train_steps=32,
                  intrinsic_reward_weight=0.5,
                  bound_reward_weight=None,
-                 bound_reward_weight_transient_epochs=10,
-                 bound_reward_weight_initial_ratio=1-EPS,
+                 bound_reward_transient_epochs=10,
+                 bound_reward_initial_ratio=1-EPS,
+                 bound_reward_ratio_of_means=True,
+                 bound_reward_relative_to_ratio=True,
                  max_epochs=100,
                  standardize_intrinsic_reward=True,
                  standardize_extrinsic_reward=True,
@@ -65,8 +67,11 @@ class RNDModel(RNDBase):
 
         self.intrinsic_reward_weight_val = intrinsic_reward_weight
         self.bound_reward_weight = bound_reward_weight
-        self.bound_reward_weight_transient_epochs = bound_reward_weight_transient_epochs
-        self.bound_reward_weight_initial_ratio = bound_reward_weight_initial_ratio
+        self.bound_reward_transient_epochs = bound_reward_transient_epochs
+        self.bound_reward_initial_ratio = bound_reward_initial_ratio
+        self.bound_reward_ratio_of_means = bound_reward_ratio_of_means
+        self.bound_reward_relative_to_ratio = bound_reward_relative_to_ratio
+
         self.max_epochs = max_epochs
 
         self.standardize_intrinsic_reward = standardize_intrinsic_reward
