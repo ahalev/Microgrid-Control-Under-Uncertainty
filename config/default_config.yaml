@@ -84,9 +84,12 @@ algo:
     additional_config: null
   rnd:
     intrinsic_reward_weight: 0.0
-    bound_reward_weight: null
-    bound_reward_weight_transient_epochs: 10
-    bound_reward_weight_initial_ratio: 0.999999  # 1-1e-6
+    bound_reward:
+      weight: null
+      transient_epochs: 10
+      initial_ratio: 0.999999  # 1-1e-6
+      ratio_of_means: true
+      relative_to_ratio: true
     predictor_lr: 1.0e-3
     batch_size: 64
     hidden_sizes:
