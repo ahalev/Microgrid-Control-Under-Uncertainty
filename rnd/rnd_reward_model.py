@@ -110,11 +110,19 @@ class RNDModel(RNDBase):
         else:
             raise ValueError(self.bound_reward_weight)
 
-        intrinsic_ratio_bound = np.clip(intrinsic_ratio_bound, EPS, 1-EPS)
-        computed_int_reward_weight = intrinsic_ratio_bound * mean_reward_ratio / (1 - intrinsic_ratio_bound)
-        int_reward_weight = min(computed_int_reward_weight, self.intrinsic_reward_weight_val)
+
+        reward_ratio = mean_reward_ratio if self.bound_reward_ratio_of_means else pairwise_reward_ratio
+
+        if self.bound_reward_relative_to_ratio:
+            intrinsic_ratio_bound = np.clip(intrinsic_ratio_bound, EPS, 1-EPS)
+            computed_int_reward_weight = intrinsic_ratio_bound * reward_ratio / (1 - intrinsic_ratio_bound)
+            int_reward_weight = min(computed_int_reward_weight, self.intrinsic_reward_weight_val)
+        else:
+            computed_int_reward_weight = intrinsic_ratio_bound * self.intrinsic_reward_weight_val
+            int_reward_weight = computed_int_reward_weight
 
         info = _get_info(int_reward_weight, computed_int_reward_weight, intrinsic_ratio_bound)
+
         return int_reward_weight, info
 
     def _cosine_int_ratio_bound(self, epoch):
