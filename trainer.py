@@ -608,8 +608,10 @@ class RLTrainer(Trainer):
 
             if self.has_wandb:
                 log.columns = log.columns.map(lambda x: '_'.join(str(v) for v in x if str(v)))
-                table = wandb.Table(dataframe=log.reset_index(names='Step'))
-                tabular.record('EvalLog', table)
+
+                # Removing this as it takes up a large amount of space
+                # table = wandb.Table(dataframe=log.reset_index(names='Step'))
+                # tabular.record('EvalLog', table)
 
                 titles = [
                     'Cumulative Reward',
