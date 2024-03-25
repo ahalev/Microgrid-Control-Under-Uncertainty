@@ -523,14 +523,18 @@ class RLTrainer(Trainer):
             raise ValueError(f"Invalid sampler config type {sampler_config.type}, must be 'local' or 'ray'.")
 
     def _setup_rnd_model(self):
-        rnd_config = self.config.algo.rnd
+        rnd_config = self.config.algo.rnd.copy()
         if not rnd_config.intrinsic_reward_weight:
             return None
         elif rnd_config.intrinsic_reward_weight <= 0:
             return StandardizeExternal()
         else:
             max_epochs = self.config.algo.train.n_epochs
-            return RNDModel(self.env.spec.observation_space.shape[0], **rnd_config, max_epochs=max_epochs)
+            bound_reward_config = rnd_config.pop('bound_reward')
+            bound_reward_config = {f'bound_reward_{k}': v for k, v in bound_reward_config.items()}
+
+            return RNDModel(self.env.spec.observation_space.shape[0], max_epochs=max_epochs, **rnd_config,
+                            **bound_reward_config)
 
     def warn_custom_params(self):
         algos = ['dqn', 'ddpg', 'ppo', 'pretrain']
