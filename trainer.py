@@ -609,9 +609,10 @@ class RLTrainer(Trainer):
             if self.has_wandb:
                 log.columns = log.columns.map(lambda x: '_'.join(str(v) for v in x if str(v)))
 
-                # Removing this as it takes up a large amount of space
-                # table = wandb.Table(dataframe=log.reset_index(names='Step'))
-                # tabular.record('EvalLog', table)
+                # Only log if self.config.wandb.log_density>=2
+                if self.config.wandb.log_density >= 2:
+                    table = wandb.Table(dataframe=log.reset_index(names='Step'))
+                    tabular.record('EvalLog', table)
 
                 titles = [
                     'Cumulative Reward',
@@ -632,17 +633,20 @@ class RLTrainer(Trainer):
                     table_subset[f'{baseline_name}_baseline'].iloc[:10] = float('nan')  # transient
                     tabular.record(f'{baseline_name.upper()}RelativeRewardSum', table_subset[f'{baseline_name}_baseline'].iloc[-1])
 
-                table_subset = table_subset.reset_index(names='Step')
+                # Only log plots if self.config.wandb.log_density>=2
 
-                for column, title in zip(table_subset.columns[1:], titles):
-                    plot = wandb.plot.line(
-                        table=wandb.Table(dataframe=table_subset[['Step', column]]),
-                        x='Step',
-                        y=column,
-                        title=title
-                    )
+                if self.config.wandb.log_density >= 2:
+                    table_subset = table_subset.reset_index(names='Step')
 
-                    tabular.record(title.replace(' ', ''), plot)
+                    for column, title in zip(table_subset.columns[1:], titles):
+                        plot = wandb.plot.line(
+                            table=wandb.Table(dataframe=table_subset[['Step', column]]),
+                            x='Step',
+                            y=column,
+                            title=title
+                        )
+
+                        tabular.record(title.replace(' ', ''), plot)
 
     def update_trainer(self, trainer):
         pass
