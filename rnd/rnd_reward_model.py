@@ -90,10 +90,14 @@ class RNDModel(RNDBase):
 
     def intrinsic_reward_weight(self, standardized_external_rewards, standardized_internal_rewards):
         mean_reward_ratio = np.abs(standardized_external_rewards).mean() / np.abs(standardized_internal_rewards).mean()
+        pairwise_reward_ratio = np.abs(standardized_external_rewards/standardized_internal_rewards).mean()
 
         def _get_info(int_reward_weight, computed_int_reward_weight, int_ratio_bound):
-            keys = 'IntrinsicRewardWeight', 'ComputedIntrinsicRewardWeight', 'IntrinsicRatioBound', 'MeanExtIntAbsRewardRatio'
-            vals = [int_reward_weight, computed_int_reward_weight, int_ratio_bound, mean_reward_ratio]
+            keys = 'IntrinsicRewardWeight', 'ComputedIntrinsicRewardWeight', 'IntrinsicRatioBound', \
+                'MeanExtIntAbsRewardRatio', 'PairwiseExtIntAbsRewardRatio'
+
+            vals = int_reward_weight, computed_int_reward_weight, int_ratio_bound, \
+                    mean_reward_ratio, pairwise_reward_ratio
 
             return dict(zip(keys, vals))
 
