@@ -249,7 +249,13 @@ class Trainer:
                     raise KeyError(f'Missing deep key: {"->".join(deep_key)}')
 
                 if pd.api.types.is_number(value):
-                    value = round(value, 3)
+                    str_value = round(value, 3)
+
+                    if str_value != value and -1e-3 < value < 1e-3:
+                        str_value = f'{value:.1e}'
+
+                    value = str_value
+
                 dirs.append(f'{split[-1]}_{value}')
 
         return dirs
