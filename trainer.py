@@ -615,8 +615,8 @@ class RLTrainer(Trainer):
             if self.has_wandb:
                 log.columns = log.columns.map(lambda x: '_'.join(str(v) for v in x if str(v)))
 
-                # Only log if self.config.wandb.log_density>=2
-                if self.config.wandb.log_density >= 2:
+                # Only log if self.config.context.wandb.log_density>=2
+                if self.config.context.wandb.log_density >= 2:
                     table = wandb.Table(dataframe=log.reset_index(names='Step'))
                     tabular.record('EvalLog', table)
 
@@ -639,9 +639,9 @@ class RLTrainer(Trainer):
                     table_subset[f'{baseline_name}_baseline'].iloc[:10] = float('nan')  # transient
                     tabular.record(f'{baseline_name.upper()}RelativeRewardSum', table_subset[f'{baseline_name}_baseline'].iloc[-1])
 
-                # Only log plots if self.config.wandb.log_density>=2
+                # Only log plots if self.config.context.wandb.log_density
 
-                if self.config.wandb.log_density >= 2:
+                if self.config.context.wandb.log_density >= 2:
                     table_subset = table_subset.reset_index(names='Step')
 
                     for column, title in zip(table_subset.columns[1:], titles):
