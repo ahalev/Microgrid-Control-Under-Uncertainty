@@ -51,7 +51,7 @@ class RNDModel(RNDBase):
                  n_train_steps=32,
                  intrinsic_reward_weight=0.5,
                  bound_reward_weight=None,
-                 bound_reward_weight_transient_epochs=10,
+                 bound_reward_weight_transient_epochs=0,
                  bound_reward_weight_initial_ratio=1-EPS,
                  max_epochs=100,
                  standardize_intrinsic_reward=True,
