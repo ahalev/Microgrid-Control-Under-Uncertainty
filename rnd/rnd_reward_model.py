@@ -79,7 +79,7 @@ class RNDModel(RNDBase):
 
         self._intrinsic_reward_running_mean_std = RunningMeanStd()
 
-        self._epoch = -1
+        self._epoch = 0
 
         super().__init__()
 
