@@ -99,6 +99,8 @@ algo:
   train:
     batch_size: 50000
     n_epochs: 100
+    use_gpu: false
+    gpu_id: 5
 context:
   verbose: 0
   experiment_name: null
