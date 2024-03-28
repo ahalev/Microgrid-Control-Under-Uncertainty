@@ -74,6 +74,7 @@ algo:
     tanhnormal: false
     params:
       center_adv: false
+      num_train_per_epoch: 1
   pretrain:
     algo_to_pretrain: null
     pretrain_algo: rbc
