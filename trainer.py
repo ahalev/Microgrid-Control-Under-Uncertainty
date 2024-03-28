@@ -19,6 +19,7 @@ from garage.experiment.deterministic import set_seed, get_seed
 from garage.sampler import LocalSampler, RaySampler
 from garage.trainer import Trainer as GarageTrainer
 from garage.np.exploration_policies import EpsilonGreedyPolicy, AddOrnsteinUhlenbeckNoise
+from garage.torch import set_gpu_mode
 from garage.torch.algos import DQN, DDPG, PPO
 from garage.torch.policies import DiscreteQFArgmaxPolicy, DeterministicMLPPolicy, GaussianMLPPolicy, TanhGaussianMLPPolicy
 from garage.torch.q_functions import DiscreteMLPQFunction, ContinuousMLPQFunction
@@ -578,6 +579,7 @@ class RLTrainer(Trainer):
         def train(ctxt=None):
             garage_trainer = GarageTrainer(ctxt)
 
+            self.set_gpu()
             self.update_trainer(garage_trainer)
 
             garage_trainer.setup(self.algo, self.env, self.callback)
@@ -653,6 +655,11 @@ class RLTrainer(Trainer):
                         )
 
                         tabular.record(title.replace(' ', ''), plot)
+
+    def set_gpu(self):
+        _set_gpu = torch.cuda.is_available() and self.config.algo.train.use_gpu
+        set_gpu_mode(_set_gpu, gpu_id=self.config.algo.train.gpu_id)
+        self.algo.to()
 
     def update_trainer(self, trainer):
         pass
