@@ -143,7 +143,10 @@ class Sweep:
         for j in range(1, self.meta_config.agent_count+1):
             with run_and_terminate_process(command, stdout=subprocess.PIPE, text=True) as proc:
                 self.logger.info(f'Running process {j} of {self.meta_config.agent_count}:\t{" ".join(proc.args)}')
+
+                subprocess.check_output(f'wandb sweep --resume {sweep_id}'.split())
                 kill_hanging(proc, timeout=self.meta_config.agent_timeout)
+
                 self.logger.info(f'COMPLETED process {j} of {self.meta_config.agent_count}:\t{" ".join(proc.args)}')
 
 
