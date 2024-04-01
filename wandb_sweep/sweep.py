@@ -1,5 +1,6 @@
 import os
 import subprocess
+import time
 
 import pandas as pd
 import wandb
@@ -145,6 +146,7 @@ class Sweep:
                 self.logger.info(f'Running process {j} of {self.meta_config.agent_count}:\t{" ".join(proc.args)}')
 
                 subprocess.check_output(f'wandb sweep --resume {sweep_id}'.split())
+                time.sleep(3)  # sleep to give wandb a second to resume the sweep (it decides to finish itself sometimes)
                 kill_hanging(proc, timeout=self.meta_config.agent_timeout)
 
                 self.logger.info(f'COMPLETED process {j} of {self.meta_config.agent_count}:\t{" ".join(proc.args)}')
