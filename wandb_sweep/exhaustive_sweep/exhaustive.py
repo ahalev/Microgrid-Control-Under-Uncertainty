@@ -91,7 +91,12 @@ class ExhaustiveSweep(Sweep):
 
     def set_config_env_var(self):
         base_config_file = self.get_base_config_file()
-        assert base_config_file.exists(), f'Base config file {base_config_file} not found'
+        if not base_config_file.exists():
+            if self.base_config is None:
+                raise ValueError(f'Base config file {base_config_file} not found')
+            else:
+                self._setup_base_config()
+                assert base_config_file.exists()
 
         os.environ.setdefault('BASED_ON_CONFIG', str(base_config_file))
 
