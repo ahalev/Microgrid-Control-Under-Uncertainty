@@ -10,7 +10,7 @@ from expfig.functions import flatten
 from dowel import set_wandb_env_keys
 
 from pathlib import Path
-from sklearn.model_selection import ParameterGrid
+from utils.parameter_grid import ParameterGrid
 
 
 from wandb_sweep.agent_subprocess import run_and_terminate_process, kill_hanging
