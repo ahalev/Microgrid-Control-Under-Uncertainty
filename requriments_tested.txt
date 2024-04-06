@@ -1,0 +1,12 @@
+dowel @ git+https://github.com/ahalev/dowel.git
+experiment-config>=1.0.0
+garage @ git+https://github.com/ahalev/garage.git
+gym==0.26.2
+matplotlib==3.7.1
+numpy==1.24.3
+pandas==2.0.1
+python-microgrid==1.4.1
+pyyaml==6.0
+ray==2.4.0
+torch==1.7.1
+wandb==0.15.12
