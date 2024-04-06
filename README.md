@@ -1,6 +1,16 @@
-## Using `trainer.py`
+## Getting started
 
-`trainer.py` is a script made for reproducible experiments. It currently only supports experiments using `garage`.
+This repo was developed using python 3.8.0 using the versions of the requirements as denoted in `requirements_tested.txt`.
+
+In particular, using the updated fork of `garage` may be required; it contains updates to keep the repo current with
+its dependencies. The fork of `dowel` is not required but allows for experiment tracking with [Weights and Biases](https://wandb.ai/site).
+
+
+
+
+## Running experiments
+
+All experiments are launched with `trainer.py`.
 
 The best way to use the trainer is to call it at the command line. By default, it will use the configuration 
 settings defined in `config/default_config.yaml`.
@@ -92,6 +102,9 @@ There are three other ways to define custom settings/hyperparameters:
      Trainer(config=config).train()  
      ```
 
+
+For additional details, see the `experiment-config` [README](https://github.com/ahalev/experiment-config?tab=readme-ov-file#additional-methods-of-inputting-custom-hyperparameters).
+
 ### Defining a microgrid
 
 There are multiple ways of passing parameters to define your microgrid. 
@@ -101,23 +114,39 @@ to use one of the saved *pymgrid25* scenarios; to use scenario two, for example,
 `--microgrid.config.scenario 2` at the command line or the equivalent according to methods 2 or 3 above.
 
 You can also take advantage of the yaml-serializability of microgrids to define a microgrid, by setting `microgrid.config`
-to be a serialized microgrid.
-
-For example, suppose `microgrid.yaml` contains:
+to be a serialized microgrid, e.g.:
 
 ```yaml
-!Microgrid
-modules:
-- - balancing
-  - !UnbalancedEnergyModule
-    cls_params:
-      initial_step: 0
-      loss_load_cost: 10.0
-      overgeneration_cost: 2.0
-      raise_errors: false
-    name:
-    - balancing
-    - 0
-    state:
-      _current_step: 0
+microgrid:
+     config:
+          modules:
+          - - balancing
+            - !UnbalancedEnergyModule
+              cls_params:
+                initial_step: 0
+                loss_load_cost: 10.0
+                overgeneration_cost: 2.0
+                raise_errors: false
+              name:
+              - balancing
+              - 0
+              state:
+                _current_step: 0
+```
+
+will result in a microgrid with a single unbalanced energy module. See the serialized *pymgrid25* scenarios for examples 
+[here](https://github.com/ahalev/python-microgrid/tree/master/src/pymgrid/data/scenario/pymgrid25).
+
+You can also pass a microgrid defined with the sdk, e.g.
+
+```python
+from pymgrid import Microgrid
+from trainer import Trainer
+
+modules = ...  # modules here
+microgrid = Microgrid(modules)
+
+cfg = {'microgrid.config': microgrid}
+
+Trainer(config=cfg).train()
 ```
