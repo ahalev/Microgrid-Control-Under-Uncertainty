@@ -1,11 +1,15 @@
 import numpy as np
 import pandas as pd
 import pymgrid
-import seaborn as sns
 import json
 import os
 import yaml
 import warnings
+
+try:
+    import seaborn as sns
+except ImportError:
+    sns = None
 
 from collections import UserDict
 from expfig import Namespacify
@@ -360,6 +364,10 @@ class ResultLoader(Namespacify):
             show=True,
             **plot_kwargs
     ):
+
+        if sns is None:
+            raise ModuleNotFoundError("Install seaborn with 'pip install seaborn' to utilize this functionality.")
+
         # Looks for forecast of the type f'{module_kind}_forecast_0, f'{module_kind}_forecast_1, etc
         forecast_horizon = [c.config.config.microgrid.methods.set_forecaster.forecast_horizon for c in self.iterlist()]
         max_forecast_horizon = max(forecast_horizon)
@@ -520,6 +528,9 @@ class ResultLoader(Namespacify):
              save=True,
              facet_kws=None,
              **kwargs):
+
+        if sns is None:
+            raise ModuleNotFoundError("Install seaborn with 'pip install seaborn' to utilize this functionality.")
 
         if x is None:
             x = 'Step'
