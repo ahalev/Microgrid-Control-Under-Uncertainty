@@ -1,3 +1,5 @@
+This repository contains code accompanying the upcoming paper `Microgrid Control under Uncertainty`.
+
 ## Getting started
 
 This repo was developed using python 3.8.0 using the versions of the requirements as denoted in `requirements_tested.txt`.
