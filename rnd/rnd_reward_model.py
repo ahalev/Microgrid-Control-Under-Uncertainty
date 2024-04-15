@@ -32,8 +32,8 @@ class RNDBase:
         self.external_reward_running_mean_std.update(extrinsic_rewards)
         return (extrinsic_rewards - self.external_reward_running_mean_std.mean) / self.external_reward_running_mean_std.var
 
+
 class StandardizeExternal(RNDBase):
-    # TODO use this class if say config.intrinsic_reward_weight is negative
 
     def train_once(self, observations):
         pass
