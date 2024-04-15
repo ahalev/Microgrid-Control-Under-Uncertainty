@@ -30,6 +30,9 @@ in this directory, denoting the configuration used for the specific experiment. 
 
 The location of results can be moved by modifying `context.log_dir` and `context.experiment_name`. 
 
+For examples of microgrid configurations, the configs used to produce the experiments in the paper are located in `results`.
+
+
 ### Additional methods of inputting custom hyperparameters
 
 There are three other ways to define custom settings/hyperparameters:
