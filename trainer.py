@@ -960,6 +960,10 @@ class PreTrainer(RLTrainer):
 class MPCTrainer(Trainer):
     algo_name = 'mpc'
 
+    def _setup_env(self):
+        # no-op, don't need
+        return None, None
+
     def _setup_algo(self, setup_algo=True):
         if not setup_algo:
             warnings.warn('Skipping algo setup.')
@@ -973,6 +977,10 @@ class MPCTrainer(Trainer):
 
 class RBCTrainer(Trainer):
     algo_name = 'rbc'
+
+    def _setup_env(self):
+        # no-op, don't need
+        return None, None
 
     def _setup_algo(self, setup_algo=True):
         if not setup_algo:
