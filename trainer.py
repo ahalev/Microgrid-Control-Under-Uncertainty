@@ -386,7 +386,7 @@ class Trainer:
         return instance
 
     @classmethod
-    def from_hub(cls, hub_repo_id, cache_dir=None, additional_config=None):
+    def from_pretrained(cls, hub_repo_id, cache_dir=None, additional_config=None):
         try:
             from huggingface_hub import snapshot_download
         except ImportError as e:
