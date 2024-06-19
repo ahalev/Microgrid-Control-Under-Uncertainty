@@ -1,4 +1,4 @@
-This repository contains code accompanying the upcoming paper `Microgrid Control under Uncertainty`.
+This repository contains code accompanying the upcoming paper [*Microgrid Control under Uncertainty*](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4866653).
 
 ## Getting started
 
@@ -154,4 +154,22 @@ microgrid = Microgrid(modules)
 cfg = {'microgrid.config': microgrid}
 
 Trainer(config=cfg).train()
+```
+
+## Pretrained models
+
+Pretrained models from the paper are available on [Hugging Face](https://huggingface.co/collections/ahalev/mcu-uncertainty-66722845f1bef807e0fb847b).
+
+They can be used as follows ([`huggingface_hub`](https://github.com/huggingface/huggingface_hub) must be installed):
+
+```python
+from trainer import Trainer
+trainer = Trainer.from_pretrained('ahalev/mcuu-table-2-0f8ud8aq')
+algo, env = trainer.algo, trainer.env
+
+# Get an action from a random observation
+action, _ = algo.policy.get_action(env.observation_space.sample())
+
+# Evaluate the policy over 2920 timesteps
+evaluation = trainer.evaluate()
 ```
