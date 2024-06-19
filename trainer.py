@@ -378,7 +378,7 @@ class Trainer:
             config.append(additional_config)
 
         instance = cls(config=config, default=default, setup_algo=setup_algo, serialize_config=False)
-        garage_data = instance.load_additional_data(log_dir, additional_garage_data)
+        garage_data = instance.load_additional_data(log_dir.joinpath('train_log'), additional_garage_data)
 
         if garage_data:
             return instance, garage_data
@@ -673,7 +673,7 @@ class RLTrainer(Trainer):
     def load_additional_data(self, log_dir, additional_garage_data=None):
         from garage.experiment import Snapshotter
 
-        garage_data = Snapshotter().load(Path(log_dir) / 'train_log')
+        garage_data = Snapshotter().load(log_dir)
         self.algo = garage_data['algo']
         self.env = garage_data['env']
 
