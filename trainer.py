@@ -393,12 +393,18 @@ class Trainer:
             msg = "Install huggingface_hub with 'pip install -U huggingface_hub' to download models from hugging-face."
             raise ModuleNotFoundError(msg) from e
 
-        snapshot_dir = snapshot_download(hub_repo_id, cache_dir=cache_dir)
-        config = Path(snapshot_dir).joinpath('config.yaml')
+        snapshot_dir = Path(snapshot_download(hub_repo_id, cache_dir=cache_dir))
+        config = [snapshot_dir.joinpath('config.yaml')]
 
+        if additional_config is not None:
+            config.append(additional_config)
 
+        instance = cls(config=config, serialize_config=False)
+        instance.load_additional_data(snapshot_dir)
 
-    def load_additional_data(self, log_dir, additional_garage_data):
+        return instance
+
+    def load_additional_data(self, log_dir, additional_garage_data=None):
         pass
 
     @classmethod
