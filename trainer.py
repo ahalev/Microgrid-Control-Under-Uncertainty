@@ -385,6 +385,19 @@ class Trainer:
 
         return instance
 
+    @classmethod
+    def from_hub(cls, hub_repo_id, cache_dir=None, additional_config=None):
+        try:
+            from huggingface_hub import snapshot_download
+        except ImportError as e:
+            msg = "Install huggingface_hub with 'pip install -U huggingface_hub' to download models from hugging-face."
+            raise ModuleNotFoundError(msg) from e
+
+        snapshot_dir = snapshot_download(hub_repo_id, cache_dir=cache_dir)
+        config = Path(snapshot_dir).joinpath('config.yaml')
+
+
+
     def load_additional_data(self, log_dir, additional_garage_data):
         pass
 
